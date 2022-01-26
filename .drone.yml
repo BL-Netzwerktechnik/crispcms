@@ -70,7 +70,7 @@ name: Build Docker Images
 
 steps:
 
-  - name: en_US.amd64
+  - name: en_US-CE
     image: plugins/docker
     settings:
       username:
@@ -78,13 +78,39 @@ steps:
       auto_tag: true
       password:
         from_secret: docker_secret
-      repo: docker.io/jrbit/crispcms
+      repo: docker.io/jrbit/crispcms-ce
       registry: docker.io
       squash: true
       build_args:
         - GIT_COMMIT=${DRONE_COMMIT_SHA:0:8}
         - LANG=en_US.UTF-8
         - DEFAULT_LOCALE=en
+    when:
+      ref:
+        - refs/heads/master
+        - refs/tags/*
+      event:
+        include:
+          - tag
+          - push
+    depends_on: [ clone ]
+
+  - name: en_US-EE
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: docker_user
+      auto_tag: true
+      password:
+        from_secret: docker_secret
+      repo: docker.io/jrbit/crispcms-ee
+      registry: docker.io
+      squash: true
+      build_args:
+        - GIT_COMMIT=${DRONE_COMMIT_SHA:0:8}
+        - LANG=en_US.UTF-8
+        - DEFAULT_LOCALE=en
+        - COMPILE_EE=true
     when:
       ref:
         - refs/heads/master
