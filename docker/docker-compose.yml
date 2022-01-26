@@ -7,7 +7,7 @@ services:
       - ../cms:/var/www/crisp
       - ../config/nginx.conf:/etc/nginx/conf.d/default.conf
       - ../config/php.ini:/usr/local/etc/php/conf.d/php_custom.ini
-      - ./data/crisp/theme:/var/www/crisp/themes/crisptheme
+      - ./data/crisp/theme/theme:/var/www/crisp/themes/crisptheme
     ports:
       - '80:80'
     links:
