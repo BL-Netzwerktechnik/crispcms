@@ -1,9 +1,46 @@
-# CrispCMS
-<h2>Next Generation Content Management Framework</h2>
+# CrispCMS Dockerized
+<h2>Next Generation Content Management Framework - Dockerized</h2>
 
 ⚠️ README work in progress ⚠️
 
+## Run in development
 
+To develop a theme, you can run crisp locally by mounting the theme folder to your workspace, example docker-compose file below
+
+```yaml
+version: '3.3'
+services:
+
+  crisp:
+    image: 'd3a9ba1e348be819bb4fcf2a829a04007fa28086d0ba5'
+    volumes:
+      - my/local/theme/folder:/var/www/crisp/themes/crisptheme
+    ports:
+      - '80:80'
+    links:
+      - postgres
+      - redis
+    environment:
+      - CRISP_THEME=crisptheme
+      - VERBOSITY=3
+      - POSTGRES_URI=postgres://postgres:postgres@postgres:5432/postgres
+      - REDIS_HOST=redis
+      - REDIS_INDEX=1
+      - ENVIRONMENT=development
+      - FLAGSMITH_APP_URL=https://flagsmith.internal.jrbit.de/api/v1/
+      - CRISP_FLAGSMITH_API_KEY=K8BJRBi6xiE3HweHoRQhQA # API Key for the development environment
+
+  redis:
+    image: redis:latest
+    restart: always
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+
+```
 
 ## Environment Variables
 
