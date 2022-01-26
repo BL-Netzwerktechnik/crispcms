@@ -34,7 +34,7 @@ steps:
 
     commands:
       - cd cms
-      - echo -e "# We dont need me!" > .env
+      - echo "# We dont need me!" > .env
       - mkdir /tmp/ci
       - cd /tmp/ci
       - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev wget git-core zip zlib1g-dev libpng-dev doxygen
