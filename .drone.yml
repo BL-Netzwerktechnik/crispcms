@@ -10,22 +10,6 @@ steps:
       - sleep 30
       - psql -h postgres -U postgres -c "CREATE DATABASE crisp_dev;"
 
-  - name: Create Crisp Config
-    image: alpine
-    commands:
-      - cd cms
-      - echo -e "POSTGRES_URI=postgres://postgres:postgres@postgres:5432/crisp_dev" > .env
-      - echo -e "REDIS_HOST=redis" >> .env
-      - echo -e "REDIS_PORT=6379" >> .env
-      - echo -e "REDIS_INDEX=2" >> .env
-      - echo -e "DEFAULT_LOCALE=de" >> .env
-      - echo -e "CRISP_FLAGSMITH_APP_URL=https://flagsmith.internal.jrbit.de/api/v1/" >> .env
-      - echo -e "CRISP_FLAGSMITH_API_KEY=4EfrHdnZR3immHjchjUB8p" >> .env
-      - echo -e "CRISP_THEME=crisptheme" >> .env
-      - echo -e "LANG=de_DE.utf8" >> .env
-      - echo -e "DEFAULT_LOCALE=de" >> .env
-
-
   - name: Migrate and Test Crisp
     image: php:8.1-buster
     environment:
@@ -36,7 +20,21 @@ steps:
       SENTRY_AUTH_TOKEN:
         from_secret: sentry_token
       SENTRY_ORG: jrbit
+
+      POSTGRES_URI: postgres://postgres:postgres@postgres:5432/crisp_dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_INDEX: 2
+      DEFAULT_LOCALE: en
+      CRISP_FLAGSMITH_APP_URL: https://flagsmith.internal.jrbit.de/api/v1/
+      CRISP_FLAGSMITH_API_KEY: 4EfrHdnZR3immHjchjUB8p
+      CRISP_THEME: crisptheme
+      LANG: en_US.utf8
+      VERBOSITY: 3
+
     commands:
+      - cd cms
+      - echo -e "# We dont need me!" > .env
       - mkdir /tmp/ci
       - cd /tmp/ci
       - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev wget git-core zip zlib1g-dev libpng-dev doxygen

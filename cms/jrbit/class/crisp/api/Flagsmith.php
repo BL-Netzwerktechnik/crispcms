@@ -45,6 +45,8 @@ class Flagsmith
             throw new \Exception("Missing Environment Variable $EnvAppUrl");
         }
 
+        Helper::Log(3, "Using $_ENV[$EnvApiKey] to connect to $_ENV[$EnvAppUrl]");
+
         $Flagsmith = new \Flagsmith\Flagsmith($_ENV[$EnvApiKey], $_ENV[$EnvAppUrl]);
 
         if ($UseCache) {
