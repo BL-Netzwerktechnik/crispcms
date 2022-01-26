@@ -27,7 +27,7 @@ steps:
       REDIS_INDEX: 2
       DEFAULT_LOCALE: en
       CRISP_FLAGSMITH_APP_URL: https://flagsmith.internal.jrbit.de/api/v1/
-      CRISP_FLAGSMITH_API_KEY: 4EfrHdnZR3immHjchjUB8p
+      CRISP_FLAGSMITH_API_KEY: mwp6tU4GGESSbTyP5qrKki
       CRISP_THEME: crisptheme
       LANG: en_US.utf8
       VERBOSITY: 3
