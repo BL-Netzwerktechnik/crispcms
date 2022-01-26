@@ -1,0 +1,103 @@
+kind: pipeline
+type: docker
+name: Test
+
+steps:
+
+  - name: create_postgres_db
+    image: postgres:9-alpine
+    commands:
+      - sleep 30
+      - psql -h postgres -U postgres -c "CREATE DATABASE crisp_dev;"
+
+  - name: Create Crisp Config
+    image: alpine
+    commands:
+      - cd cms
+      - echo -e "eyJ1dWlkIjoiZWMyNTNjZDItZDA2NS1mNTUwLTVjMGQtODAwNTFhZGU2MWQ3IiwiaXNzdWVkX2F0IjoxNjMzMjgzMDA3LCJzdGFydHNfYXQiOjE2MzMyODMwMDcsInVwZGF0ZWRfYXQiOjE2MzMyODMwMDcsInplcm9fZGF5Ijp0cnVlLCJzdGFsZSI6MTYzMzI4MzYwNywicmV2b2tlZCI6MCwiZXhwaXJlc19hdCI6ZmFsc2V9MP4LR4cwJQKL7QgGBM7/t/+3ThSJSwi/5uXtiadN0BZBdq8nHnjVpo1FxyNBaNr13UynVvhOAT7fjyO1aLIvxwFWWaRum56lhE7aP9rdikPD8SrD/UaoMyQ7XpRPyD+tmNdm3IABA1Ay+/IIh3DxZxVgZRNL6o86zhBMi69Fmg7tfgPa/aD2+fVbHBYmghyr4f7hybbN3otXp2ZJ2SlfBwCErS3Uw0r4mGLmZCBcN/17hXYuZHq11A32NJVSAxP+s7vvvA6uwhtOwcjP1Cb7vICqFUJuJw9RxpYELAgqOQDjTNs2sZrK3GOyS0oM5Z4RXu7Fhr3J6IGPy6t5mt0gBN3wutWWNVD0tINjtl2zLxTFAElQRTYS6EQW0NtF5QPeREEq618KwXElNKSu7/iX7H+VZUko21tK781z+Ju6Ngsr2fJUUTJknoKBbhDXxi/4mY+3dj9FM+GgidtO4t06jZ2NkttOXhVZpoL0wtIN/I5Hp36FUK62AHU7anD4TvOUIwFM1aTbR408rCjdxVSXP1pIkMpqsQy1QoJYLo7sxpPJkFGIIO7cc3SiBQFBts8WIidGEY3tKCuo62FCGJNrs7Zf+IMUvSXJW+xqy5pJ/0fKl4u7OTbybXurJ4/0une1S38noOFuOxIIMfK5QDsl9SAccmbzftRWeDHBFTVXhW4=" > ci.license
+      - echo -e "POSTGRES_URI=postgres://postgres:postgres@postgres:5432/crisp_dev" > .env
+      - echo -e "REDIS_HOST=redis" >> .env
+      - echo -e "REDIS_PORT=6379" >> .env
+      - echo -e "REDIS_INDEX=2" >> .env
+      - echo -e "SENTRY_DSN=https://d0e418c924564bbf9640581dc2a00209@sentry.internal.jrbit.de/18" >> .env
+      - echo -e "DEFAULT_LOCALE=de" >> .env
+      - echo -e "LICENSE_FILE=./ci.license" >> .env
+      - echo -e "CRISP_FLAGSMITH_APP_URL=https://flagsmith.internal.jrbit.de/api/v1/" >> .env
+      - echo -e "CRISP_FLAGSMITH_API_KEY=4EfrHdnZR3immHjchjUB8p" >> .env
+      - echo -e "CRISP_THEME=crisptheme" >> .env
+      - echo -e "LANG=de_DE.utf8" >> .env
+      - echo -e "DEFAULT_LOCALE=de" >> .env
+
+
+  - name: Migrate and Test Crisp
+    image: php:8.1-buster
+    environment:
+      COMPOSER_ALLOW_SUPERUSER: 1
+      ENVIRONMENT: development
+      GIT_COMMIT: ${DRONE_COMMIT_SHA:0:8}
+      SENTRY_URL: https://sentry.internal.jrbit.de
+      SENTRY_AUTH_TOKEN:
+        from_secret: sentry_token
+      SENTRY_ORG: jrbit
+    commands:
+      - mkdir /tmp/ci
+      - cd /tmp/ci
+      - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev wget git-core zip zlib1g-dev libpng-dev doxygen
+      - pecl install redis
+      - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
+      - docker-php-ext-enable pdo_pgsql pdo_mysql redis intl gd gettext
+      - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
+      - cd /drone/src/cms
+      - php /tmp/ci/composer install
+      - php bin/cli.php migrate
+      - php bin/cli.php theme install basic
+      - rm /tmp/ci/composer
+      - curl -sL https://sentry.io/get-cli/ | bash
+      - export VERSION=$(php bin/cli.php release)
+      - sentry-cli releases new --finalize -p crisp-core $VERSION
+      - sentry-cli releases set-commits --auto $VERSION
+
+
+services:
+  - name: redis
+    image: redis
+  - name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+---
+kind: pipeline
+type: docker
+name: Build Docker Images
+
+steps:
+
+  - name: en_US.amd64
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: docker_user
+      auto_tag: true
+      password:
+        from_secret: docker_secret
+      repo: docker.io/jrbit/crispcms
+      registry: docker.io
+      squash: true
+      build_args:
+        - GIT_COMMIT=${DRONE_COMMIT_SHA:0:8}
+        - LANG=en_US.UTF-8
+        - DEFAULT_LOCALE=en
+    when:
+      ref:
+        - refs/heads/master
+        - refs/tags/*
+      event:
+        include:
+          - tag
+          - push
+    depends_on: [ clone ]
+depends_on:
+  - Test

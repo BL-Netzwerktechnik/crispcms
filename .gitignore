@@ -1,0 +1,15 @@
+cms/jrbit/cache/*
+!/cms/jrbit/cache/.keep
+cms/.env
+cms/vendor
+.vscode
+.idea/
+composer.phar
+licensekey.dat
+*.license.txt
+*.license
+cms/themes/*
+!/cms/themes/basic
+docker/data
+docker/docker-compose.override.yml
+docker/docker-compose.yml
