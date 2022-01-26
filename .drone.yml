@@ -19,6 +19,7 @@ steps:
       - echo -e "REDIS_PORT=6379" >> .env
       - echo -e "REDIS_INDEX=2" >> .env
       - echo -e "DEFAULT_LOCALE=de" >> .env
+      - echo -e "CRISP_FLAGSMITH_APP_URL=https://flagsmith.internal.jrbit.de/api/v1/" >> .env
       - echo -e "CRISP_FLAGSMITH_API_KEY=4EfrHdnZR3immHjchjUB8p" >> .env
       - echo -e "CRISP_THEME=crisptheme" >> .env
       - echo -e "LANG=de_DE.utf8" >> .env
