@@ -48,7 +48,7 @@ class Sessions
 
 
         $statement = $DBConnection->prepare('INSERT INTO sessions (token, "user", identifier, oidc_token) VALUES (:Token, :User, :Identifier, :oidc)');
-        $result = $statement->execute(array(":User" => $ID['sub'], ":Token" => $Token, ":Identifier" => $Identifier, ":oidc" => 'None'));
+        $result = $statement->execute(array(":User" => $ID, ":Token" => $Token, ":Identifier" => $Identifier, ":oidc" => 'None'));
 
         if (!$result) {
             return false;
