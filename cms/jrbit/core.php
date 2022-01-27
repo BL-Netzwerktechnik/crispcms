@@ -252,31 +252,6 @@ try {
         }
 
 
-        if (Sessions::isSessionValid()) {
-            $GLOBALS["user"] = $_SESSION[core\Config::$Cookie_Prefix . "session_login"]["user"];
-            $TwigTheme->addGlobal("user", $GLOBALS["user"]);
-
-            $LoggedInID = (new Identity($GLOBALS['user']['sub']))
-                ->withTrait((new IdentityTrait('session_id'))
-                    ->withValue($GLOBALS['guid'] ?? 'unknown'))
-                ->withTrait((new IdentityTrait('route'))
-                    ->withValue($GLOBALS['route']->Page ?? 'unknown'))
-                ->withTrait((new IdentityTrait('locale'))
-                    ->withValue($Locale ?? $_ENV['DEFAULT_LOCALE']))
-                ->withTrait((new IdentityTrait('email'))
-                    ->withValue($GLOBALS['user']['email'] ?? 'unknown'))
-                ->withTrait((new IdentityTrait('preferred_username'))
-                    ->withValue($GLOBALS['user']['preferred_username'] ?? 'unknown'))
-                ->withTrait((new IdentityTrait('country_code'))
-                    ->withValue($_ENV["GEOIP_COUNTRY_CODE"] ?? 'NONE'))
-                ->withTrait((new IdentityTrait('country_code3'))
-                    ->withValue($_ENV["GEOIP_COUNTRY_CODE3"] ?? 'NONE'))
-                ->withTrait((new IdentityTrait('country_name'))
-                    ->withValue($_ENV["GEOIP_COUNTRY_NAME"] ?? 'NONE'));
-
-            $GLOBALS['flagsmith_identity'] = $LoggedInID;
-
-        } else {
 
             $AnonymousID = (new Identity($GLOBALS['guid']))
                 ->withTrait((new IdentityTrait('session_id'))
@@ -294,7 +269,7 @@ try {
 
             $GLOBALS['flagsmith_identity'] = $AnonymousID;
 
-        }
+
 
         /* Twig Globals */
 
