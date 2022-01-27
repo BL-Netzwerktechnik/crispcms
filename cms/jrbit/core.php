@@ -356,9 +356,6 @@ try {
         $RedisClass = new Redis();
         $rateLimiter = new RedisRateLimiter($RedisClass->getDBConnector());
 
-        if (file_exists(__DIR__ . "/../themes/$CurrentTheme/hook.php") && $GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'theme_hooks_enabled')) {
-            require_once __DIR__ . "/../themes/$CurrentTheme/hook.php";
-        }
 
         if (IS_API_ENDPOINT && $GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'enable_api',)) {
 
