@@ -35,7 +35,7 @@ class Sessions
     public static ?PDO $Postgres_Database_Connection = null;
 
 
-    public static function createSession($ID, AccessTokenInterface $oidc_token, $Identifier = "login"): bool|array
+    public static function createSession($ID, $Identifier = "login"): bool|array
     {
         $DB = new Postgres();
         $DBConnection = $DB->getDBConnector();
