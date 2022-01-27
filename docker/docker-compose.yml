@@ -2,7 +2,7 @@ version: '3.3'
 services:
 
   crisp:
-    image: 'd3a9ba1e348be819bb4fcf2a829a04007fa28086d0ba5'
+    image: 'jrbit/crispcms-ce:latest'
     volumes:
       - ../cms:/var/www/crisp
       - ../config/nginx.conf:/etc/nginx/conf.d/default.conf
