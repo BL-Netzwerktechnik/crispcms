@@ -54,6 +54,8 @@ class Helper
 
         if(php_sapi_name() == "cli"){
             echo "[$typeHuman] $message". PHP_EOL;
+        } else {
+            error_log("[$typeHuman] $message". PHP_EOL);
         }
     }
 
