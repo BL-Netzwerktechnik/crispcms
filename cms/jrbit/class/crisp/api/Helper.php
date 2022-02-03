@@ -36,7 +36,7 @@ use crisp\core\RESTfulAPI;
 class Helper
 {
 
-    public static function Log(int $type, string $message): void
+    public static function Log(int $type, $message): void
     {
 
         if(empty($_ENV["VERBOSITY"])) $_ENV["VERBOSITY"] = 2;
@@ -53,9 +53,9 @@ class Helper
 
 
         if(php_sapi_name() == "cli"){
-            echo "[$typeHuman] $message". PHP_EOL;
+            echo "[$typeHuman] ". var_export($message, true). PHP_EOL;
         } else {
-            error_log("[$typeHuman] $message". PHP_EOL);
+            error_log("[$typeHuman] ".var_export($message, true). PHP_EOL);
         }
     }
 
