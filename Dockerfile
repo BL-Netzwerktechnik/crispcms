@@ -81,9 +81,6 @@ RUN rm -rf /tmp/pear \
 COPY config/php.ini /usr/local/etc/php/conf.d/php_custom.ini
 COPY config/nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN printf '[PHP]\ndate.timezone = "$TZ"\n' > /usr/local/etc/php/conf.d/timezone.ini
-
 COPY cms /var/www/crisp
 COPY docker /opt/entrypoint.d
 
