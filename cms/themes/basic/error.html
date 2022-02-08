@@ -435,16 +435,16 @@
             }
         });
     </script>
+    <script
+            src="https://browser.sentry-cdn.com/6.16.1/bundle.min.js"
+            integrity="sha384-WkFzsrcXKeJ3KlWNXojDiim8rplIj1RPsCbuv7dsLECoXY8C6Cx158CMgl+O+QKW"
+            crossorigin="anonymous"
+    ></script>
 <script>
   Sentry.init({ dsn: "{{ SENTRY_JS_DSN }}" });
   Sentry.showReportDialog({
     eventId: "{{ sentry_id }}",
   });
 </script>
-    <script
-            src="https://browser.sentry-cdn.com/6.16.1/bundle.min.js"
-            integrity="sha384-WkFzsrcXKeJ3KlWNXojDiim8rplIj1RPsCbuv7dsLECoXY8C6Cx158CMgl+O+QKW"
-            crossorigin="anonymous"
-    ></script>
 
 </html>
