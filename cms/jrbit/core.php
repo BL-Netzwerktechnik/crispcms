@@ -476,6 +476,8 @@ try {
         exit;
     }
 
+    header("X-Sentry-ID: ". SentrySdk::getCurrentHub()->getLastEventId());
+   
     echo strtr($errorraw, ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId(), "{{ SENTRY_JS_DSN }}" => $_ENV["SENTRY_JS_DSN"]]);
     exit;
 }
