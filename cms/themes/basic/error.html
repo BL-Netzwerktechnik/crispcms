@@ -435,18 +435,12 @@
             }
         });
     </script>
-    <script>
-        Sentry.init({
-            dsn: "https://d0e418c924564bbf9640581dc2a00209@sentry.internal.jrbit.de/18",
-            beforeSend(event, hint) {
-                // Check if it is an exception, and if so, show the report dialog
-                if (event.exception) {
-                    Sentry.showReportDialog({ eventId: event.event_id });
-                }
-                return event;
-            },
-        });
-    </script>
+<script>
+  Sentry.init({ dsn: "{{ SENTRY_JS_DSN }}" });
+  Sentry.showReportDialog({
+    eventId: "{{ sentry_id }}",
+  });
+</script>
     <script
             src="https://browser.sentry-cdn.com/6.16.1/bundle.min.js"
             integrity="sha384-WkFzsrcXKeJ3KlWNXojDiim8rplIj1RPsCbuv7dsLECoXY8C6Cx158CMgl+O+QKW"
