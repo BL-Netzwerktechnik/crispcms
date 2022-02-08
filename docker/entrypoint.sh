@@ -53,7 +53,7 @@ php bin/cli.php cache clear || (echo "Failed to clear cache" && exit 1)
 echo "Setting System Timezone..."
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 echo "Setting PHP Timezone..."
-printf "[PHP]\ndate.timezone = \"$TZ\"\n" > /usr/local/etc/php/conf.d/timezone.ini
+printf "[Date]\ndate.timezone = \"$TZ\"\n" > /usr/local/etc/php/conf.d/timezone.ini
 
 echo "Chowning cache..."
 rm /var/www/crisp/jrbit/cache -R
