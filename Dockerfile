@@ -24,7 +24,7 @@ ARG CRISP_FLAGSMITH_APP_URL="https://flagsmith.internal.jrbit.de/api/v1/"
 ARG CRISP_FLAGSMITH_API_KEY="PDj3dJjVc6XPjK4f6FStPz"
 ARG CRISP_THEME="crisptheme"
 
-
+ENV TZ "UTC"
 ENV CRISP_THEME "$CRISP_THEME"
 ENV DEFAULT_LOCALE "$DEFAULT_LOCALE"
 ENV LANG "$LANG"
@@ -77,8 +77,12 @@ RUN rm -rf /tmp/pear \
     && apt-get clean
 
 
+
 COPY config/php.ini /usr/local/etc/php/conf.d/php_custom.ini
 COPY config/nginx.conf /etc/nginx/conf.d/default.conf
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN printf '[PHP]\ndate.timezone = "$TZ"\n' > /usr/local/etc/php/conf.d/timezone.ini
 
 COPY cms /var/www/crisp
 COPY docker /opt/entrypoint.d
