@@ -99,6 +99,12 @@ class Helper
         $UserAgent = ($UserAgent ?? $_SERVER['HTTP_USER_AGENT']);
         return preg_match('/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i', $UserAgent);
     }
+    
+    
+    public static function getSubdomains: array
+    {
+        return array_filter(explode('.',str_replace($_ENV["HOST"], "", $_SERVER['HTTP_HOST'])));
+    }
 
     /**
      * @param $BitmaskFlag
