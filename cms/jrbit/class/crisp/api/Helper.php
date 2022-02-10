@@ -101,7 +101,7 @@ class Helper
     }
     
     
-    public static function getSubdomains: array
+    public static function getSubdomains(): array
     {
         return array_filter(explode('.',str_replace($_ENV["HOST"], "", $_SERVER['HTTP_HOST'])));
     }
