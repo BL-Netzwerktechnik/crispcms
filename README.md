@@ -63,3 +63,5 @@ services:
 | CRISP_FLAGSMITH_APP_URL | API Endpoint of the Flagsmith instance for the CMS                                                                      | 🤖       | BUILT BY CI                                 |
 | THEME_GIT_COMMIT        | Git commit of the theme, used by VERSION_STRING. MUST BE SET for themes                                                 | 🤖       | BUILT BY CI                                 |
 | FLAGSMITH_API_KEY       | API Key for your theme instance                                                                                         | ✔️       |                                             |
+| ROOT                    | Domain of the CMS                                                                                                       | ❌       |                                             |
+| PROTO                   | Protocol of the request                                                                                                 | ✔️       | https                                       |
