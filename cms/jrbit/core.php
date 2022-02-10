@@ -88,9 +88,8 @@ class core
         define('RELEASE_ICON', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".svg"));
         define('CRISP_ICON', file_get_contents(__DIR__ . '/../themes/basic/crisp.svg'));
         define('RELEASE_ART', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".art"));
-        define('IS_EE', isset($_ENV['COMPILE_EE']));
 
-        if (!empty($_ENV['FLAGSMITH_API_KEY']) && !empty($_ENV['FLAGSMITH_APP_URL']) && IS_EE) {
+        if (!empty($_ENV['FLAGSMITH_API_KEY']) && !empty($_ENV['FLAGSMITH_APP_URL'])) {
             define('USES_FLAGSMITH', true);
             $GLOBALS['Flagsmith'] = Flagsmith::Client();
 
@@ -112,26 +111,6 @@ class core
         $GLOBALS['flagsmith_server'] = Flagsmith::Client('CRISP_FLAGSMITH_API_KEY', 'CRISP_FLAGSMITH_APP_URL', 300);
 
 
-        if (IS_EE) {
-            /** @var License */
-            $GLOBALS['License'] = new License($_ENV['LICENSE_FILE']);
-
-
-            $ServerID = (new Identity($GLOBALS['License']->getMachineID()))
-                ->withTrait((new IdentityTrait('commit'))
-                    ->withValue(Helper::getCommitHash()))
-                ->withTrait((new IdentityTrait('hostname'))
-                    ->withValue(gethostname()))
-                ->withTrait((new IdentityTrait('crisp_version'))
-                    ->withValue(self::CRISP_VERSION))
-                ->withTrait((new IdentityTrait('api_version'))
-                    ->withValue(self::API_VERSION))
-                ->withTrait((new IdentityTrait('environment'))
-                    ->withValue(ENVIRONMENT));
-
-
-            $GLOBALS['flagsmith_server_identity'] = $ServerID;
-        } else {
             $ServerID = (new Identity(Helper::getMachineID()))
                 ->withTrait((new IdentityTrait('commit'))
                     ->withValue(Helper::getCommitHash()))
@@ -145,7 +124,7 @@ class core
                     ->withValue(ENVIRONMENT));
 
             $GLOBALS['flagsmith_server_identity'] = $ServerID;
-        }
+        
 
         $GLOBALS['flagsmith_server']->setTraitsByIdentity($GLOBALS['flagsmith_server_identity']);
 
