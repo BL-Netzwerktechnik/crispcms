@@ -1,6 +1,6 @@
 {
-  "name": "tosdr/crispcms",
-  "description": "Dynamic CMS for ToS;DR",
+  "name": "jrbit/crispcms",
+  "description": "Dynamic CMS",
   "autoload": {
     "classmap": [
       "jrbit/class/crisp"
