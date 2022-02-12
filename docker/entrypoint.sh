@@ -49,6 +49,8 @@ echo "Migrating theme..."
 php bin/cli.php theme migrate "$CRISP_THEME" || (echo "Failed to migrate theme" && exit 1)
 echo "Clearing cache..."
 php bin/cli.php cache clear || (echo "Failed to clear cache" && exit 1)
+echo "Executing Boot files..."
+php bin/cli.php theme boot "$CRISP_THEME"
 
 echo "Setting System Timezone..."
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
