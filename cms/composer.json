@@ -25,7 +25,7 @@
     "vlucas/phpdotenv": "^5.3",
     "stevenmaguire/oauth2-keycloak": "^2.2",
     "aws/aws-sdk-php": "^3.185",
-    "flagsmith/flagsmith-php-client": "2.0.2"
+    "flagsmith/flagsmith-php-client": "2.1.1"
 
   },
   "require-dev": {
