@@ -59,7 +59,7 @@ echo "Chowning cache..."
 rm /var/www/crisp/jrbit/cache -R
 mkdir /var/www/crisp/jrbit/cache
 chown 33:33 /var/www/crisp/jrbit/cache -R
-rm -R /tmp/symfony-cache
+rm -R /tmp/*
 
 cd / || exit 1
 
