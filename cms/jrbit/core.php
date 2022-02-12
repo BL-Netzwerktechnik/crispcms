@@ -431,7 +431,6 @@ try {
     }
 } catch (TypeError | Exception | Error | CompileError | ParseError | Throwable $ex) {
     captureException($ex);
-    error_log(var_export($ex, true));
     if (PHP_SAPI === 'cli') {
         var_dump($ex);
         exit(1);
