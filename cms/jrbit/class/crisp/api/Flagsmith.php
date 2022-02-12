@@ -50,7 +50,7 @@ class Flagsmith
         $Flagsmith = new \Flagsmith\Flagsmith($_ENV[$EnvApiKey], $_ENV[$EnvAppUrl]);
 
         if ($UseCache) {
-            return $Flagsmith->withTimeToLive(15)->withCache(new Psr16Cache(new FilesystemAdapter($EnvApiKey, $TTL))); //15 seconds
+            return $Flagsmith->withTimeToLive(15)->withCache(new Psr16Cache(new FilesystemAdapter($_ENV[$EnvApiKey], $TTL))); //15 seconds
         }
         return $Flagsmith;
     }
