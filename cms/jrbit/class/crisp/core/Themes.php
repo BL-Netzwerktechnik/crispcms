@@ -321,6 +321,9 @@ class Themes
      */
     public static function clearCache(): bool
     {
+        if(!file_exists(__DIR__ . "/../../../cache/")){
+            return false;
+        }
         $it = new RecursiveDirectoryIterator(realpath(__DIR__ . "/../../../cache/"), RecursiveDirectoryIterator::SKIP_DOTS);
         $files = new RecursiveIteratorIterator($it,
             RecursiveIteratorIterator::CHILD_FIRST);
@@ -463,6 +466,46 @@ class Themes
         return true;
     }
 
+    
+    public static function loadBootFiles(string $ThemeName = null, stdClass $ThemeMetadata = null): bool
+    {
+        $ThemeFolder = \crisp\api\Config::get("theme_dir");
+        if ($ThemeName == null) {
+            $ThemeName = \crisp\api\Config::get('theme');
+        }
+        $FullThemeFolder = __DIR__ . "/../../../../$ThemeFolder/$ThemeName";
+
+        if ($ThemeMetadata == null) {
+            $ThemeMetadata = self::getThemeMetadata($ThemeName);
+        }
+
+
+        $GLOBALS['Crisp_FullThemeFolder'] = $FullThemeFolder;
+        $GLOBALS['Crisp_ThemeMetadata'] = $ThemeMetadata;
+
+        if (!is_object($ThemeMetadata) && !isset($ThemeMetadata->hookFile)) {
+            return false;
+        }
+        if (isset($ThemeMetadata->onBoot) && is_array($ThemeMetadata->onBoot)) {
+
+            foreach ($ThemeMetadata->onBoot as $File) {
+
+                if (!file_exists("$FullThemeFolder/$File")) {
+                    throw new Exception("$FullThemeFolder/$File does not exist but boot scripts are configured!");
+                }
+                
+                if (is_dir("$FullThemeFolder/$File")) {
+                    throw new Exception("$FullThemeFolder/$File boot script is a directory!");
+                }
+                
+                require_once "$FullThemeFolder/$File";
+               
+            }
+            return true;
+        }
+        return false;
+    }
+    
     public static function autoload(string $ThemeName = null, stdClass $ThemeMetadata = null): bool
     {
         $ThemeFolder = \crisp\api\Config::get("theme_dir");
