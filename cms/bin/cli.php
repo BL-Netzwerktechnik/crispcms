@@ -68,6 +68,33 @@ switch ($argv[1]) {
 
         switch ($argv[2]) {
 
+            case "boot":
+                if($argc < 4) {
+                    Helper::Log(1, "Missing theme name");
+                    exit;
+                }
+                
+                if ($argc < 4) {
+                    Helper::Log(1, "Missing theme name");
+                    exit;
+                }
+
+                if (!crisp\core\Themes::isInstalled($argv[3])) {
+                    Helper::Log(1, "This theme is not installed");
+                    exit;
+                }
+                if (!crisp\core\Themes::isValid($argv[3])) {
+                    Helper::Log(1, "This theme does not exist");
+                    exit;
+                }
+                
+                if(!crisp\core\Themes::loadBootFiles()){
+              
+                    Helper::Log(1, "Failed loading boot files!");
+                    exit;
+                }
+                    
+                
             case "migrate":
                 if ($argc < 4) {
                     Helper::Log(1, "Missing theme name");
