@@ -7,7 +7,7 @@
     ]
   },
   "require": {
-    "twig/twig": "3.0.5",
+    "twig/twig": "3.3.8",
     "nette/utils": "3.0",
     "beberlei/assert": "^3.3",
     "league/oauth2-client": "^2.6",
