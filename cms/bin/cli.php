@@ -93,6 +93,8 @@ switch ($argv[1]) {
                     Helper::Log(1, "Failed loading boot files!");
                     exit;
                 }
+                
+            break;
                     
                 
             case "migrate":
