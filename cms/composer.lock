@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0cc752a762f0dbea93daa7e12da4ae53",
+    "content-hash": "61a6389afca5a200392faf76e61d8fce",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -329,16 +329,16 @@
         },
         {
             "name": "flagsmith/flagsmith-php-client",
-            "version": "v2.0.2",
+            "version": "v2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Flagsmith/flagsmith-php-client.git",
-                "reference": "b78ebb42a101bf51e0f73b14f390b87df3c0930c"
+                "reference": "daa562dc49ddcdf0f84d1d59b2bdab6960787cf8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Flagsmith/flagsmith-php-client/zipball/b78ebb42a101bf51e0f73b14f390b87df3c0930c",
-                "reference": "b78ebb42a101bf51e0f73b14f390b87df3c0930c",
+                "url": "https://api.github.com/repos/Flagsmith/flagsmith-php-client/zipball/daa562dc49ddcdf0f84d1d59b2bdab6960787cf8",
+                "reference": "daa562dc49ddcdf0f84d1d59b2bdab6960787cf8",
                 "shasum": ""
             },
             "require": {
@@ -350,7 +350,8 @@
                 "psr/simple-cache": "^1.0"
             },
             "require-dev": {
-                "guzzlehttp/guzzle": "^7.3"
+                "guzzlehttp/guzzle": "^7.3",
+                "guzzlehttp/psr7": "^2.1.0"
             },
             "type": "library",
             "autoload": {
@@ -370,9 +371,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Flagsmith/flagsmith-php-client/issues",
-                "source": "https://github.com/Flagsmith/flagsmith-php-client/tree/v2.0.2"
+                "source": "https://github.com/Flagsmith/flagsmith-php-client/tree/v2.1.1"
             },
-            "time": "2021-11-18T13:48:18+00:00"
+            "time": "2022-02-01T08:05:22+00:00"
         },
         {
             "name": "graham-campbell/result-type",
