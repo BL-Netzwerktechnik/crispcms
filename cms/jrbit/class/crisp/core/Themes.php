@@ -487,7 +487,7 @@ class Themes
             return false;
         }
         if (isset($ThemeMetadata->onBoot) && is_array($ThemeMetadata->onBoot)) {
-
+            self::autoload($ThemeName, $ThemeFolder);
             foreach ($ThemeMetadata->onBoot as $File) {
 
                 if (!file_exists("$FullThemeFolder/$File")) {
