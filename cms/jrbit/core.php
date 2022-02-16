@@ -132,7 +132,7 @@ class core
 
             init([
                 'dsn' => $_ENV['SENTRY_DSN'],
-                'traces_sample_rate' => 1.0,
+                'traces_sample_rate' => $_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
                 'environment' => ENVIRONMENT,
                 'release' => RELEASE,
             ]);
