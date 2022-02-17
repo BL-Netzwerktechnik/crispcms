@@ -1,4 +1,7 @@
 # CrispCMS Dockerized
+
+[![Build Status](https://ci.internal.jrbit.de/api/badges/crispcms/core/status.svg)](https://ci.internal.jrbit.de/crispcms/core)
+
 <h2>Next Generation Content Management Framework - Dockerized</h2>
 
 ⚠️ README work in progress ⚠️
@@ -12,7 +15,7 @@ version: '3.3'
 services:
 
   crisp:
-    image: 'jrbit/crispcms-ce:latest'
+    image: 'jrbit/crispcms:latest'
     volumes:
       - my/local/theme/folder:/var/www/crisp/themes/crisptheme
     ports:
