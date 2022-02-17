@@ -93,4 +93,6 @@ RUN ["chmod", "+x", "/opt/entrypoint.d/bootstrap.sh"]
 
 RUN ["/bin/bash", "-c", "/opt/entrypoint.d/bootstrap.sh"]
 
+WORKDIR /var/www/crisp
+
 ENTRYPOINT ["/bin/bash", "-c", "/opt/entrypoint.d/entrypoint.sh"]
