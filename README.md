@@ -12,7 +12,7 @@ version: '3.3'
 services:
 
   crisp:
-    image: 'd3a9ba1e348be819bb4fcf2a829a04007fa28086d0ba5'
+    image: 'jrbit/crispcms-ce:latest'
     volumes:
       - my/local/theme/folder:/var/www/crisp/themes/crisptheme
     ports:
