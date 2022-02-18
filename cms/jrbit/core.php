@@ -51,7 +51,7 @@ class core
 {
     /* Some important constants */
 
-    public const CRISP_VERSION = '10.2.2';
+    public const CRISP_VERSION = '10.3.0';
 
     public const API_VERSION = '2.2.0';
 
@@ -76,7 +76,6 @@ class core
     {
         define('CRISP_HOOKED', true);
         /** Core headers, can be accessed anywhere */
-        header('X-Cluster: ' . gethostname());
         /** After autoloading we include additional headers below */
 
 
@@ -144,6 +143,10 @@ class core
         }
 
         header('X-Request-ID: ' . REQUEST_ID);
+
+        if(!$_ENV['DONT_EXPOSE_CRISP']){
+            header("x-powered-by: CrispCMS/". self::CRISP_VERSION);
+        }
 
     }
 
