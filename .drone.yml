@@ -78,7 +78,7 @@ steps:
       auto_tag: true
       password:
         from_secret: docker_secret
-      repo: registry.jrbit.de/crispcms/core/en_US
+      repo: registry.jrbit.de/crispcms/core/en_us
       registry: registry.jrbit.de
       squash: true
       build_args:
