@@ -97,5 +97,31 @@ steps:
     depends_on: [ clone ]
 
 
+  - name: de_DE
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: docker_user
+      auto_tag: true
+      password:
+        from_secret: docker_secret
+      repo: registry.jrbit.de/crispcms/core/de_de
+      registry: registry.jrbit.de
+      squash: true
+      build_args:
+        - GIT_COMMIT=${DRONE_COMMIT_SHA:0:8}
+        - LANG=de_DE.UTF-8
+        - DEFAULT_LOCALE=de
+        - COMPILE_EE=true
+    when:
+      ref:
+        - refs/heads/master
+        - refs/tags/*
+      event:
+        include:
+          - tag
+          - push
+    depends_on: [ clone ]
+
 depends_on:
   - Test
