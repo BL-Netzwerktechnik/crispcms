@@ -15,7 +15,7 @@ version: '3.3'
 services:
 
   crisp:
-    image: 'jrbit/crispcms:latest'
+    image: 'registry.jrbit.de/crispcms/core/en_US:latest'
     volumes:
       - my/local/theme/folder:/var/www/crisp/themes/crisptheme
     ports:
