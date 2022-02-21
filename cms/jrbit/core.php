@@ -51,7 +51,7 @@ class core
 {
     /* Some important constants */
 
-    public const CRISP_VERSION = '10.3.0';
+    public const CRISP_VERSION = '10.4.0';
 
     public const API_VERSION = '2.2.0';
 
