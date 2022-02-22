@@ -175,11 +175,20 @@ try {
         'CRISP_FLAGSMITH_APP_URL',
         'CRISP_FLAGSMITH_API_KEY',
         'CRISP_THEME',
-        'ENVIRONMENT'
+        'ENVIRONMENT',
+        'HOST',
+        'PROTO',
+        'TZ',
+        'DEFAULT_LOCALE',
+        'LANG',
+        'CRISP_FLAGSMITH_APP_URL',
+        'CRISP_FLAGSMITH_API_KEY',
     ])->notEmpty();
     $dotenv->required(['REDIS_INDEX', 'REDIS_PORT'])->isInteger();
     $dotenv->required('POSTGRES_URI')->allowedRegexValues('/^(?:([^:\/?#\s]+):\/{2})?(?:([^@\/?#\s]+)@)?([^\/?#\s]+)?(?:\/([^?#\s]*))?(?:[?]([^#\s]+))?\S*$/i');
 
+
+    $GLOBALS['dotenv'] = $dotenv;
 
     core::bootstrap();
 
