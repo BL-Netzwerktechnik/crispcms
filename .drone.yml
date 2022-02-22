@@ -31,6 +31,9 @@ steps:
       CRISP_THEME: crisptheme
       LANG: en_US.utf8
       VERBOSITY: 3
+      HOST: ci
+      PROTO: http
+      TZ: UTC
 
     commands:
       - cd cms
@@ -85,7 +88,6 @@ steps:
         - GIT_COMMIT=${DRONE_COMMIT_SHA:0:8}
         - LANG=en_US.UTF-8
         - DEFAULT_LOCALE=en
-        - COMPILE_EE=true
     when:
       ref:
         - refs/heads/master
@@ -112,7 +114,6 @@ steps:
         - GIT_COMMIT=${DRONE_COMMIT_SHA:0:8}
         - LANG=de_DE.UTF-8
         - DEFAULT_LOCALE=de
-        - COMPILE_EE=true
     when:
       ref:
         - refs/heads/master
