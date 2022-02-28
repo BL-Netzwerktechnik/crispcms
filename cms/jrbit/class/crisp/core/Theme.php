@@ -105,8 +105,20 @@ class Theme {
 
                 require __DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/includes/$CurrentPage.php";
 
+                $PageClass = null;
+
+                if(class_exists($CurrentPage, false)){
+                    $PageClass = new $CurrentPage();
+                }
+
+
                 $_vars = ($_vars ?? []);
                 $_vars["template"] = $this;
+
+
+                if($PageClass !== null && method_exists($PageClass, 'preRender')){
+                    $PageClass->preRender();
+                }
 
 
                 $GLOBALS["microtime"]["logic"]["end"] = microtime(true);
@@ -114,6 +126,10 @@ class Theme {
                 $TwigTheme->addGlobal("LogicMicroTime", ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
                 header("X-CMS-LogicTime: " . ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
                 echo $TwigTheme->render("views/$CurrentPage.twig", $_vars);
+
+                if($PageClass !== null && method_exists($PageClass, 'postRender')){
+                    $PageClass->postRender();
+                }
             }
         } else {
             throw new BitmaskException("Failed to load template " . $this->CurrentPage . ": Missing includes file", Bitmask::THEME_MISSING_INCLUDES);

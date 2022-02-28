@@ -36,6 +36,37 @@ use crisp\core\RESTfulAPI;
 class Helper
 {
 
+
+    private static function getDirContentsRecursively($dir, &$results = array()) {
+        $files = scandir($dir);
+
+        foreach ($files as $key => $value) {
+            $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
+
+            if($path === "vendor" || $path === ".env" || $path === "themes") continue;
+
+
+            if (!is_dir($path)) {
+                $results[] = ["is_dir" => false, "path" => $path];
+            } else if ($value != "." && $value != "..") {
+                self::getDirContentsRecursively($path, $results);
+                $results[] = ["is_dir" => true, "path" => $path];
+            }
+        }
+
+        return $results;
+    }
+
+
+    public static function calculateCMSHash(): string
+    {
+
+        $Dirs = self::getDirContentsRecursively(\crisp\core\Config::$Crisp_Root);
+
+
+        var_dump($Dirs);
+    }
+
     public static function Log(int $type, $message): void
     {
 

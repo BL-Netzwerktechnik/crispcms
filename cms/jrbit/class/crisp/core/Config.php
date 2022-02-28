@@ -31,5 +31,6 @@ class Config {
      * @var string
      */
     public static string $Cookie_Prefix = "crisp_";
+    public static string $Crisp_Root = "/var/www/crisp";
 
 }
