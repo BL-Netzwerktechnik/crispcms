@@ -85,7 +85,7 @@ class core
 
         if($_ENV['BUILD_TYPE'] === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "rc."))){
             $BuildType = 2;
-        }elseif($_ENV['BUILD_TYPE'] === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "pre-release"))){
+        }elseif($_ENV['BUILD_TYPE'] === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "pre-release") || str_contains(strtolower($_ENV['GIT_TAG']), "prerelease"))){
             $BuildType = 3;
         }elseif($_ENV['BUILD_TYPE'] === 0 && isset($_ENV['GIT_TAG'])){
             $BuildType = 1;
