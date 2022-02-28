@@ -117,7 +117,7 @@ class Theme {
 
 
                 if($PageClass !== null && method_exists($PageClass, 'preRender')){
-                    $_vars = array_merge($_vars, $PageClass->preRender($_vars) ?? []);
+                    $_vars = array_merge($_vars, $PageClass->preRender($_vars, $TwigTheme) ?? []);
                 }
 
 
@@ -128,7 +128,7 @@ class Theme {
                 echo $TwigTheme->render("views/$CurrentPage.twig", $_vars);
 
                 if($PageClass !== null && method_exists($PageClass, 'postRender')){
-                    $PageClass->postRender($_vars);
+                    $PageClass->postRender($_vars, $TwigTheme);
                 }
             }
         } else {
