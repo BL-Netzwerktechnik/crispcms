@@ -34,8 +34,6 @@ use Twig\Environment;
 class RESTfulAPI
 {
 
-    use Hook;
-
     public string $Interface;
     public string $ThemePath;
     public Environment $TwigTheme;
@@ -54,26 +52,73 @@ class RESTfulAPI
 
         if (file_exists($this->ThemePath . "/includes/api/" . $this->Interface . ".php")) {
             require $this->ThemePath . "/includes/api/" . $this->Interface . ".php";
-            exit;
+
+            $PageClass = null;
+
+            if(class_exists($this->Interface, false)){
+                $PageClass = new $this->Interface();
+            }
+
+
+            if($PageClass !== null && method_exists($PageClass, 'render')){
+                $PageClass->render($this->Interface, $ThemeLoader);
+            }
+
         } else {
-            if (file_exists($this->ThemePath . "/includes/api/_start.php") && $Interface == "api" ) {
-                require $this->ThemePath . "/includes/api/_start.php";
+            $_RootFile = Themes::getThemeMetadata()->apiRoot;
+            $_RootClass = substr($_RootFile, 0, -4);
+
+
+            if (file_exists($this->ThemePath . "/includes/api/views/$_RootFile") && $Interface == "api" ) {
+                require $this->ThemePath . "/includes/api/views/$_RootFile";
+
+                $PageClass = null;
+
+                if(class_exists($_RootClass, false)){
+                    $PageClass = new $_RootClass();
+                }
+
+                if($PageClass !== null && method_exists($PageClass, 'render')){
+                    $PageClass->render($this->Interface, $ThemeLoader);
+                }
+
                 exit;
             }
+
+
+            $_NFFile = Themes::getThemeMetadata()->apiNotFound;
+            $_NFClass = substr($_NFFile, 0, -4);
+
+            if (file_exists($this->ThemePath . "/includes/api/$_NFFile")) {
+                require $this->ThemePath . "/includes/api/$_NFFile";
+
+                $PageClass = null;
+
+                if(class_exists($_NFClass, false)){
+                    $PageClass = new $_NFClass();
+                }
+
+                if($PageClass !== null && method_exists($PageClass, 'render')){
+                    $PageClass->render($this->Interface, $ThemeLoader);
+                }
+                exit;
+            }
+
             self::response(Bitmask::INTERFACE_NOT_FOUND->value, 'REST Interface not found!', []);
-            exit;
         }
+        exit;
     }
 
     /**
      * Send a JSON response
-     * @param array|bool|int $Errors Error array or false
+     * @param int|null $Errors Error array or false
      * @param string $message A message to send
      * @param array $Parameters Some response parameters
      * @param constant|null $Flags JSON_ENCODE constants
+     * @param int $HTTP
      * @throws \JsonException
      */
-    public static function response(int $Errors = null, string $message, array $Parameters = [], constant $Flags = null, $HTTP = 200)
+    public static function response(int $Errors = null, string $message, array $Parameters = [], constant $Flags = null, int $HTTP = 200)
     {
         header("Content-Type: application/json");
         http_response_code($HTTP);
