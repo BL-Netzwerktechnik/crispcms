@@ -1,6 +1,6 @@
 <?php
 
-namespace crisp\core;
+namespace crisp\models;
 
 use Twig\Environment;
 
