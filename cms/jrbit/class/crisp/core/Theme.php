@@ -93,15 +93,16 @@ class Theme {
 
             if ($GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'theme_hooks_enabled')) {
                 $_HookFile = Themes::getThemeMetadata()->hookFile;
+                $_HookClass = substr($_HookFile, 0, -4);
 
                 require_once __DIR__ . "/../../../../".\crisp\api\Config::get("theme_dir")."/".\crisp\api\Config::get("theme")."/$_HookFile";
 
-                if(class_exists($_HookFile, false)){
-                    $HookClass = new $_HookFile();
+                if(class_exists($_HookClass, false)){
+                    $HookClass = new $_HookClass();
                 }
 
                 if($HookClass !== null && method_exists($HookClass, 'preRender')){
-                    $_vars = array_merge($_vars, $HookClass->preRender($_vars) ?? []);
+                    $_vars = array_merge($_vars, $HookClass->preRender($_vars, $TwigTheme) ?? []);
                 }
         }
 
