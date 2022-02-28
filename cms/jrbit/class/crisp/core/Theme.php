@@ -110,10 +110,9 @@ class Theme {
 
         if (Helper::templateExists(\crisp\api\Config::get("theme"), "/views/$CurrentPage.twig")) {
 
-            if (file_exists(__DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/includes/$CurrentPage.php") && Helper::templateExists(\crisp\api\Config::get("theme"), "/views/$CurrentPage.twig")) {
-
-                require __DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/includes/$CurrentPage.php";
-
+                if(file_exists(__DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/includes/$CurrentPage.php")) {
+                    require __DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/includes/$CurrentPage.php";
+                }
                 $PageClass = null;
 
                 if(class_exists($CurrentPage, false)){
@@ -141,7 +140,6 @@ class Theme {
                 if($HookClass !== null && method_exists($HookClass, 'postRender')){
                     $HookClass->preRender($_vars);
                 }
-            }
         } else {
             throw new BitmaskException("Failed to load template " . $this->CurrentPage . ": Missing includes file", Bitmask::THEME_MISSING_INCLUDES);
         }
