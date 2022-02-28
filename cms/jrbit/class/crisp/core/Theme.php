@@ -117,7 +117,7 @@ class Theme {
 
 
                 if($PageClass !== null && method_exists($PageClass, 'preRender')){
-                    $PageClass->preRender();
+                    $_vars = array_merge($_vars, $PageClass->preRender() ?? []);
                 }
 
 
