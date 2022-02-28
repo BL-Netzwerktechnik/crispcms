@@ -102,7 +102,7 @@ class Theme {
                 }
 
                 if($HookClass !== null && method_exists($HookClass, 'preRender')){
-                    $_vars = array_merge($_vars, $HookClass->preRender($_vars, $TwigTheme) ?? []);
+                    $_vars = array_merge($_vars, $HookClass->preRender($_vars, $TwigTheme, $CurrentPage, $CurrentFile) ?? []);
                 }
         }
 
@@ -138,7 +138,7 @@ class Theme {
                     $PageClass->postRender($_vars, $TwigTheme);
                 }
                 if($HookClass !== null && method_exists($HookClass, 'postRender')){
-                    $HookClass->postRender($_vars, $TwigTheme);
+                    $HookClass->postRender($_vars, $TwigTheme, $CurrentPage, $CurrentFile);
                 }
         } else {
             throw new BitmaskException("Failed to load template " . $this->CurrentPage . ": Missing includes file", Bitmask::THEME_MISSING_INCLUDES);
