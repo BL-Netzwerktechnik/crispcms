@@ -32,11 +32,8 @@ use PDO;
  * Crisp DB Migration Class
  * @since 0.0.8-beta.RC1
  */
-abstract class Migrations
+class Migrations
 {
-
-
-    abstract public function run();
 
     /**
      * The PDO Database
