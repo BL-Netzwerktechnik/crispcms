@@ -138,7 +138,7 @@ class Theme {
                     $PageClass->postRender($_vars, $TwigTheme);
                 }
                 if($HookClass !== null && method_exists($HookClass, 'postRender')){
-                    $HookClass->preRender($_vars);
+                    $HookClass->postRender($_vars);
                 }
         } else {
             throw new BitmaskException("Failed to load template " . $this->CurrentPage . ": Missing includes file", Bitmask::THEME_MISSING_INCLUDES);
