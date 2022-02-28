@@ -88,13 +88,21 @@ class Theme {
         $this->CurrentPage = $CurrentPage;
 
 
+        $HookClass = null;
+        $_vars = ($_vars ?? []);
 
-        if (file_exists(__DIR__ . "/../../../../".\crisp\api\Config::get("theme_dir")."/".\crisp\api\Config::get("theme")."/hook.php") && $GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'theme_hooks_enabled')) {
-            require_once __DIR__ . "/../../../../".\crisp\api\Config::get("theme_dir")."/".\crisp\api\Config::get("theme")."/hook.php";
+            if ($GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'theme_hooks_enabled')) {
+                $_HookFile = Themes::getThemeMetadata()->hookFile;
 
+                require_once __DIR__ . "/../../../../".\crisp\api\Config::get("theme_dir")."/".\crisp\api\Config::get("theme")."/$_HookFile";
 
+                if(class_exists($_HookFile, false)){
+                    $HookClass = new $_HookFile();
+                }
 
-
+                if($HookClass !== null && method_exists($HookClass, 'preRender')){
+                    $_vars = array_merge($_vars, $HookClass->preRender($_vars) ?? []);
+                }
         }
 
 
@@ -112,7 +120,6 @@ class Theme {
                 }
 
 
-                $_vars = ($_vars ?? []);
                 $_vars["template"] = $this;
 
 
@@ -129,6 +136,9 @@ class Theme {
 
                 if($PageClass !== null && method_exists($PageClass, 'postRender')){
                     $PageClass->postRender($_vars, $TwigTheme);
+                }
+                if($HookClass !== null && method_exists($HookClass, 'postRender')){
+                    $HookClass->preRender($_vars);
                 }
             }
         } else {

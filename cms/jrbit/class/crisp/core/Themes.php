@@ -100,21 +100,6 @@ class Themes
 
         try {
 
-
-            if (!empty($_ENV['SENTRY_DSN'])) {
-                init([
-                    'dsn' => $_ENV['SENTRY_DSN'],
-                    'traces_sample_rate' => 1.0,
-                    'environment' => ENVIRONMENT,
-                    'release' => RELEASE,
-                ]);
-
-                configureScope(function (Scope $scope): void {
-                    $scope->setTag('request_id', REQUEST_ID);
-                });
-            }
-
-
             Themes::autoload();
             if (count($GLOBALS["render"]) === 0) {
                 if (file_exists(__DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/includes/$CurrentPage.php") && Helper::templateExists(\crisp\api\Config::get("theme"), "/views/$CurrentPage.twig")) {
