@@ -88,6 +88,8 @@ steps:
         - GIT_COMMIT=${DRONE_COMMIT_SHA:0:8}
         - LANG=en_US.UTF-8
         - DEFAULT_LOCALE=en
+        - GIT_TAG=${DRONE_TAG}
+        - CI_BUILD=${DRONE_BUILD_NUMBER}
     when:
       ref:
         - refs/heads/master
@@ -114,6 +116,8 @@ steps:
         - GIT_COMMIT=${DRONE_COMMIT_SHA:0:8}
         - LANG=de_DE.UTF-8
         - DEFAULT_LOCALE=de
+        - GIT_TAG=${DRONE_TAG}
+        - CI_BUILD=${DRONE_BUILD_NUMBER}
     when:
       ref:
         - refs/heads/master

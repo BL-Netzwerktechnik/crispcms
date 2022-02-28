@@ -79,14 +79,47 @@ class core
         /** After autoloading we include additional headers below */
 
 
+
+
+        $BuildType = $_ENV['BUILD_TYPE'];
+
+        if($_ENV['BUILD_TYPE'] === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "rc."))){
+            $BuildType = 2;
+        }elseif($_ENV['BUILD_TYPE'] === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "pre-release"))){
+            $BuildType = 3;
+        }elseif($_ENV['BUILD_TYPE'] === 0 && isset($_ENV['GIT_TAG'])){
+            $BuildType = 1;
+        }
+
+        $_ENV['BUILD_TYPE'] =  match($BuildType){
+            1 => "Stable",
+            2 => "Release-Candidate",
+            3 => "Pre-Release",
+            default => "Nightly"
+        };
+
+        define('BUILD_TYPE', $_ENV['BUILD_TYPE']);
+
         define('IS_API_ENDPOINT', (PHP_SAPI !== 'cli' && isset($_SERVER['IS_API_ENDPOINT'])));
         define('IS_NATIVE_API', isset($_SERVER['IS_API_ENDPOINT']));
-        define('RELEASE', (IS_API_ENDPOINT ? 'api' : 'crisp') . '@' . (IS_API_ENDPOINT ? self::API_VERSION : self::CRISP_VERSION) . '+' . Helper::getCommitHash());
+        define('RELEASE', (IS_API_ENDPOINT ? 'api' : 'crisp')
+            . '@' .
+            (IS_API_ENDPOINT ? self::API_VERSION : self::CRISP_VERSION)
+            . '+' .
+            (Helper::getCommitHash() ?? 'nongit')
+            . '-' .
+            (BUILD_TYPE ?? 'Nightly')
+            . '.' .
+            ($_ENV['CI_BUILD'] ?? 0)
+        );
         define('REQUEST_ID', Crypto::UUIDv4());
         define('VM_IP', exec('hostname -I'));
         define('RELEASE_ICON', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".svg"));
         define('CRISP_ICON', file_get_contents(__DIR__ . '/../themes/basic/crisp.svg'));
         define('RELEASE_ART', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".art"));
+
+
+
 
         if (!empty($_ENV['FLAGSMITH_API_KEY']) && !empty($_ENV['FLAGSMITH_APP_URL'])) {
             define('USES_FLAGSMITH', true);
