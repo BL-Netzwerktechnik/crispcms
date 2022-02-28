@@ -4,8 +4,8 @@ namespace crisp\core;
 
 use Twig\Environment;
 
-interface ThemePage
+abstract class ThemePage
 {
-    public function preRender(array $variables, Environment $TwigTheme): ?array;
-    public function postRender(array $variables, Environment $TwigTheme): ?array;
+    public abstract function preRender(array $variables, Environment $TwigTheme): ?array;
+    public abstract function postRender(array $variables, Environment $TwigTheme): ?array;
 }
