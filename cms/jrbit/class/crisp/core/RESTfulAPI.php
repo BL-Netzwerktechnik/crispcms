@@ -69,8 +69,8 @@ class RESTfulAPI
             $_RootClass = substr($_RootFile, 0, -4);
 
 
-            if (file_exists($this->ThemePath . "/includes/api/views/$_RootFile") && $Interface == "api" ) {
-                require $this->ThemePath . "/includes/api/views/$_RootFile";
+            if (file_exists($this->ThemePath . "/includes/api/$_RootFile") && $Interface == "api" ) {
+                require $this->ThemePath . "/includes/api/$_RootFile";
 
                 $PageClass = null;
 
