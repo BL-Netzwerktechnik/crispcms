@@ -78,8 +78,8 @@ class RESTfulAPI
                     $PageClass = new $_RootClass();
                 }
 
-                if($PageClass !== null && method_exists($PageClass, 'render')){
-                    $PageClass->render($this->Interface, $ThemeLoader);
+                if($PageClass !== null && method_exists($PageClass, 'execute')){
+                    $PageClass->execute($this->Interface, $ThemeLoader);
                 }
 
                 exit;
@@ -98,8 +98,8 @@ class RESTfulAPI
                     $PageClass = new $_NFClass();
                 }
 
-                if($PageClass !== null && method_exists($PageClass, 'render')){
-                    $PageClass->render($this->Interface, $ThemeLoader);
+                if($PageClass !== null && method_exists($PageClass, 'execute')){
+                    $PageClass->execute($this->Interface, $ThemeLoader);
                 }
                 exit;
             }
