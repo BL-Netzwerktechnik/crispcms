@@ -65,21 +65,6 @@ class Themes
     public static function loadAPI(Environment $ThemeLoader, string $Interface): void
     {
         try {
-
-            if (!empty($_ENV['SENTRY_DSN'])) {
-                init([
-                    'dsn' => $_ENV['SENTRY_DSN'],
-                    'traces_sample_rate' => 1.0,
-                    'environment' => ENVIRONMENT,
-                    'release' => RELEASE,
-                ]);
-
-                configureScope(function (Scope $scope): void {
-                    $scope->setTag('request_id', REQUEST_ID);
-                });
-            }
-
-
             Themes::autoload();
             new RESTfulAPI($ThemeLoader, $Interface);
         } catch (Exception $ex) {
