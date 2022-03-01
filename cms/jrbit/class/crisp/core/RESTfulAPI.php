@@ -50,8 +50,8 @@ class RESTfulAPI
         $this->TwigTheme = $ThemeLoader;
         $this->ThemePath = realpath(__DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/");
 
-        if (file_exists($this->ThemePath . "/includes/api/" . $this->Interface . ".php")) {
-            require $this->ThemePath . "/includes/api/" . $this->Interface . ".php";
+        if (file_exists($this->ThemePath . "/includes/api/views/" . $this->Interface . ".php")) {
+            require $this->ThemePath . "/includes/api/views/" . $this->Interface . ".php";
 
             $PageClass = null;
 
