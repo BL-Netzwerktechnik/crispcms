@@ -50,6 +50,19 @@ class RESTfulAPI
         $this->TwigTheme = $ThemeLoader;
         $this->ThemePath = realpath(__DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/");
 
+        $HookClass = null;
+
+        if ($GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'theme_hooks_enabled')) {
+            $_HookFile = Themes::getThemeMetadata()->hookFile;
+            $_HookClass = substr($_HookFile, 0, -4);
+
+            require_once __DIR__ . "/../../../../".\crisp\api\Config::get("theme_dir")."/".\crisp\api\Config::get("theme")."/$_HookFile";
+
+            if(class_exists($_HookClass, false)){
+                $HookClass = new $_HookClass();
+            }
+        }
+
         if (file_exists($this->ThemePath . "/includes/api/views/" . $this->Interface . ".php")) {
             require $this->ThemePath . "/includes/api/views/" . $this->Interface . ".php";
 
@@ -60,8 +73,16 @@ class RESTfulAPI
             }
 
 
+            if($HookClass !== null && method_exists($HookClass, 'preExecute')){
+                $HookClass->preExecute($Interface, $ThemeLoader);
+            }
+
             if($PageClass !== null && method_exists($PageClass, 'execute')){
                 $PageClass->execute($this->Interface, $ThemeLoader);
+            }
+
+            if($HookClass !== null && method_exists($HookClass, 'postExecute')){
+                $HookClass->postExecute($Interface, $ThemeLoader);
             }
 
         } else {
@@ -78,8 +99,17 @@ class RESTfulAPI
                     $PageClass = new $_RootClass();
                 }
 
+
+                if($HookClass !== null && method_exists($HookClass, 'preExecute')){
+                    $HookClass->preExecute($Interface, $ThemeLoader);
+                }
+
                 if($PageClass !== null && method_exists($PageClass, 'execute')){
                     $PageClass->execute($this->Interface, $ThemeLoader);
+                }
+
+                if($HookClass !== null && method_exists($HookClass, 'postExecute')){
+                    $HookClass->postExecute($Interface, $ThemeLoader);
                 }
 
                 exit;
@@ -98,8 +128,16 @@ class RESTfulAPI
                     $PageClass = new $_NFClass();
                 }
 
+                if($HookClass !== null && method_exists($HookClass, 'preExecute')){
+                    $HookClass->preExecute($Interface, $ThemeLoader);
+                }
+
                 if($PageClass !== null && method_exists($PageClass, 'execute')){
                     $PageClass->execute($this->Interface, $ThemeLoader);
+                }
+
+                if($HookClass !== null && method_exists($HookClass, 'postExecute')){
+                    $HookClass->postExecute($Interface, $ThemeLoader);
                 }
                 exit;
             }
