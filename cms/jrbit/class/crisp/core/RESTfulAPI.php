@@ -60,8 +60,8 @@ class RESTfulAPI
             }
 
 
-            if($PageClass !== null && method_exists($PageClass, 'render')){
-                $PageClass->render($this->Interface, $ThemeLoader);
+            if($PageClass !== null && method_exists($PageClass, 'execute')){
+                $PageClass->execute($this->Interface, $ThemeLoader);
             }
 
         } else {
