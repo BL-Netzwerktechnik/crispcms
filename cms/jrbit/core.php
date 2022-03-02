@@ -392,12 +392,6 @@ try {
                 exit;
             }
 
-            if (!api\Helper::getAPIKeyFromHeaders()) {
-                http_response_code(403);
-                echo $TwigTheme->render('errors/nginx/403.twig', ['error_msg' => 'Request forbidden by administrative rules. Please make sure your request has a valid Authorization header']);
-                exit;
-            }
-
             $IndicatorSecond = 's_' . Helper::getRealIpAddr();
             $IndicatorHour = 'h_' . Helper::getRealIpAddr();
             $IndicatorDay = 'd_' . Helper::getRealIpAddr();
