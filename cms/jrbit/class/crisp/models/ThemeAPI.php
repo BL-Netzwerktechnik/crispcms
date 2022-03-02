@@ -2,7 +2,6 @@
 
 namespace crisp\models;
 
-use crisp\core\RESTfulAPI;
 use Twig\Environment;
 
 abstract class ThemeAPI

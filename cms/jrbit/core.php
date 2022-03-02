@@ -392,69 +392,32 @@ try {
                 exit;
             }
 
-            $keyDetails = null;
-            if (isset(apache_request_headers()['Authorization'])) {
-                $keyDetails = api\Helper::getAPIKeyDetails(apache_request_headers()['Authorization']);
-
-                if ($keyDetails['expires_at'] !== null && strtotime($keyDetails['expires_at']) < time()) {
-                    header('X-APIKey: expired');
-                } elseif ($keyDetails['revoked']) {
-                    header('X-APIKey: revoked');
-                } else {
-                    header('X-APIKey: ok');
-                }
-            } else {
-                header('X-APIKey: not-given');
-            }
-
-            if (api\Helper::getAPIKeyFromHeaders() !== null && !api\Helper::getAPIKey()) {
-                http_response_code(401);
-                echo $TwigTheme->render('errors/nginx/401.twig', ['error_msg' => 'Request forbidden by administrative rules. Please make sure your request has a valid Authorization header']);
+            if (!api\Helper::getAPIKeyFromHeaders()) {
+                http_response_code(403);
+                echo $TwigTheme->render('errors/nginx/403.twig', ['error_msg' => 'Request forbidden by administrative rules. Please make sure your request has a valid Authorization header']);
                 exit;
             }
 
-            $Benefit = 'Guest';
             $IndicatorSecond = 's_' . Helper::getRealIpAddr();
             $IndicatorHour = 'h_' . Helper::getRealIpAddr();
             $IndicatorDay = 'd_' . Helper::getRealIpAddr();
 
-            $LimitSecond = Rate::perSecond(15);
-            $LimitHour = Rate::perHour(1000);
-            $LimitDay = Rate::perDay(15000);
 
-            $apikey = api\Helper::getAPIKey();
-            if ($apikey) {
+            $ThemeMetadata = Themes::getThemeMetadata();
 
-                if ($keyDetails['ratelimit_second'] === null) {
-                    $LimitSecond = Rate::perSecond(150);
-                } else {
-                    $LimitSecond = Rate::perSecond($keyDetails['ratelimit_second']);
-                }
-                if ($keyDetails['ratelimit_hour'] === null) {
-                    $LimitHour = Rate::perHour(10000);
-                } else {
-                    $LimitHour = Rate::perHour($keyDetails['ratelimit_hour']);
-                }
 
-                if ($keyDetails['ratelimit_day'] === null) {
-                    $LimitDay = Rate::perDay(50000);
-                } else {
-                    $LimitDay = Rate::perDay($keyDetails['ratelimit_day']);
-                }
+            $LimitSecond = Rate::perSecond($ThemeMetadata->api->ratelimit->perSecond ?? 150);
+            $LimitHour = Rate::perHour($ThemeMetadata->api->ratelimit->perHour ?? 10000);
+            $LimitDay = Rate::perDay($ThemeMetadata->api->ratelimit->perDay ?? 50000);
 
-                $Benefit = $keyDetails['ratelimit_benefit'] ?? 'Partner';
-            }
 
             $statusSecond = $rateLimiter->limitSilently($_ENV['REDIS_PREFIX'] ?? 'crispcms_' . $IndicatorSecond, $LimitSecond);
             $statusHour = $rateLimiter->limitSilently($_ENV['REDIS_PREFIX'] ?? 'crispcms_' . $IndicatorHour, $LimitHour);
             $statusDay = $rateLimiter->limitSilently($_ENV['REDIS_PREFIX'] ?? 'crispcms_' . $IndicatorDay, $LimitDay);
 
-            header('X-RateLimit-Benefit: ' . $Benefit);
             header('X-RateLimit-S: ' . $statusSecond->getRemainingAttempts());
             header('X-RateLimit-H: ' . $statusHour->getRemainingAttempts());
             header('X-RateLimit-D: ' . $statusDay->getRemainingAttempts());
-            header('X-RateLimit-Benefit: ' . $Benefit);
-            header('X-CMS-API: ' . api\Config::get('api_cdn'));
             header('X-CMS-API-VERSION: ' . core::API_VERSION);
 
             if ($statusSecond->limitExceeded() || $statusHour->limitExceeded() || $statusDay->limitExceeded()) {

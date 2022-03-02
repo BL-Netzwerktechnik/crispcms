@@ -86,7 +86,7 @@ class RESTfulAPI
             }
 
         } else {
-            $_RootFile = Themes::getThemeMetadata()->apiRoot;
+            $_RootFile = Themes::getThemeMetadata()->api->pages->root;
             $_RootClass = substr($_RootFile, 0, -4);
 
 
@@ -116,7 +116,7 @@ class RESTfulAPI
             }
 
 
-            $_NFFile = Themes::getThemeMetadata()->apiNotFound;
+            $_NFFile = Themes::getThemeMetadata()->api->pages->notFound;
             $_NFClass = substr($_NFFile, 0, -4);
 
             if (file_exists($this->ThemePath . "/includes/api/$_NFFile")) {
