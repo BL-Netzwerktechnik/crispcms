@@ -40,7 +40,8 @@ ENV IS_DOCKER "$IS_DOCKER"
 
 # Install Dependencies
 
-RUN apt-get update && \
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+    apt-get update && \
     apt-get install -y \
             git \
             libfreetype6-dev \
@@ -55,6 +56,7 @@ RUN apt-get update && \
             libzip-dev \
             libicu-dev \
             locales \
+            nodejs \
             nginx && \
             sed -i -e "s/# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen && \
             dpkg-reconfigure --frontend=noninteractive locales && \
