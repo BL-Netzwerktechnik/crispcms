@@ -24,6 +24,7 @@
 
 use crisp\api\Config;
 use crisp\api\Helper;
+use crisp\api\lists\Languages;
 use crisp\core\Migrations;
 use crisp\core\Themes;
 
@@ -40,6 +41,75 @@ error_reporting(error_reporting() & ~E_NOTICE);
 require_once __DIR__ . "/../jrbit/core.php";
 
 switch ($argv[1]) {
+
+    case "check_translations":
+
+        $ThemeMetadata = Themes::getThemeMetadata();
+        $ThemeFolder = Config::get("theme_dir");
+        $ThemeName = Config::get("theme");
+
+        if(!file_exists(__DIR__ . "/../../../../$ThemeFolder/$ThemeName/" . $ThemeMetadata->onInstall->createTranslationKeys . "/en.json")){
+            if (defined("CRISP_CLI")) {
+                echo "ERR: Source Language Not found!" . PHP_EOL;
+            }
+            exit;
+        }
+
+        $masterLang = file_get_contents(__DIR__ . "/../../../../$ThemeFolder/$ThemeName/" . $ThemeMetadata->onInstall->createTranslationKeys . "/en.json");
+        $masterLang = json_decode($masterLang, true, 512, JSON_THROW_ON_ERROR);
+
+        if (isset($ThemeMetadata->onInstall->createTranslationKeys) && is_string($ThemeMetadata->onInstall->createTranslationKeys)) {
+
+            if (file_exists(__DIR__ . "/../../../../$ThemeFolder/$ThemeName/" . $ThemeMetadata->onInstall->createTranslationKeys)) {
+
+                $files = glob(__DIR__ . "/../../../../$ThemeFolder/$ThemeName/" . $ThemeMetadata->onInstall->createTranslationKeys . "*.{json}", GLOB_BRACE);
+                foreach ($files as $File) {
+                    if (!file_exists($File)) {
+                        if (defined("CRISP_CLI")) {
+                            echo "ERR: $File Not found!" . PHP_EOL;
+                        }
+                        continue;
+                    }
+
+
+                    $lang = file_get_contents($File);
+                    $lang = json_decode($lang, true, 512, JSON_THROW_ON_ERROR);
+                    $langCode = substr(basename($File), 0, -5);
+                    $result = Helper::array_diff_key_recursive($masterLang, $lang);
+
+                    if(empty($result)) {
+                        Helper::Log(2, "Language up to date");
+                        continue;
+                    }
+
+                    foreach($result as $key => $val) {
+                        // check if section key exists in target lang
+                        if(array_key_exists($key, $lang)) {
+                            // add only missing section keys
+                            foreach ($val as $k => $v) {
+                                $lang[$key][$k] = $v;
+                            }
+                            // sort keys
+                            ksort($lang[$key]);
+                        } else {
+                            // add whole section
+                            $lang[$key] = $val;
+                            ksort($lang);
+                        }
+                    }
+
+                    $lang = json_encode($lang, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    file_put_contents(__DIR__ . "/../../../../$ThemeFolder/$ThemeName/" . $ThemeMetadata->onInstall->createTranslationKeys . "/$langCode", $lang);
+
+                    Helper::Log(2, $result);
+                }
+            }
+            return true;
+        }
+
+        Helper::Log(1, "Array based translation keys are no longer supported. Please switch to directory based ones.");
+
+        break;
     case "release":
 
         echo RELEASE;
@@ -70,11 +140,6 @@ switch ($argv[1]) {
 
             case "boot":
                 if($argc < 4) {
-                    Helper::Log(1, "Missing theme name");
-                    exit;
-                }
-                
-                if ($argc < 4) {
                     Helper::Log(1, "Missing theme name");
                     exit;
                 }

@@ -144,6 +144,11 @@ class Themes
         return "/" . ($Prefix ? \crisp\api\Config::get("theme_dir") . "/" . $Theme : "") . "/$File?" . hash_file("sha256", __DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . $Theme . "/$File");
     }
 
+
+    public static function loadTranslation(string $code){
+
+    }
+
     public static function getThemeMetadata(string $ThemeName = null): stdClass|null
     {
         $ThemeFolder = \crisp\api\Config::get("theme_dir");
