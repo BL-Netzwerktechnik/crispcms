@@ -9,9 +9,9 @@ final class APIKeyTest extends TestCase
     public function testCreateApiKey(): void
     {
         $DB = (new Postgres())->getDBConnector();
-        
+
         $statement = $DB->query("INSERT INTO APIKeys (key) VALUES ('12345')");
 
-        $this->assertTrue($statement->rowCount > 0);
+        $this->assertTrue($statement->rowCount() > 0);
     }
 }
