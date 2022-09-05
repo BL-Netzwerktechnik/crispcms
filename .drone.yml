@@ -50,6 +50,7 @@ steps:
       - php bin/cli.php migrate
       - php bin/cli.php theme install basic
       - rm /tmp/ci/composer
+      - ./vendor/bin/phpunit --bootstrap vendor/autoload.php tests
       #- curl -sL https://sentry.io/get-cli/ | bash
       #- export VERSION=$(php bin/cli.php release)
       #- sentry-cli releases new --finalize -p crisp-core $VERSION
