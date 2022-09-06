@@ -10,8 +10,24 @@ final class APIKeyTest extends TestCase
     {
         $DB = (new Postgres())->getDBConnector();
 
-        $statement = $DB->query("INSERT INTO APIKeys (key) VALUES ('12345')");
+        $statementInsert = $DB->query("INSERT INTO APIKeys (key) VALUES ('12345')");
+        $this->assertTrue($statementInsert->rowCount() > 0);
 
-        $this->assertTrue($statement->rowCount() > 0);
+        $statementDelete = $DB->query("DELETE FROM APIKeys WHERE key = '12345'");
+        $this->assertTrue($statementDelete->rowCount() > 0);
     }
+
+    /**
+     * @depends testCreateApiKey
+     */
+    
+    /*
+    public function testDisableApiKey(): void
+    {
+
+        $class = new api\APIKey("12345");
+
+        $this->assertTrue($class->disable());
+    }
+    */
 }

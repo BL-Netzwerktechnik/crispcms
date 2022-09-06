@@ -51,142 +51,17 @@ class core
 {
     /* Some important constants */
 
-    public const CRISP_VERSION = '11.0.0';
+    public const CRISP_VERSION = '11.1.0';
 
     public const API_VERSION = '2.2.0';
 
     public const RELEASE_NAME = "Stroopwafel";
 
-    /**
-     * This is my autoloader.
-     * There are many like it, but this one is mine.
-     * My autoloader is my best friend.
-     * It is my life.
-     * I must master it as I must master my life.
-     * My autoloader, without me, is useless.
-     * Without my autoloader, I am useless.
-     * I must use my autoloader true.
-     * I must code better than my enemy who is trying to be better than me.
-     * I must be better than him before he is.
-     * And I will be.
-     *
-     * @throws Exception
-     */
-    public static function bootstrap(): void
-    {
-        define('CRISP_HOOKED', true);
-        /** Core headers, can be accessed anywhere */
-        /** After autoloading we include additional headers below */
-
-
-
-
-        $BuildType = $_ENV['BUILD_TYPE'];
-
-        if($_ENV['BUILD_TYPE'] === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "rc."))){
-            $BuildType = 2;
-        }elseif($_ENV['BUILD_TYPE'] === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "pre-release") || str_contains(strtolower($_ENV['GIT_TAG']), "prerelease"))){
-            $BuildType = 3;
-        }elseif($_ENV['BUILD_TYPE'] === 0 && isset($_ENV['GIT_TAG'])){
-            $BuildType = 1;
-        }
-
-        $_ENV['BUILD_TYPE'] =  match($BuildType){
-            1 => "Stable",
-            2 => "Release-Candidate",
-            3 => "Pre-Release",
-            default => "Nightly"
-        };
-
-        define('BUILD_TYPE', $_ENV['BUILD_TYPE']);
-
-        define('IS_API_ENDPOINT', (PHP_SAPI !== 'cli' && isset($_SERVER['IS_API_ENDPOINT'])));
-        define('IS_NATIVE_API', isset($_SERVER['IS_API_ENDPOINT']));
-        define('RELEASE', (IS_API_ENDPOINT ? 'api' : 'crisp')
-            . '@' .
-            (IS_API_ENDPOINT ? self::API_VERSION : self::CRISP_VERSION)
-            . '+' .
-            (Helper::getCommitHash() ?? 'nongit')
-            . '-' .
-            (BUILD_TYPE ?? 'Nightly')
-            . '.' .
-            ($_ENV['CI_BUILD'] ?? 0)
-        );
-        define('REQUEST_ID', Crypto::UUIDv4());
-        define('VM_IP', exec('hostname -I'));
-        define('RELEASE_ICON', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".svg"));
-        define('CRISP_ICON', file_get_contents(__DIR__ . '/../themes/basic/crisp.svg'));
-        define('RELEASE_ART', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".art"));
-
-
-
-
-        if (!empty($_ENV['FLAGSMITH_API_KEY']) && !empty($_ENV['FLAGSMITH_APP_URL'])) {
-            define('USES_FLAGSMITH', true);
-            $GLOBALS['Flagsmith'] = Flagsmith::Client();
-
-        } else {
-            define('USES_FLAGSMITH', false);
-        }
-
-        spl_autoload_register(static function ($class) {
-            $file = __DIR__ . '/class/' . str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
-
-            if (file_exists($file)) {
-                require $file;
-                return true;
-            }
-            return false;
-        });
-
-        /** @var \Flagsmith\Flagsmith */
-        $GLOBALS['flagsmith_server'] = Flagsmith::Client('CRISP_FLAGSMITH_API_KEY', 'CRISP_FLAGSMITH_APP_URL', 300);
-
-
-            $ServerID = (new Identity(Helper::getMachineID()))
-                ->withTrait((new IdentityTrait('commit'))
-                    ->withValue(Helper::getCommitHash()))
-                ->withTrait((new IdentityTrait('hostname'))
-                    ->withValue(gethostname()))
-                ->withTrait((new IdentityTrait('crisp_version'))
-                    ->withValue(self::CRISP_VERSION))
-                ->withTrait((new IdentityTrait('api_version'))
-                    ->withValue(self::API_VERSION))
-                ->withTrait((new IdentityTrait('environment'))
-                    ->withValue(ENVIRONMENT));
-
-            $GLOBALS['flagsmith_server_identity'] = $ServerID;
-        
-
-        $GLOBALS['flagsmith_server']->setTraitsByIdentity($GLOBALS['flagsmith_server_identity']);
-
-        if(isset($_ENV['SENTRY_DSN'])) {
-
-            init([
-                'dsn' => $_ENV['SENTRY_DSN'],
-                'traces_sample_rate' => $_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
-                'environment' => ENVIRONMENT,
-                'release' => RELEASE,
-            ]);
-
-            configureScope(function (Scope $scope): void {
-                $scope->setTag('request_id', REQUEST_ID);
-            });
-
-        }
-
-        header('X-Request-ID: ' . REQUEST_ID);
-
-        if(!$_ENV['DONT_EXPOSE_CRISP']){
-            header("x-powered-by: CrispCMS/". self::CRISP_VERSION);
-        }
-
-    }
-
 }
+require_once __DIR__ . '/../vendor/autoload.php';
+
 
 try {
-    require_once __DIR__ . '/../vendor/autoload.php';
     define('IS_DEV_ENV', (isset($_SERVER['ENVIRONMENT']) && $_SERVER['ENVIRONMENT'] !== 'production'));
     define('ENVIRONMENT', match (strtolower($_SERVER['ENVIRONMENT'] ?? 'production')) {
         'staging' => 'staging',
@@ -221,9 +96,106 @@ try {
     $dotenv->required('POSTGRES_URI')->allowedRegexValues('/^(?:([^:\/?#\s]+):\/{2})?(?:([^@\/?#\s]+)@)?([^\/?#\s]+)?(?:\/([^?#\s]*))?(?:[?]([^#\s]+))?\S*$/i');
 
 
+
     $GLOBALS['dotenv'] = $dotenv;
 
-    core::bootstrap();
+
+        define('CRISP_HOOKED', true);
+        /** Core headers, can be accessed anywhere */
+        /** After autoloading we include additional headers below */
+
+
+
+
+        $BuildType = $_ENV['BUILD_TYPE'] ?? 0;
+
+        if($BuildType === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "rc."))){
+            $BuildType = 2;
+        }elseif($BuildType === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "pre-release") || str_contains(strtolower($_ENV['GIT_TAG']), "prerelease"))){
+            $BuildType = 3;
+        }elseif($BuildType === 0 && isset($_ENV['GIT_TAG'])){
+            $BuildType = 1;
+        }
+
+        $_ENV['BUILD_TYPE'] = match($BuildType){
+            1 => "Stable",
+            2 => "Release-Candidate",
+            3 => "Pre-Release",
+            default => "Nightly"
+        };
+
+        define('BUILD_TYPE', $_ENV['BUILD_TYPE']);
+
+        define('IS_API_ENDPOINT', (PHP_SAPI !== 'cli' && isset($_SERVER['IS_API_ENDPOINT'])));
+        define('IS_NATIVE_API', isset($_SERVER['IS_API_ENDPOINT']));
+        define('RELEASE', (IS_API_ENDPOINT ? 'api' : 'crisp')
+            . '@' .
+            (IS_API_ENDPOINT ? core::API_VERSION : core::CRISP_VERSION)
+            . '+' .
+            (Helper::getCommitHash() ?? 'nongit')
+            . '-' .
+            (BUILD_TYPE ?? 'Nightly')
+            . '.' .
+            ($_ENV['CI_BUILD'] ?? 0)
+        );
+        define('REQUEST_ID', Crypto::UUIDv4());
+
+
+        if(isset($_ENV['SENTRY_DSN'])) {
+
+            init([
+                'dsn' => $_ENV['SENTRY_DSN'],
+                'traces_sample_rate' => $_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
+                'environment' => ENVIRONMENT,
+                'release' => RELEASE,
+            ]);
+
+            configureScope(function (Scope $scope): void {
+                $scope->setTag('request_id', REQUEST_ID);
+            });
+
+        }
+
+        define('VM_IP', exec('hostname -I'));
+        define('RELEASE_ICON', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".svg"));
+        define('CRISP_ICON', file_get_contents(__DIR__ . '/../themes/basic/crisp.svg'));
+        define('RELEASE_ART', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".art"));
+
+        if (!empty($_ENV['FLAGSMITH_API_KEY']) && !empty($_ENV['FLAGSMITH_APP_URL'])) {
+            define('USES_FLAGSMITH', true);
+            $GLOBALS['Flagsmith'] = Flagsmith::Client();
+
+        } else {
+            define('USES_FLAGSMITH', false);
+        }
+
+        /** @var \Flagsmith\Flagsmith */
+        $GLOBALS['flagsmith_server'] = Flagsmith::Client('CRISP_FLAGSMITH_API_KEY', 'CRISP_FLAGSMITH_APP_URL', 300);
+
+
+            $ServerID = (new Identity(Helper::getMachineID()))
+                ->withTrait((new IdentityTrait('commit'))
+                    ->withValue(Helper::getCommitHash()))
+                ->withTrait((new IdentityTrait('hostname'))
+                    ->withValue(gethostname()))
+                ->withTrait((new IdentityTrait('crisp_version'))
+                    ->withValue(core::CRISP_VERSION))
+                ->withTrait((new IdentityTrait('api_version'))
+                    ->withValue(core::API_VERSION))
+                ->withTrait((new IdentityTrait('environment'))
+                    ->withValue(ENVIRONMENT));
+
+            $GLOBALS['flagsmith_server_identity'] = $ServerID;
+        
+
+        $GLOBALS['flagsmith_server']->setTraitsByIdentity($GLOBALS['flagsmith_server_identity']);
+
+
+        header('X-Request-ID: ' . REQUEST_ID);
+
+        if(!$_ENV['DONT_EXPOSE_CRISP']){
+            header("x-powered-by: CrispCMS/". core::CRISP_VERSION);
+        }
 
     setlocale(LC_TIME, $_ENV["LANG"] ?? 'de_DE.utf8');
     if (PHP_SAPI !== 'cli') {
@@ -447,7 +419,7 @@ try {
     }
 
     if (IS_DEV_ENV) {
-        $refid = $ex->getMessage();
+        $refid = $ex->__toString();
     }
 
 

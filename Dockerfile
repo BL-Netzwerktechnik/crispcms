@@ -38,10 +38,10 @@ ENV CRISP_THEME "$CRISP_THEME"
 ENV GIT_COMMIT "$GIT_COMMIT"
 ENV IS_DOCKER "$IS_DOCKER"
 
-# Install Dependencies
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
 
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
-    apt-get update && \
+# Install Dependencies
+RUN apt-get update && \
     apt-get install -y \
             git \
             libfreetype6-dev \

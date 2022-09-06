@@ -2,9 +2,11 @@
   "name": "jrbit/crispcms",
   "description": "Dynamic CMS",
   "autoload": {
-    "classmap": [
-      "jrbit/class/crisp"
-    ]
+        "psr-4": {
+            "crisp\\": "jrbit/class/crisp/",
+            "RateLimit\\": "jrbit/class/RateLimit/",
+            "Assert\\": "jrbit/class/Assert/"
+      }
   },
   "require": {
     "twig/twig": "3.3.8",
