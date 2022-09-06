@@ -87,7 +87,7 @@ class APIKey
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("UPDATE APIKeys SET revoked = 0 WHERE `key` = :ID");
+        $statement = $this->Database_Connection->prepare("UPDATE APIKeys SET revoked = 1 WHERE `key` = :ID");
         return $statement->execute(array(":ID" => $this->APIKey));
     }
 
