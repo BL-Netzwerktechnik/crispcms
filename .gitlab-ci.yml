@@ -1,128 +1,113 @@
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 services:
-  - postgres:14.5
-  - redis:latest
-
-
+- postgres:14.5
+- redis:latest
 variables:
-    POSTGRES_USER: postgres
-    POSTGRES_DB: crisp_dev
-    POSTGRES_HOST_AUTH_METHOD: trust
-
-
+  POSTGRES_USER: postgres
+  POSTGRES_DB: crisp_dev
+  POSTGRES_HOST_AUTH_METHOD: trust
 stages:
-  - test
-  - build
-
-
+- test
+- build
 migrate-and-test:
   stage: test
   variables:
-      COMPOSER_ALLOW_SUPERUSER: 1
-      ENVIRONMENT: development
-      GIT_COMMIT: ${CI_COMMIT_SHORT_SHA}
-      POSTGRES_URI: postgres://postgres:postgres@postgres:5432/crisp_dev
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_INDEX: 2
-      DEFAULT_LOCALE: en
-      CRISP_FLAGSMITH_APP_URL: https://flagsmith.internal.jrbit.de/api/v1/
-      CRISP_FLAGSMITH_API_KEY: mwp6tU4GGESSbTyP5qrKki
-      CRISP_THEME: crisptheme
-      LANG: en_US.utf8
-      VERBOSITY: 3
-      HOST: ci
-      PROTO: http
-      TZ: UTC
+    COMPOSER_ALLOW_SUPERUSER: 1
+    ENVIRONMENT: development
+    GIT_COMMIT: "${CI_COMMIT_SHORT_SHA}"
+    POSTGRES_URI: postgres://postgres:postgres@postgres:5432/crisp_dev
+    REDIS_HOST: redis
+    REDIS_PORT: 6379
+    REDIS_INDEX: 2
+    DEFAULT_LOCALE: en
+    CRISP_FLAGSMITH_APP_URL: https://flagsmith.internal.jrbit.de/api/v1/
+    CRISP_FLAGSMITH_API_KEY: mwp6tU4GGESSbTyP5qrKki
+    CRISP_THEME: crisptheme
+    LANG: en_US.utf8
+    VERBOSITY: 3
+    HOST: ci
+    PROTO: http
+    TZ: UTC
   image:
     name: php:8.1-buster
   script:
-      - cd cms
-      - echo "# We dont need me!" > .env
-      - mkdir /tmp/ci
-      - cd /tmp/ci
-      - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev wget git-core zip zlib1g-dev libpng-dev doxygen
-      - pecl install redis
-      - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
-      - docker-php-ext-enable pdo_pgsql pdo_mysql redis intl gd gettext
-      - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
-      - cd ${CI_PROJECT_DIR}/cms
-      - php /tmp/ci/composer install
-      - php bin/cli.php migrate
-      - php bin/cli.php theme install basic
-      - rm /tmp/ci/composer
-      - ./vendor/bin/phpunit --bootstrap vendor/autoload.php tests
-
-
+  - cd cms
+  - echo "# We dont need me!" > .env
+  - mkdir /tmp/ci
+  - cd /tmp/ci
+  - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev
+    wget git-core zip zlib1g-dev libpng-dev doxygen
+  - pecl install redis
+  - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
+  - docker-php-ext-enable pdo_pgsql pdo_mysql redis intl gd gettext
+  - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
+  - cd ${CI_PROJECT_DIR}/cms
+  - php /tmp/ci/composer install
+  - php bin/cli.php migrate
+  - php bin/cli.php theme install basic
+  - rm /tmp/ci/composer
+  - "./vendor/bin/phpunit --bootstrap vendor/autoload.php tests"
 de_de-master:
   stage: build
   image:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint: [""]
+    entrypoint:
+    - ''
   script:
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/de_de:dev"
-      --destination "${CI_REGISTRY_IMAGE}/de_de:latest"
-      --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
-      --build-arg LANG=de_DE.UTF-8
-      --build-arg DEFAULT_LOCALE=de
-      --build-arg CI_BUILD=${CI_JOB_ID}
+  - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+    --destination "${CI_REGISTRY_IMAGE}/de_de:dev" --destination "${CI_REGISTRY_IMAGE}/de_de:latest"
+    --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA} --build-arg LANG=de_DE.UTF-8 --build-arg
+    DEFAULT_LOCALE=de --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
-    - if: '$CI_COMMIT_REF_NAME == "master"'
-
+  - if: $CI_COMMIT_REF_NAME == "master"
 en_us-master:
   stage: build
   image:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint: [""]
+    entrypoint:
+    - ''
   script:
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/en_us:dev"
-      --destination "${CI_REGISTRY_IMAGE}/de_de:latest"
-      --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
-      --build-arg LANG=en_US.UTF-8
-      --build-arg DEFAULT_LOCALE=en
-      --build-arg CI_BUILD=${CI_JOB_ID}
+  - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+    --destination "${CI_REGISTRY_IMAGE}/en_us:dev" --destination "${CI_REGISTRY_IMAGE}/de_de:latest"
+    --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA} --build-arg LANG=en_US.UTF-8 --build-arg
+    DEFAULT_LOCALE=en --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
-    - if: '$CI_COMMIT_REF_NAME == "master"'
-
+  - if: $CI_COMMIT_REF_NAME == "master"
 en_us:
   stage: build
   image:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint: [""]
+    entrypoint:
+    - ''
   script:
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/en_us:${CI_COMMIT_TAG}"
-      --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
-      --build-arg LANG=en_US.UTF-8
-      --build-arg DEFAULT_LOCALE=en
-      --build-arg GIT_TAG=${CI_COMMIT_TAG}
-      --build-arg CI_BUILD=${CI_JOB_ID}
+  - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+    --destination "${CI_REGISTRY_IMAGE}/en_us:${CI_COMMIT_TAG}" --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
+    --build-arg LANG=en_US.UTF-8 --build-arg DEFAULT_LOCALE=en --build-arg GIT_TAG=${CI_COMMIT_TAG}
+    --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
-    - if: $CI_COMMIT_TAG
-    - if: '$CI_COMMIT_REF_NAME == "master"'
-
+  - if: "$CI_COMMIT_TAG"
+  - if: $CI_COMMIT_REF_NAME == "master"
 de_de:
   stage: build
   image:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint: [""]
+    entrypoint:
+    - ''
   script:
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/de_de:${CI_COMMIT_TAG}"
-      --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
-      --build-arg LANG=de_DE.UTF-8
-      --build-arg DEFAULT_LOCALE=de
-      --build-arg GIT_TAG=${CI_COMMIT_TAG}
-      --build-arg CI_BUILD=${CI_JOB_ID}
+  - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+    --destination "${CI_REGISTRY_IMAGE}/de_de:${CI_COMMIT_TAG}" --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
+    --build-arg LANG=de_DE.UTF-8 --build-arg DEFAULT_LOCALE=de --build-arg GIT_TAG=${CI_COMMIT_TAG}
+    --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
-    - if: $CI_COMMIT_TAG
-    - if: '$CI_COMMIT_REF_NAME == "master"'
+  - if: "$CI_COMMIT_TAG"
+  - if: $CI_COMMIT_REF_NAME == "master"
+sast:
+  stage: test
+include:
+- template: Security/SAST.gitlab-ci.yml
