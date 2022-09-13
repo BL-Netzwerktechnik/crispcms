@@ -57,7 +57,7 @@ class Postgres {
             ));
             $this->Database_Connection = $pdo;
         } catch (Exception $ex) {
-            throw new BitmaskException($ex, Bitmask::POSTGRES_CONN_ERROR);
+            throw new BitmaskException($ex, Bitmask::POSTGRES_CONN_ERROR->value);
         }
     }
 
