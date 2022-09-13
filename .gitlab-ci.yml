@@ -72,4 +72,28 @@ migrate-and-test:
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/en_us:latest"
-      
+      --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
+      --build-arg LANG=en_US.UTF-8
+      --build-arg DEFAULT_LOCALE=en
+      --build-arg GIT_TAG=${CI_COMMIT_TAG}
+      --build-arg CI_BUILD=${CI_JOB_ID}
+  rules:
+    - if: $CI_COMMIT_TAG
+
+.de_de:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    entrypoint: [""]
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/de_de:latest"
+      --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
+      --build-arg LANG=de_DE.UTF-8
+      --build-arg DEFAULT_LOCALE=de
+      --build-arg GIT_TAG=${CI_COMMIT_TAG}
+      --build-arg CI_BUILD=${CI_JOB_ID}
+  rules:
+    - if: $CI_COMMIT_TAG
