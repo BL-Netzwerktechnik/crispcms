@@ -54,7 +54,7 @@ migrate-and-test:
       - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
       - docker-php-ext-enable pdo_pgsql pdo_mysql redis intl gd gettext
       - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
-      - cd /drone/src/cms
+      - cd ${CI_PROJECT_DIR}/cms
       - php /tmp/ci/composer install
       - php bin/cli.php migrate
       - php bin/cli.php theme install basic
