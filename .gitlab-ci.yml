@@ -1,0 +1,74 @@
+services:
+  - postgres:14.5
+  - redis:latest
+
+
+variables:
+    POSTGRES_USER: postgres
+    POSTGRES_DB: postgres
+    POSTGRES_HOST_AUTH_METHOD: trust
+
+
+stages:
+  - prepare
+  - test
+  - build
+
+setup-postgres:
+  stage: prepare
+  image:
+    name: postgres:9-alpine
+  script:
+    - sleep 30
+    - psql -h postgres -U postgres -c "CREATE DATABASE crisp_dev;"
+
+
+migrate-and-test:
+  stage: test
+  variables:
+      COMPOSER_ALLOW_SUPERUSER: 1
+      ENVIRONMENT: development
+      GIT_COMMIT: ${CI_COMMIT_SHORT_SHA}
+      POSTGRES_URI: postgres://postgres:postgres@postgres:5432/crisp_dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_INDEX: 2
+      DEFAULT_LOCALE: en
+      CRISP_FLAGSMITH_APP_URL: https://flagsmith.internal.jrbit.de/api/v1/
+      CRISP_FLAGSMITH_API_KEY: mwp6tU4GGESSbTyP5qrKki
+      CRISP_THEME: crisptheme
+      LANG: en_US.utf8
+      VERBOSITY: 3
+      HOST: ci
+      PROTO: http
+      TZ: UTC
+  image:
+    name: php:8.1-buster
+  script:
+      - cd cms
+      - echo "# We dont need me!" > .env
+      - mkdir /tmp/ci
+      - cd /tmp/ci
+      - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev wget git-core zip zlib1g-dev libpng-dev doxygen
+      - pecl install redis
+      - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
+      - docker-php-ext-enable pdo_pgsql pdo_mysql redis intl gd gettext
+      - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
+      - cd /drone/src/cms
+      - php /tmp/ci/composer install
+      - php bin/cli.php migrate
+      - php bin/cli.php theme install basic
+      - rm /tmp/ci/composer
+      - ./vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+
+
+.en_us:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    entrypoint: [""]
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/en_us:latest"
