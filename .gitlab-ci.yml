@@ -5,22 +5,13 @@ services:
 
 variables:
     POSTGRES_USER: postgres
-    POSTGRES_DB: postgres
+    POSTGRES_DB: crisp_dev
     POSTGRES_HOST_AUTH_METHOD: trust
 
 
 stages:
-  - prepare
   - test
   - build
-
-setup-postgres:
-  stage: prepare
-  image:
-    name: postgres:9-alpine
-  script:
-    - sleep 30
-    - psql -h postgres -U postgres -c "CREATE DATABASE crisp_dev;"
 
 
 migrate-and-test:
