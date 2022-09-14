@@ -12,6 +12,7 @@ variables:
   POSTGRES_USER: postgres
   POSTGRES_DB: crisp_dev
   POSTGRES_HOST_AUTH_METHOD: trust
+  LICENSE_FINDER_CLI_OPTS: '--recursive'
 stages:
 - test
 - compile
