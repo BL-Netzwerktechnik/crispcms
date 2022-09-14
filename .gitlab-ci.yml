@@ -63,7 +63,13 @@ migrate-and-test:
   - php bin/cli.php migrate
   - php bin/cli.php theme install basic
   - rm /tmp/ci/composer
-  - "./vendor/bin/phpunit --bootstrap vendor/autoload.php tests"
+  - "./vendor/bin/phpunit --bootstrap vendor/autoload.php --log-junit results.xml tests"
+  artifacts:
+    when: always
+    paths:
+      - results.xml
+    reports:
+      junit: results.xml
 de_de-master:
   stage: publish
   image:
