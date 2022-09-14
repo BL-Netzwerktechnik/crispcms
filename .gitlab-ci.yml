@@ -67,9 +67,9 @@ migrate-and-test:
   artifacts:
     when: always
     paths:
-      - results.xml
+      - cms/results.xml
     reports:
-      junit: results.xml
+      junit: cms/results.xml
 de_de-master:
   stage: publish
   image:
