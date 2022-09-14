@@ -13,8 +13,16 @@ variables:
   POSTGRES_DB: crisp_dev
   POSTGRES_HOST_AUTH_METHOD: trust
 stages:
+- scan
 - test
 - build
+
+sast:
+  stage: scan
+include:
+- template: Security/SAST.gitlab-ci.yml
+
+
 migrate-and-test:
   stage: test
   variables:
@@ -53,6 +61,10 @@ migrate-and-test:
   - php bin/cli.php theme install basic
   - rm /tmp/ci/composer
   - "./vendor/bin/phpunit --bootstrap vendor/autoload.php tests"
+
+
+
+
 de_de-master:
   stage: build
   image:
@@ -65,7 +77,10 @@ de_de-master:
     --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA} --build-arg LANG=de_DE.UTF-8 --build-arg
     DEFAULT_LOCALE=de --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
-  - if: $CI_COMMIT_REF_NAME == "master"
+   - if: $CI_COMMIT_REF_NAME == "master"
+
+
+
 en_us-master:
   stage: build
   image:
@@ -79,6 +94,10 @@ en_us-master:
     DEFAULT_LOCALE=en --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
   - if: $CI_COMMIT_REF_NAME == "master"
+
+
+
+
 en_us:
   stage: build
   image:
@@ -91,8 +110,9 @@ en_us:
     --build-arg LANG=en_US.UTF-8 --build-arg DEFAULT_LOCALE=en --build-arg GIT_TAG=${CI_COMMIT_TAG}
     --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
-  - if: "$CI_COMMIT_TAG"
-  - if: $CI_COMMIT_REF_NAME == "master"
+  - if: $CI_COMMIT_TAG && $CI_COMMIT_REF_NAME == "master"
+
+
 de_de:
   stage: build
   image:
@@ -105,9 +125,6 @@ de_de:
     --build-arg LANG=de_DE.UTF-8 --build-arg DEFAULT_LOCALE=de --build-arg GIT_TAG=${CI_COMMIT_TAG}
     --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
-  - if: "$CI_COMMIT_TAG"
-  - if: $CI_COMMIT_REF_NAME == "master"
-sast:
-  stage: test
-include:
-- template: Security/SAST.gitlab-ci.yml
+  - if: $CI_COMMIT_TAG && $CI_COMMIT_REF_NAME == "master"
+
+
