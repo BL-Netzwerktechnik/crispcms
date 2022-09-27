@@ -104,7 +104,7 @@ pages:
   - doxygen Doxyfile > /dev/nul
   artifacts:
     paths:
-    - docs
+    - public
   rules:
   - if: $CI_COMMIT_REF_NAME == "master"
 
