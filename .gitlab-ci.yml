@@ -107,7 +107,7 @@ pages:
     - public
   environment:
     name: production
-    url: https://staging.example.com
+    url: https://docs.crispcms.de
 
   rules:
   - if: $CI_COMMIT_REF_NAME == "master"
