@@ -57,6 +57,8 @@ class core
 
     public const RELEASE_NAME = "Stroopwafel";
 
+    public const PERSISTENT_DATA = "/data";
+
 }
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -138,7 +140,7 @@ try {
             . '.' .
             ($_ENV['CI_BUILD'] ?? 0)
         );
-        define('REQUEST_ID', Crypto::UUIDv4());
+        define('REQUEST_ID', Crypto::UUIDv4("R"));
 
 
         if(isset($_ENV['SENTRY_DSN'])) {
@@ -173,7 +175,7 @@ try {
         $GLOBALS['flagsmith_server'] = Flagsmith::Client('CRISP_FLAGSMITH_API_KEY', 'CRISP_FLAGSMITH_APP_URL', 300);
 
 
-            $ServerID = (new Identity(Helper::getMachineID()))
+            $ServerID = (new Identity(Helper::getInstanceId()))
                 ->withTrait((new IdentityTrait('commit'))
                     ->withValue(Helper::getCommitHash()))
                 ->withTrait((new IdentityTrait('hostname'))

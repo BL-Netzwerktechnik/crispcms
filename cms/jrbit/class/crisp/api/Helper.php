@@ -107,35 +107,17 @@ class Helper
         }
     }
 
-    public static function getMachineID(): string
+    public static function getInstanceId(): string
     {
-        $result = null;
 
-        if (PHP_OS_FAMILY === 'Windows') {
-
-            $output = shell_exec("diskpart /s select disk 0\ndetail disk");
-            $lines = explode("\n", $output);
-            $result = array_filter($lines, static function ($line) {
-                return stripos($line, "ID:") !== false;
-            });
-            if (count($result) > 0) {
-                $array = array_values($result);
-                $result = array_shift($array);
-                $result = explode(":", $result);
-                $result = trim(end($result));
-            } else {
-                $result = $output;
-            }
-        } else if (file_exists('/etc/machine-id')) {
-            $result = file_get_contents('/etc/machine-id');
-        } else if (file_exists('/var/lib/dbus/machine-id')) {
-            $result = file_get_contents('/var/lib/dbus/machine-id');
+        if(file_exists(\crisp\core::PERSISTENT_DATA . "/.instance_id")){
+            return file_get_contents(\crisp\core::PERSISTENT_DATA . "/.instance_id");
         }
+        $InstanceId = \crisp\core\Crypto::UUIDv4("I");
 
+        file_put_contents(\crisp\core::PERSISTENT_DATA . "/.instance_id", $InstanceId);
 
-        Helper::Log(3, "MachineID: " . hash('md5', trim($result)));
-
-        return hash('md5', trim($result));
+        return $InstanceId;
     }
 
     /**

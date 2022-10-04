@@ -20,6 +20,7 @@ services:
     image: 'registry.jrbit.de/crispcms/core/en_us:latest'
     volumes:
       - my/local/theme/folder:/var/www/crisp/themes/crisptheme
+      - ./data:/data
     ports:
       - '80:80'
     links:

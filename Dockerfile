@@ -38,6 +38,9 @@ ENV CRISP_THEME "$CRISP_THEME"
 ENV GIT_COMMIT "$GIT_COMMIT"
 ENV IS_DOCKER "$IS_DOCKER"
 
+
+VOLUME /data
+
 RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
 
 # Install Dependencies
