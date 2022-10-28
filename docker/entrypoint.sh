@@ -37,20 +37,20 @@ if [ -z "$DEFAULT_LOCALE" ]; then
 fi
 
 
-cd /var/www/crisp || exit 1
+cd "$CRISP_WORKDIR" || exit 1
 
 echo "Migrating..."
-php bin/cli.php migrate || (echo "Failed to Migrate" && exit 1)
+crisp-cli migrate || (echo "Failed to Migrate" && exit 1)
 echo "Installing Theme..."
-php bin/cli.php theme install "$CRISP_THEME" || (echo "Failed to install theme" && exit 1)
+crisp-cli theme install "$CRISP_THEME" || (echo "Failed to install theme" && exit 1)
 echo "Reloading theme..."
-php bin/cli.php theme reload "$CRISP_THEME" overwrite || (echo "Failed to reload theme" && exit 1)
+crisp-cli theme reload "$CRISP_THEME" overwrite || (echo "Failed to reload theme" && exit 1)
 echo "Migrating theme..."
-php bin/cli.php theme migrate "$CRISP_THEME" || (echo "Failed to migrate theme" && exit 1)
+crisp-cli theme migrate "$CRISP_THEME" || (echo "Failed to migrate theme" && exit 1)
 echo "Clearing cache..."
-php bin/cli.php cache clear || (echo "Failed to clear cache" && exit 1)
+crisp-cli cache clear || (echo "Failed to clear cache" && exit 1)
 echo "Executing Boot files..."
-php bin/cli.php theme boot "$CRISP_THEME"
+crisp-cli theme boot "$CRISP_THEME"
 
 echo "Setting System Timezone..."
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -58,9 +58,9 @@ echo "Setting PHP Timezone..."
 printf "[Date]\ndate.timezone = \"$TZ\"\n" > /usr/local/etc/php/conf.d/timezone.ini
 
 echo "Chowning cache..."
-rm /var/www/crisp/jrbit/cache -R
-mkdir /var/www/crisp/jrbit/cache
-chown 33:33 /var/www/crisp/jrbit/cache -R
+rm "$CRISP_WORKDIR/jrbit/cache" -R
+mkdir "$CRISP_WORKDIR/jrbit/cache"
+chown 33:33 "$CRISP_WORKDIR/jrbit/cache" -R
 rm /tmp/* -R
 
 cd / || exit 1

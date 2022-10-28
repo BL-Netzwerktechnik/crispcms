@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-cd "/var/www/crisp" || exit 1
+cd "$CRISP_WORKDIR" || exit 1
 
 
 if [ -z "$SKIP_COMPOSER" ]; then
