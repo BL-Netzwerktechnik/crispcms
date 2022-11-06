@@ -8,6 +8,12 @@
             "Assert\\": "jrbit/class/Assert/"
       }
   },
+  "repositories": [
+    {
+      "type": "composer", 
+      "url": "https://gitlab.jrbit.de/api/v4/group/48/-/packages/composer/packages.json"
+    }
+  ],
   "require": {
     "twig/twig": "3.4.3",
     "nette/utils": "3.0",
@@ -25,7 +31,7 @@
     "guzzlehttp/guzzle": "^7.4",
     "symfony/cache": "^5.3",
     "vlucas/phpdotenv": "^5.3",
-    "stevenmaguire/oauth2-keycloak": "^2.2",
+    "jrbit/oauth2-keycloak": "dev-master",
     "aws/aws-sdk-php": "^3.185",
     "flagsmith/flagsmith-php-client": "2.1.1"
 

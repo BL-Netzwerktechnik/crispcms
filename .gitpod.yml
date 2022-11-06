@@ -75,8 +75,8 @@ tasks:
     command: nginx -c ${GITPOD_REPO_ROOT}/config/nginx.conf -g "daemon off;"
 
   - name: pgAdmin
-  - init: docker pull dpage/pgadmin4
-  - command: docker run --name pgadmin --rm --net="host" -p 5050:80 -e PGADMIN_DEFAULT_EMAIL=pgadmin@crispcms.de -e PGADMIN_DEFAULT_PASSWORD=password -e PGADMIN_CONFIG_SERVER_MODE=False dpage/pgadmin4 
+    init: docker pull dpage/pgadmin4
+    command: docker run --name pgadmin --rm --net="host" -p 5050:80 -e PGADMIN_DEFAULT_EMAIL=pgadmin@crispcms.de -e PGADMIN_DEFAULT_PASSWORD=password -e PGADMIN_CONFIG_SERVER_MODE=False dpage/pgadmin4 
 
 vscode:
   extensions:
