@@ -8,8 +8,11 @@ if [ -z "$SKIP_COMPOSER" ]; then
   /usr/local/bin/composer install
 fi
 
+if [ ! -f .env ]
+then
+  echo "# Additional environment variables below" > .env || exit 1
+fi
 
-echo "# We dont need me!" > .env || exit 1
 
 cd / || exit 1
 
