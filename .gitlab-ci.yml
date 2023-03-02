@@ -46,7 +46,7 @@ migrate-and-test:
     PROTO: http
     TZ: UTC
   image:
-    name: php:8.1-buster
+    name: php:8.2-buster
   script:
   - cd cms
   - echo "# We dont need me!" > .env

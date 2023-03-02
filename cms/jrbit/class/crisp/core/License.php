@@ -272,7 +272,7 @@ Seb1Hu/BeFNHvahHjenI2BkCAwEAAQ==
             "features" => $this->_Features,
             "valid" => $this->_Valid,
             "domains" => $this->_Domains,
-            "plan" => $this->_Pkan
+            "plan" => $this->_Plan
         ];
     }
 
