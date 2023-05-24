@@ -289,6 +289,33 @@ class Migrations
         echo "Failed to remove Column from Table $Table!" . PHP_EOL;
         throw new Exception($statement->errorInfo());
     }
+    
+
+    /**
+     * Add a foreign key to a column
+     * @param string $SourceTable The table name to add the foreign key to
+     * @param string $ReferenceTable The Table to source the data from
+     * @param string $SourceColumn The column name to add the foreign key to
+     * @param string $ReferenceColumn The column name to source the data from
+     * @param string $ConstraintName The name of the foreign_key
+     * @return boolean
+     * @throws Exception on PDO Error
+     * @since 11.2.0
+     */
+    protected function addForeignKey(string $SourceTable, string $ReferenceTable, string $SourceColumn,  string $ReferenceColumn, string $ConstraintName): bool
+    {
+        echo "Adding foreign key to Table $SourceTable..." . PHP_EOL;
+        $SQL = "ALTER TABLE $SourceTable ADD CONSTRAINT fk_$ConstraintName FOREIGN KEY ($SourceColumn) REFERENCES $ReferenceTable ($ReferenceColumn);";
+
+        $statement = $this->Database->prepare($SQL);
+
+        if ($statement->execute()) {
+            echo "Added Foreign Key to Table $SourceTable!" . PHP_EOL;
+            return true;
+        }
+        echo "Failed to add Foreign Key to Table $SourceTable!" . PHP_EOL;
+        throw new Exception($statement->errorInfo());
+    }
 
     /**
      * Add a column to a table
