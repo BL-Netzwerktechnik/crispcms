@@ -129,6 +129,10 @@ class Themes
 
     public static function includeResource($File, bool $Prefix = true, $Theme = null): string
     {
+        if (str_starts_with($File, "//") || str_starts_with($File, "http://")  || str_starts_with($File, "https://")) {
+            return $File;
+        }
+        
         if (str_starts_with($File, "/")) {
             $File = substr($File, 1);
         }
