@@ -51,11 +51,11 @@ class core
 {
     /* Some important constants */
 
-    public const CRISP_VERSION = '13.0.0';
+    public const CRISP_VERSION = '13.0.1';
 
     public const API_VERSION = '3.0.0';
 
-    public const RELEASE_NAME = "Drumstick";
+    public const RELEASE_NAME = "Bitterlemon";
 
     public const PERSISTENT_DATA = "/data";
 
