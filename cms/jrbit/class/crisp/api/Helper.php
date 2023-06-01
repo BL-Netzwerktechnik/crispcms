@@ -450,7 +450,8 @@ class Helper
             $LookupIndex = 1;
         }
 
-        if ($_Route[$LookupIndex] !== '') {
+
+        if ($_Route[$LookupIndex] !== '' && ((count($_Route) > 2 && !IS_API_ENDPOINT) || (IS_API_ENDPOINT))) {
             $_RouteArray = $_Route;
             if(!IS_API_ENDPOINT){
                 for ($i = 0; $i < count($_Route) - 1; $i++) {
@@ -488,6 +489,7 @@ class Helper
         }
 
         unset($_GET["route"]);
+
         self::Log(3, "Processed ROUTE: " . var_export($obj, true));
         self::Log(3, "Processed GET: " . var_export($_GET, true));
 
