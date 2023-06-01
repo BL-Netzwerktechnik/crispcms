@@ -23,11 +23,6 @@ ports:
     port: 6379
     onOpen: ignore
 
-  - name: FPM
-    description: PHP FPM server
-    port: 9000
-    onOpen: ignore
-
   - name: Mailhog SMTP
     description: Dev SMTP server
     port: 1025
@@ -78,13 +73,6 @@ tasks:
       --net="host"
       --rm
       registry.jrbit.de/crispcms/core/en_us:latest
-
-
-  - name: PHP
-    command: php-fpm -F -R -D
-
-  - name: Nginx
-    command: nginx -c ${GITPOD_REPO_ROOT}/config/nginx.conf -g "daemon off;"
 
   - name: pgAdmin
     init: docker pull dpage/pgadmin4
