@@ -240,7 +240,7 @@ try {
         }
 
         $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/$CurrentTheme/templates/"]);
-        if (ENVIRONMENT === 'production' && $GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'cache_twig')) {
+        if (ENVIRONMENT === 'production') {
             $TwigTheme = new Environment($ThemeLoader, [
                 'cache' => __DIR__ . '/cache/'
             ]);
@@ -293,12 +293,9 @@ try {
         $TwigTheme->addGlobal('CRISP_ICON', CRISP_ICON);
         $TwigTheme->addGlobal('GLOBAL_IDENTITY', $GLOBALS['flagsmith_identity']);
 
-        if ($GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'prettydump_enabled')) {
-            $TwigTheme->addFunction(new TwigFunction('prettyDump', [new Helper(), 'prettyDump']));
-        }
-        if ($GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'twig_string_loader_ext')) {
-            $TwigTheme->addExtension(new StringLoaderExtension());
-        }
+        $TwigTheme->addFunction(new TwigFunction('prettyDump', [new Helper(), 'prettyDump']));
+        $TwigTheme->addExtension(new StringLoaderExtension());
+
         if ($GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'version_string_v1')) {
             $TwigTheme->addGlobal('VERSION_STRING', $GLOBALS['flagsmith_server']->getFeatureValueByIdentity($GLOBALS['flagsmith_server_identity'], 'version_string_v1'));
         }
@@ -350,11 +347,8 @@ try {
         $TwigTheme->addFilter(new TwigFilter('formattime', [new Helper(), 'FormatTime']));
 
 
-        $RedisClass = new Redis();
-        $rateLimiter = new RedisRateLimiter($RedisClass->getDBConnector());
 
-
-        if (IS_API_ENDPOINT && $GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'enable_api',)) {
+        if (IS_API_ENDPOINT) {
 
             header('Access-Control-Allow-Origin: *');
             header('Cache-Control: max-age=600, public, must-revalidate');
@@ -366,11 +360,6 @@ try {
             }
 
             core\Themes::loadAPI($TwigTheme, $GLOBALS['route']->Page);
-        }
-
-        if (!$GLOBALS['route']->Language) {
-            header("Location: /$Locale/$CurrentPage");
-            exit;
         }
 
         Themes::load($TwigTheme, $CurrentFile, $CurrentPage);

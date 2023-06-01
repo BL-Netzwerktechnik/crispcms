@@ -427,10 +427,6 @@ class Helper
         $_Route = explode('/', $Route);
         array_shift($_Route);
         self::Log(3, "Route Obj: " . var_export($_Route, true));
-        if (isset($_SERVER['IS_API_ENDPOINT'])) {
-            array_unshift($_Route, 'api');
-        }
-
 
         $obj = new stdClass();
 
@@ -457,15 +453,16 @@ class Helper
 
         if ($_Route[$LookupIndex] !== '') {
             $_RouteArray = $_Route;
-            for ($i = 0; $i < count($_Route) - 1; $i++) {
                 array_shift($_RouteArray);
-            }
             for ($i = 0, $iMax = count($_RouteArray); $i <= $iMax; $i += 2) {
                 $key = $_RouteArray[$i];
                 $value = $_RouteArray[$i + 1];
                 if ($key !== '') {
                     if ($value === null) {
-                            $_GET['q'] = explode('?', $key)[0];
+                            $val = explode('?', $key)[0];
+                            if(strlen($val) > 0) {
+                                $_GET['q'] = $val;
+                            }
                     } else {
                         $_GET[$key] = explode('?', $value)[0];
                     }
@@ -485,7 +482,11 @@ class Helper
         }
 
         unset($_GET["route"]);
-        self::Log(3, "Processed route: " . var_export($obj, true));
+        self::Log(3, "Processed ROUTE: " . var_export($obj, true));
+        self::Log(3, "Processed GET: " . var_export($_GET, true));
+
+        Helper::prettyDump($_GET);
+        Helper::prettyDump($obj);
 
         return $obj;
     }

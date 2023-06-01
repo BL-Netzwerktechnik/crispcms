@@ -52,7 +52,6 @@ class RESTfulAPI
 
         $HookClass = null;
 
-        if ($GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'theme_hooks_enabled')) {
             $_HookFile = Themes::getThemeMetadata()->hookFile;
             $_HookClass = substr($_HookFile, 0, -4);
 
@@ -61,7 +60,6 @@ class RESTfulAPI
             if(class_exists($_HookClass, false)){
                 $HookClass = new $_HookClass();
             }
-        }
 
         if (file_exists($this->ThemePath . "/includes/api/views/" . $this->Interface . ".php")) {
             require $this->ThemePath . "/includes/api/views/" . $this->Interface . ".php";
@@ -89,13 +87,13 @@ class RESTfulAPI
             $_RootFile = Themes::getThemeMetadata()->api->pages->root;
             $_RootClass = substr($_RootFile, 0, -4);
 
-            if(!$_RootFile && $Interface == "api"){
+            if(!$_RootFile && $Interface == ""){
                 self::response(Bitmask::GENERIC_ERROR->value, 'API Root has not been configured. Please consult the Docs', []);
                 exit;
             }
 
 
-            if (file_exists($this->ThemePath . "/includes/api/$_RootFile") && $Interface == "api" ) {
+            if (file_exists($this->ThemePath . "/includes/api/$_RootFile") && $Interface == "" ) {
                 require $this->ThemePath . "/includes/api/$_RootFile";
 
                 $PageClass = null;
