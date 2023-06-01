@@ -57,16 +57,31 @@ tasks:
     command: 'docker run -p 1025:1025 -p 8025:8025 --name mailhog --net="host" --rm mailhog/mailhog'
 
   - name: CrispCMS
-    init: cd cms && composer install
     env:
-      CRISP_WORKDIR: "${GITPOD_REPO_ROOT}/cms"
+      POSTGRES_URI: "postgres://postgres:postgres@localhost:5432/postgres"
+      REDIS_HOST: "localhost"
+      REDIS_INDEX: "1"
+      REDIS_PORT: "6379"
+      DEFAULT_LOCALE: 'en'
+      CRISP_FLAGSMITH_APP_URL: "https://flagsmith.internal.jrbit.de/api/v1/"
+      CRISP_FLAGSMITH_API_KEY: "K8BJRBi6xiE3HweHoRQhQA"
+      CRISP_THEME: "crisptheme"
+      ENVIRONMENT: "development"
+      HOST: "localhost"
+      PROTO: "http"
+      TZ: "Europe/Berlin"
+      LANG: "en_US.UTF.8"
+      GIT_TAG: "nightly"
+      GIT_COMMIT: "none"
     command: gp ports await 5432 && gp ports await 6379 && 
+             export CRISP_WORKDIR=${GITPOD_REPO_ROOT}/cms &&
+             cd cms && composer install &&
              crisp-cli migrate && 
              crisp-cli theme install "$CRISP_THEME" &&
              crisp-cli theme reload "$CRISP_THEME" overwrite &&
              crisp-cli theme migrate "$CRISP_THEME" &&
              crisp-cli cache clear &&
-             crisp-cli theme boot "$CRISP_THEME" &&
+             crisp-cli theme boot "$CRISP_THEME"
 
   - name: PHP
     command: php-fpm -F -R -D
