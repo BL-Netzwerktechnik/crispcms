@@ -5,8 +5,3 @@ RUN sudo install-packages php-xdebug && sudo pecl install -o -f redis && echo "e
 RUN sudo update-alternatives --set php $(which php8.1)
 
 RUN sudo rm -rf /var/lib/apt/lists/*
-
-
-COPY config/crisp-cli.sh /usr/local/bin/crisp-cli
-
-RUN ["sudo", "chmod", "+x", "/usr/local/bin/crisp-cli"]
