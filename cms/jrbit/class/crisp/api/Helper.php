@@ -432,9 +432,8 @@ class Helper
 
 
         if(strlen($_Route[0]) === 2){
-            $obj->Language = (lists\Languages::languageExists($_Route[0]) && $_Route[0] !== '' ? $_Route[0] : self::getLocale());
-
             $obj->Page = explode("?", $_Route[1])[0];
+            $obj->Language = (lists\Languages::languageExists($_Route[0]) && $_Route[0] !== '' ? $_Route[0] : self::getLocale());
             $obj->LanguageParameter = true;
         }else{
             $obj->Page = explode("?", $_Route[0])[0];
@@ -453,7 +452,14 @@ class Helper
 
         if ($_Route[$LookupIndex] !== '') {
             $_RouteArray = $_Route;
+            if(!IS_API_ENDPOINT){
+                for ($i = 0; $i < count($_Route) - 1; $i++) {
+                    array_shift($_RouteArray);
+                }
+
+            }else{
                 array_shift($_RouteArray);
+            }
             for ($i = 0, $iMax = count($_RouteArray); $i <= $iMax; $i += 2) {
                 $key = $_RouteArray[$i];
                 $value = $_RouteArray[$i + 1];
@@ -484,9 +490,6 @@ class Helper
         unset($_GET["route"]);
         self::Log(3, "Processed ROUTE: " . var_export($obj, true));
         self::Log(3, "Processed GET: " . var_export($_GET, true));
-
-        Helper::prettyDump($_GET);
-        Helper::prettyDump($obj);
 
         return $obj;
     }
