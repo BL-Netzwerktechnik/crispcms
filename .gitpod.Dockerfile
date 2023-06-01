@@ -9,4 +9,4 @@ RUN sudo rm -rf /var/lib/apt/lists/*
 
 COPY config/crisp-cli.sh /usr/local/bin/crisp-cli
 
-RUN ["chmod", "+x", "/usr/local/bin/crisp-cli"]
+RUN ["sudo", "chmod", "+x", "/usr/local/bin/crisp-cli"]
