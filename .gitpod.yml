@@ -52,8 +52,8 @@ tasks:
     command: 'docker run -p 1025:1025 -p 8025:8025 --name mailhog --net="host" --rm mailhog/mailhog'
 
   - name: CrispCMS
-    init: registry.jrbit.de/crispcms/core/en_us:latest
-    command: gp ports await 5432 && gp ports await 6379 && git clone https://gitlab.jrbit.de/crispcms/theme-template cms/themes/crisptheme && docker run --name crispcms
+    init: docker pull registry.jrbit.de/crispcms/core/en_us:latest && git clone https://gitlab.jrbit.de/crispcms/theme-template cms/themes/crisptheme && rm -rf cms/themes/crisptheme/.git
+    command: gp ports await 5432 && gp ports await 6379 && docker run --name crispcms
       -e CRISP_THEME=crisptheme
       -e VERBOSITY=3
       -e POSTGRES_URI=postgres://postgres:postgres@localhost:5432/postgres
