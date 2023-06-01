@@ -99,7 +99,12 @@ class Themes
                     $GLOBALS["microtime"]["template"]["start"] = microtime(true);
                     $TwigTheme->addGlobal("LogicMicroTime", ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
                     http_response_code(404);
-                    echo $TwigTheme->render("errors/notfound.twig", []);
+
+                    if (Helper::templateExists(\crisp\api\Config::get("theme"), "errors/notfound.twig")) {
+                        echo $TwigTheme->render("errors/notfound.twig", []);
+                    }else{
+                        echo file_get_contents(__DIR__ . "/../../../../themes/basic/not_found.html");
+                    }
                 }
             }
         } catch (Exception $ex) {
@@ -109,7 +114,7 @@ class Themes
                 exit(1);
             }
             http_response_code(500);
-            $errorraw = file_get_contents(__DIR__ . '/../../../../themes/basic/error.html');
+
 
             if (defined('REQUEST_ID')) {
                 $refid = REQUEST_ID;
@@ -122,12 +127,17 @@ class Themes
             }
 
 
-            if (IS_API_ENDPOINT && $GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'enable_api')) {
+            if (IS_API_ENDPOINT) {
                 RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
                 exit;
             }
 
-            echo strtr($errorraw, ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId()]);
+            if (Helper::templateExists(\crisp\api\Config::get("theme"), "errors/servererror.twig")) {
+                echo $TwigTheme->render("errors/servererror.twig", ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId()]);
+            }else{
+                echo strtr(file_get_contents(__DIR__ . '/../../../../themes/basic/error.html'), ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId()]);
+            }
+
             exit;
         }
     }
