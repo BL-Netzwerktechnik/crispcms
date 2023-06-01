@@ -426,40 +426,65 @@ class Helper
     {
         $_Route = explode('/', $Route);
         array_shift($_Route);
+        self::Log(3, "Route Obj: " . var_export($_Route, true));
         if (isset($_SERVER['IS_API_ENDPOINT'])) {
             array_unshift($_Route, 'api');
         }
 
+
         $obj = new stdClass();
-        $obj->Language = (lists\Languages::languageExists($_Route[0]) && $_Route[0] !== '' ? $_Route[0] : self::getLocale());
-        $obj->Page = explode('?', ($_Route[1] === '' ? (strlen($_Route[0]) > 0 ? $_Route[0] : false) : $_Route[1]))[0];
-        $obj->GET = array();
-        if ($_Route[2] !== '') {
+
+
+        if(strlen($_Route[0]) === 2){
+            $obj->Language = (lists\Languages::languageExists($_Route[0]) && $_Route[0] !== '' ? $_Route[0] : self::getLocale());
+
+            $obj->Page = explode("?", $_Route[1])[0];
+            $obj->LanguageParameter = true;
+        }else{
+            $obj->Page = explode("?", $_Route[0])[0];
+            $obj->Language = self::getLocale();
+            $obj->LanguageParameter = false;
+        }
+
+
+        /** /mypage/my_parameter */
+
+        if($obj->LanguageParameter){
+            $LookupIndex = 2;
+        }else{
+            $LookupIndex = 1;
+        }
+
+        if ($_Route[$LookupIndex] !== '') {
             $_RouteArray = $_Route;
-            array_shift($_RouteArray);
-            array_shift($_RouteArray);
+            for ($i = 0; $i < count($_Route) - 1; $i++) {
+                array_shift($_RouteArray);
+            }
             for ($i = 0, $iMax = count($_RouteArray); $i <= $iMax; $i += 2) {
                 $key = $_RouteArray[$i];
                 $value = $_RouteArray[$i + 1];
                 if ($key !== '') {
                     if ($value === null) {
-                        $obj->GET['q'] = explode('?', $key)[0];
+                            $_GET['q'] = explode('?', $key)[0];
                     } else {
-                        $obj->GET[$key] = explode('?', $value)[0];
+                        $_GET[$key] = explode('?', $value)[0];
                     }
                 }
             }
         }
+
+
+        $obj->Raw = implode("/", $_Route);
         if (str_contains($Route, '?')) {
             $qexplode = explode('?', $Route);
             array_shift($qexplode);
             foreach ($qexplode as $key) {
                 $key = explode('=', $key);
-                $_GET[$key[0]] = $key[1];
+                $_GET[$key[0]] = $key[1] ?? "";
             }
         }
 
-
+        unset($_GET["route"]);
         self::Log(3, "Processed route: " . var_export($obj, true));
 
         return $obj;

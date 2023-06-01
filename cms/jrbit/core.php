@@ -365,35 +365,6 @@ try {
                 exit;
             }
 
-            $IndicatorSecond = 's_' . Helper::getRealIpAddr();
-            $IndicatorHour = 'h_' . Helper::getRealIpAddr();
-            $IndicatorDay = 'd_' . Helper::getRealIpAddr();
-
-
-            $ThemeMetadata = Themes::getThemeMetadata();
-
-
-            $LimitSecond = Rate::perSecond($ThemeMetadata->api->ratelimit->perSecond ?? 150);
-            $LimitHour = Rate::perHour($ThemeMetadata->api->ratelimit->perHour ?? 10000);
-            $LimitDay = Rate::perDay($ThemeMetadata->api->ratelimit->perDay ?? 50000);
-
-
-            $statusSecond = $rateLimiter->limitSilently($_ENV['REDIS_PREFIX'] ?? 'crispcms_' . $IndicatorSecond, $LimitSecond);
-            $statusHour = $rateLimiter->limitSilently($_ENV['REDIS_PREFIX'] ?? 'crispcms_' . $IndicatorHour, $LimitHour);
-            $statusDay = $rateLimiter->limitSilently($_ENV['REDIS_PREFIX'] ?? 'crispcms_' . $IndicatorDay, $LimitDay);
-
-            header('X-RateLimit-S: ' . $statusSecond->getRemainingAttempts());
-            header('X-RateLimit-H: ' . $statusHour->getRemainingAttempts());
-            header('X-RateLimit-D: ' . $statusDay->getRemainingAttempts());
-            header('X-CMS-API-VERSION: ' . core::API_VERSION);
-
-            if ($statusSecond->limitExceeded() || $statusHour->limitExceeded() || $statusDay->limitExceeded()) {
-                http_response_code(429);
-                echo $TwigTheme->render('errors/nginx/429.twig', ['error_msg' => 'Request forbidden by administrative rules. You are sending too many requests in a certain timeframe.']);
-                exit;
-            }
-
-
             core\Themes::loadAPI($TwigTheme, $GLOBALS['route']->Page);
         }
 
@@ -430,7 +401,9 @@ try {
     }
 
     header("X-Sentry-ID: ". SentrySdk::getCurrentHub()->getLastEventId());
-   
+
+    error_log($ex->__toString());
+
     echo strtr($errorraw, ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId(), "{{ SENTRY_JS_DSN }}" => $_ENV["SENTRY_JS_DSN"]]);
     exit;
 }

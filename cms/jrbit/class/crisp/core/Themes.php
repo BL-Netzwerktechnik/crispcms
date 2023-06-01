@@ -87,6 +87,11 @@ class Themes
 
             Themes::autoload();
             if (count($GLOBALS["render"]) === 0) {
+
+                if($GLOBALS['route']->Raw === "favicon.ico"){
+
+                }
+
                 if (file_exists(__DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/includes/$CurrentPage.php") && Helper::templateExists(\crisp\api\Config::get("theme"), "/views/$CurrentPage.twig")) {
                     new Theme($TwigTheme, $CurrentFile, $CurrentPage);
                 } else {

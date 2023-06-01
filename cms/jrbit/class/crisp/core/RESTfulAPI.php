@@ -89,6 +89,11 @@ class RESTfulAPI
             $_RootFile = Themes::getThemeMetadata()->api->pages->root;
             $_RootClass = substr($_RootFile, 0, -4);
 
+            if(!$_RootFile && $Interface == "api"){
+                self::response(Bitmask::GENERIC_ERROR->value, 'API Root has not been configured. Please consult the Docs', []);
+                exit;
+            }
+
 
             if (file_exists($this->ThemePath . "/includes/api/$_RootFile") && $Interface == "api" ) {
                 require $this->ThemePath . "/includes/api/$_RootFile";
@@ -118,6 +123,12 @@ class RESTfulAPI
 
             $_NFFile = Themes::getThemeMetadata()->api->pages->notFound;
             $_NFClass = substr($_NFFile, 0, -4);
+
+
+            if(!$_NFFile){
+                self::response(Bitmask::GENERIC_ERROR->value, 'API Not Found File has not been configured. Please consult the Docs', []);
+                exit;
+            }
 
             if (file_exists($this->ThemePath . "/includes/api/$_NFFile")) {
                 require $this->ThemePath . "/includes/api/$_NFFile";
