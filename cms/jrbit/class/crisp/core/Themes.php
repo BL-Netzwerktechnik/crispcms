@@ -90,6 +90,19 @@ class Themes
 
                 if($GLOBALS['route']->Raw === "favicon.ico"){
 
+                    $metadata = self::getThemeMetadata();
+
+                    $faviconFile = __DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/" .$metadata->faviconFile;
+
+                    if($metadata !== null && 
+                    $metadata->faviconFile !== null && 
+                    file_exists($faviconFile)
+                    ){
+                        header("Content-Type: ". mime_content_type($faviconFile));
+                        echo file_get_contents($faviconFile);
+                        exit;
+                    }
+
                 }
 
                 if (file_exists(__DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/includes/$CurrentPage.php") && Helper::templateExists(\crisp\api\Config::get("theme"), "/views/$CurrentPage.twig")) {
