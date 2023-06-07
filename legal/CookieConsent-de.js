@@ -44,7 +44,7 @@ window.addEventListener("load", function () {
         consent_modal: {
           title: "Wir verwenden Cookies!",
           description:
-            'Hallo, diese Website verwendet essentielle Cookies, um ihren ordnungsgemäßen Betrieb zu gewährleisten, und Tracking-Cookies, um zu verstehen, wie Sie mit ihr interagieren. Letztere werden nur nach Zustimmung gesetzt werden. <button type="button" data-cc="c-settings" class="cc-link">Lassen Sie mich wählen</button>',
+            'Hallo, diese Website verwendet essentielle Cookies, um ihren ordnungsgemäßen Betrieb zu gewährleisten. <button type="button" data-cc="c-settings" class="cc-link">Lassen Sie mich wählen</button>',
           primary_btn: {
             text: "Alle akzeptieren",
             role: "accept_all", // 'accept_selected' or 'accept_all'
