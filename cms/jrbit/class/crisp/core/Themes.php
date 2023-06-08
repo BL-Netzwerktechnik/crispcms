@@ -490,9 +490,9 @@ class Themes
         Helper::Log(LogTypes::INFO, "Installing translations for Theme ". ThemeMetadata->name);
 
         if (isset(ThemeMetadata->onInstall->createTranslationKeys) && is_string(ThemeMetadata->onInstall->createTranslationKeys)) {
-            if (file_exists(Themes::getThemeDirectory() . ThemeMetadata->onInstall->createTranslationKeys)) {
+            if (file_exists(Themes::getThemeDirectory() . "/" . ThemeMetadata->onInstall->createTranslationKeys)) {
 
-                $files = glob(Themes::getThemeDirectory(). ThemeMetadata->onInstall->createTranslationKeys . "*.{json}", GLOB_BRACE);
+                $files = glob(Themes::getThemeDirectory(). "/" .  ThemeMetadata->onInstall->createTranslationKeys . "*.{json}", GLOB_BRACE);
                 foreach ($files as $File) {
 
                     Helper::Log(LogTypes::INFO, sprintf("Installing language %s", substr(basename($File), 0, -5)));
