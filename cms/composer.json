@@ -33,7 +33,8 @@
     "vlucas/phpdotenv": "^5.3",
     "jrbit/oauth2-keycloak": "dev-master",
     "aws/aws-sdk-php": "^3.185",
-    "flagsmith/flagsmith-php-client": "2.1.1"
+    "flagsmith/flagsmith-php-client": "2.1.1",
+    "jrb-it/php-cli": "^1.0"
 
   },
   "require-dev": {

@@ -272,9 +272,6 @@ class Themes
     {
         $ThemeFolder = \crisp\api\Config::get("theme_dir");
 
-        Helper::Log(3, "ThemeName: $ThemeName");
-        Helper::Log(3, "ThemeFolder: $ThemeFolder");
-
         return file_exists(__DIR__ . "/../../../../$ThemeFolder/$ThemeName/theme.json");
     }
 

@@ -1,17 +1,22 @@
 {
-  "name": "basic",
+  "name": "full",
   "author": "Justin René Back <j.back@jrbit.de>",
-  "description": "Basic theme for CrispCMS",
+  "description": "Example theme.json with all possible parameters prefilled",
   "type": 1,
-  "hookFile": "hook.php",
+  "strict_autoloading": true,
+  "autoload": [
+    "includes/class",
+    "includes/class/MyClass.php",
+    "includes/vendor"
+  ],
+  "hookFile": "ThemeHook.php",
   "onInstall": {
     "createTranslationKeys": "translations/",
-    "createKVStorageItems": {},
-    "activateDependencies": []
+    "createKVStorageItems": {
+      "site_name": "My Awesome Site"
+    }
   },
   "onUninstall": {
-    "deleteData": true,
-    "deactivateDependencies": [],
-    "purgeDependencies": []
+    "deleteData": true
   }
 }

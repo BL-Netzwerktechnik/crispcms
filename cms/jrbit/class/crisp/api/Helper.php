@@ -24,11 +24,12 @@
 namespace crisp\api;
 
 use crisp\api\lists\Languages;
+use crisp\core\Logger;
+use crisp\core\LogTypes;
 use crisp\core\Postgres;
 use PDO;
+use splitbrain\phpcli\CLI;
 use stdClass;
-use crisp\core\Bitmask;
-use crisp\core\RESTfulAPI;
 
 /**
  * Some useful helper functions
@@ -84,27 +85,47 @@ class Helper
         var_dump($Dirs);
     }
 
-    public static function Log(int $type, $message): void
+    public static function getRequestLog(): string
+    {
+        return sprintf('%s - [%s] "%s %s %s" %s "%s"',
+            self::getRealIpAddr(),
+            date("d/M/Y:H:i:s O"),
+            $_SERVER["REQUEST_METHOD"],
+            $GLOBALS["route"]->Raw ?: "/",
+            $_SERVER['SERVER_PROTOCOL'],
+            http_response_code(),
+            $_SERVER["HTTP_USER_AGENT"]
+        );
+    }
+
+    public static function Log(LogTypes|int $type, $message): void
     {
 
-        if(empty($_ENV["VERBOSITY"])) $_ENV["VERBOSITY"] = 2;
-
-        $typeHuman = match($type){
-            1 => "ERROR",
-            2 => "INFO",
-            3 => "DEBUG"
-        };
-
-        if($_ENV["VERBOSITY"] < 3 && $type === 3) return;
-        if($_ENV["VERBOSITY"] < 2 && $type === 2) return;
-        if($_ENV["VERBOSITY"] < 1 && $type === 1) return;
-
-
-        if(php_sapi_name() == "cli"){
-            echo "[$typeHuman] ". var_export($message, true). PHP_EOL;
-        } else {
-            error_log("[$typeHuman] ".var_export($message, true). PHP_EOL);
+        $cli = new Logger();
+        if(!isset($_ENV["NO_COLORS"])) {
+            $cli->colors->enable();
         }
+        if(is_numeric($type)){
+            $type = LogTypes::from($type);
+        }
+
+        $debugMsg = is_string($message) ? $message : var_export($message, true);
+
+            switch($type){
+                case LogTypes::DEBUG:
+                    if((int)$_ENV["VERBOSITY"] > 1){
+                        $cli->notice($debugMsg);
+                    }
+                    break;
+                case LogTypes::ERROR:
+                    $cli->error($debugMsg);
+                    break;
+                case LogTypes::INFO:
+                    $cli->info($debugMsg);
+                    break;
+                case LogTypes::SUCCESS:
+                    $cli->success($debugMsg);
+            }
     }
 
     public static function getInstanceId(): string
@@ -247,7 +268,7 @@ class Helper
             return $_SERVER['HTTP_CLIENT_IP'];
         }
 
-        if (empty($_SERVER['REMOTE_ADDR'])) {
+        if (!empty($_SERVER['REMOTE_ADDR'])) {
             return $_SERVER['REMOTE_ADDR'];
         }
 
@@ -426,7 +447,7 @@ class Helper
     {
         $_Route = explode('/', $Route);
         array_shift($_Route);
-        self::Log(3, "Route Obj: " . var_export($_Route, true));
+        self::Log(LogTypes::DEBUG, "Route Obj: " . var_export($_Route, true));
 
         $obj = new stdClass();
 
@@ -490,8 +511,8 @@ class Helper
 
         unset($_GET["route"]);
 
-        self::Log(3, "Processed ROUTE: " . var_export($obj, true));
-        self::Log(3, "Processed GET: " . var_export($_GET, true));
+        self::Log(LogTypes::DEBUG, "Processed ROUTE: " . var_export($obj, true));
+        self::Log(LogTypes::DEBUG, "Processed GET: " . var_export($_GET, true));
 
         return $obj;
     }

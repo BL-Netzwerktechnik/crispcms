@@ -25,7 +25,7 @@ namespace crisp;
 
 use CompileError;
 use crisp\api\{Config, Flagsmith, Helper, lists\Languages, Translation};
-use crisp\core\{Bitmask, Crypto, Redis, RESTfulAPI, Security, Sessions, Themes, License};
+use crisp\core\{Bitmask, Crypto, LogTypes, Redis, RESTfulAPI, Security, Sessions, Themes, License};
 use Dotenv\Dotenv;
 use Error;
 use Exception;
@@ -59,17 +59,24 @@ class core
 
     public const PERSISTENT_DATA = "/data";
 
+    public const DEFAULT_THEME = "crisptheme";
+
 }
 require_once __DIR__ . '/../vendor/autoload.php';
 
 
 try {
+    if(!defined('STDIN'))  define('STDIN',  fopen('php://stdin',  'rb'));
+    if(!defined('STDOUT')) define('STDOUT', fopen('php://stdout', 'wb'));
+    if(!defined('STDERR')) define('STDERR', fopen('php://stderr', 'wb'));
     define('IS_DEV_ENV', (isset($_SERVER['ENVIRONMENT']) && $_SERVER['ENVIRONMENT'] !== 'production'));
     define('ENVIRONMENT', match (strtolower($_SERVER['ENVIRONMENT'] ?? 'production')) {
         'staging' => 'staging',
         'development' => 'development',
         default => 'production'
     });
+
+
 
 
     $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
@@ -142,6 +149,12 @@ try {
         define('REQUEST_ID', Crypto::UUIDv4("R"));
 
 
+
+        if (PHP_SAPI !== 'cli') {
+            $GLOBALS['route'] = api\Helper::processRoute($_GET['route']);
+            Helper::Log(LogTypes::INFO, Helper::getRequestLog());
+        }
+
         if(isset($_ENV['SENTRY_DSN'])) {
 
             init([
@@ -201,7 +214,6 @@ try {
     setlocale(LC_TIME, $_ENV["LANG"] ?? 'de_DE.utf8');
     if (PHP_SAPI !== 'cli') {
 
-        $GLOBALS['route'] = api\Helper::processRoute($_GET['route']);
 
         $GLOBALS['microtime'] = [];
         $GLOBALS['microtime']['logic'] = [];

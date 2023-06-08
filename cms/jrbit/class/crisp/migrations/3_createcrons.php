@@ -53,7 +53,7 @@ class createcrons extends \crisp\core\Migrations {
                     array("Canceled", $this::DB_BOOL, "NOT NULL DEFAULT 0"),
                     array("Failed", $this::DB_BOOL, "NOT NULL DEFAULT 0"),
                     array("Data", $this::DB_LONGTEXT, "DEFAULT NULL"),
-                    array("Log", $this::DB_LONGTEXT, "DEFAULT NULL"),
+                    array("Logger", $this::DB_LONGTEXT, "DEFAULT NULL"),
                     array("Interval", $this::DB_VARCHAR, "DEFAULT '5 MINUTE'"),
                     array("Plugin", $this::DB_VARCHAR, "DEFAULT NULL")
             );
