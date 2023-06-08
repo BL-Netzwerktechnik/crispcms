@@ -3,12 +3,8 @@
 namespace crisp\commands;
 
 use CLI;
-use crisp\api\Config;
-use crisp\api\Helper;
-use crisp\core;
 use crisp\core\Migrations;
 use crisp\core\Themes;
-use Minimal;
 use splitbrain\phpcli\Options;
 
 class Migration {

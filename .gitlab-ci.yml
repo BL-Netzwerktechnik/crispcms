@@ -60,8 +60,9 @@ migrate-and-test:
   - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
   - cd ${CI_PROJECT_DIR}/cms
   - php /tmp/ci/composer install
-  - php bin/cli.php migrate
-  - php bin/cli.php theme install basic
+  - php bin/cli.php crisp -m
+  - mv themes/basic themes/crisptheme
+  - php bin/cli.php theme -i
   - rm /tmp/ci/composer
   - "./vendor/bin/phpunit --bootstrap vendor/autoload.php --log-junit results.xml tests"
   artifacts:
