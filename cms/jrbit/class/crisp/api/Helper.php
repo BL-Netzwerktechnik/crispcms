@@ -27,6 +27,7 @@ use crisp\api\lists\Languages;
 use crisp\core\Logger;
 use crisp\core\LogTypes;
 use crisp\core\Postgres;
+use crisp\core\Themes;
 use PDO;
 use splitbrain\phpcli\CLI;
 use stdClass;
@@ -40,50 +41,6 @@ class Helper
 
 
 
-    public static function array_diff_key_recursive(array $arr1, array $arr2) {
-        $diff = array_diff_key($arr1, $arr2);
-        $intersect = array_intersect_key($arr1, $arr2);
-        foreach ($intersect as $k => $v) {
-            if (is_array($arr1[$k]) && is_array($arr2[$k])) {
-                $d = $this->array_diff_key_recursive($arr1[$k], $arr2[$k]);
-                if ($d) {
-                    $diff[$k] = $d;
-                }
-            }
-        }
-
-        return $diff;
-    }
-
-    private static function getDirContentsRecursively($dir, &$results = array()) {
-        $files = scandir($dir);
-
-        foreach ($files as $key => $value) {
-            $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
-
-            if($path === "vendor" || $path === ".env" || $path === "themes") continue;
-
-
-            if (!is_dir($path)) {
-                $results[] = ["is_dir" => false, "path" => $path];
-            } else if ($value != "." && $value != "..") {
-                self::getDirContentsRecursively($path, $results);
-                $results[] = ["is_dir" => true, "path" => $path];
-            }
-        }
-
-        return $results;
-    }
-
-
-    public static function calculateCMSHash(): string
-    {
-
-        $Dirs = self::getDirContentsRecursively(\crisp\core\Config::$Crisp_Root);
-
-
-        var_dump($Dirs);
-    }
 
     public static function getRequestLog(): string
     {
@@ -114,7 +71,7 @@ class Helper
             switch($type){
                 case LogTypes::DEBUG:
                     if((int)$_ENV["VERBOSITY"] > 1){
-                        $cli->notice($debugMsg);
+                        $cli->debug(sprintf("[%s] %s", date(DATE_RFC2822), $debugMsg));
                     }
                     break;
                 case LogTypes::ERROR:
@@ -125,6 +82,9 @@ class Helper
                     break;
                 case LogTypes::SUCCESS:
                     $cli->success($debugMsg);
+                    break;
+                case LogTypes::WARNING:
+                    $cli->warning($debugMsg);
             }
     }
 
@@ -151,104 +111,7 @@ class Helper
         return preg_match('/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i', $UserAgent);
     }
     
-    
-    public static function getSubdomains(): array
-    {
-        return array_filter(explode('.',str_replace($_ENV["HOST"], "", $_SERVER['HTTP_HOST'])));
-    }
 
-    /**
-     * @param $BitmaskFlag
-     * @param null $apikey
-     * @return bool|int
-     */
-    public static function hasApiPermissions($BitmaskFlag, $apikey = null): bool|int
-    {
-
-        if ($apikey === null) {
-            $apikey = self::getAPIKeyFromHeaders();
-
-            if ($apikey === null) {
-                return false;
-            }
-        }
-
-        $keyDetails = self::getAPIKeyDetails($apikey);
-
-        if (!$keyDetails) {
-            return false;
-        }
-
-
-        return ($keyDetails['permissions'] & $BitmaskFlag);
-    }
-
-    /**
-     * @param string $ApiKey
-     * @return mixed
-     */
-    public static function getAPIKeyDetails(string $ApiKey): mixed
-    {
-
-
-        $Postgres = new Postgres();
-
-        $statement = $Postgres->getDBConnector()->prepare('SELECT * FROM apikeys WHERE key = :key');
-
-        $statement->execute([':key' => $ApiKey]);
-
-        if ($statement->rowCount() > 0) {
-            return $statement->fetch(PDO::FETCH_ASSOC);
-        }
-        return false;
-    }
-
-    /**
-     * @param string|null $apikey
-     * @return bool
-     */
-    public static function getAPIKey(string $apikey = null): bool
-    {
-
-        $Postgres = new Postgres();
-
-        $statement = $Postgres->getDBConnector()->prepare('SELECT * FROM apikeys WHERE key = :key AND revoked = 0 AND (expires_at is null OR expires_at > NOW())');
-
-        if ($apikey === null) {
-            $apikey = self::getAPIKeyFromHeaders();
-
-            if ($apikey === null) {
-                return false;
-            }
-        }
-
-        $statement->execute([':key' => $apikey]);
-
-        return $statement->rowCount() > 0;
-    }
-
-    public static function getAPIKeyFromHeaders(): ?string
-    {
-        if (isset(apache_request_headers()['Authorization'])) {
-            return apache_request_headers()['Authorization'];
-        }
-        if (isset($_SERVER['HTTP_X_API_KEY'])) {
-            return $_SERVER['HTTP_X_API_KEY'];
-        }
-        if (isset($_SERVER['HTTP_X_KEY'])) {
-            return $_SERVER['HTTP_X_KEY'];
-        }
-        if (isset($_SERVER['HTTP_X_API'])) {
-            return $_SERVER['HTTP_X_API'];
-        }
-        if (isset($_SERVER['HTTP_API'])) {
-            return $_SERVER['HTTP_API'];
-        }
-        if (isset($_SERVER['HTTP_KEY'])) {
-            return $_SERVER['HTTP_KEY'];
-        }
-        return null;
-    }
 
     /**
      * Gets the real ip address even behind a proxy
@@ -406,28 +269,6 @@ class Helper
     }
 
 
-    /**
-     * Validates if the plugin name
-     * @param string $Name The name of the plugin
-     * @return array|boolean Array of errors if found, otherwise true
-     */
-    public static function isValidPluginName(string $Name): bool|array
-    {
-
-        $Matches = [];
-
-        if (preg_match_all('/[^0-9a-zA-Z\-_]/', $Name) > 0) {
-            $Matches[] = 'STRING_CONTAINS_NON_ALPHA_NUM';
-        }
-        if (str_contains($Name, ' ')) {
-            $Matches[] = 'STRING_CONTAINS_SPACES';
-        }
-        if (preg_match('/[A-Z]/', $Name)) {
-            $Matches[] = 'STRING_CONTAINS_UPPERCASE';
-        }
-
-        return (count($Matches) > 0 ? $Matches : true);
-    }
 
     /**
      * @param string $Path
@@ -532,16 +373,18 @@ class Helper
      * @param string $Template The Template name
      * @return boolean
      */
-    public static function templateExists(string $Theme, string $Template): bool
+    public static function templateExists(string $Template): bool
     {
-        return file_exists(__DIR__ . "/../../../../themes/$Theme/templates/$Template");
+        return file_exists(Themes::getThemeDirectory(). "/templates/$Template");
     }
 
     /**
      * Truncates a text and appends "..." to the end
-     * @param string $String The text to truncate
-     * @param int $Length After how many chars should we truncate the text?
-     * @param bool $AppendDots Should we append dots to the end of the string?
+     * @param $text
+     * @param int $length
+     * @param string $ending
+     * @param bool $exact
+     * @param bool $considerHtml
      * @return string
      */
     public static function truncateText($text, $length = 100, $ending = '...', $exact = false, $considerHtml = true): string

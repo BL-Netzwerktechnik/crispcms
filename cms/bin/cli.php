@@ -22,331 +22,117 @@
  */
 
 
-use crisp\api\Config;
 use crisp\api\Helper;
-use crisp\api\lists\Languages;
-use crisp\core;
-use crisp\core\Migrations;
-use crisp\core\Themes;
+use crisp\commands\Crisp;
+use crisp\commands\Maintenance;
+use crisp\commands\Migration;
+use crisp\commands\Storage;
+use crisp\commands\Theme;
+use crisp\commands\Translations;
+use crisp\commands\Version;
+use splitbrain\phpcli\CLI as SplitbrainCLI;
+use splitbrain\phpcli\Options;
 
-const CRISP_CLI = true;
-const CRISP_API = true;
 
 if (PHP_SAPI !== 'cli') {
     Helper::Log(1, "Not from CLI");
     exit;
 }
 
-
-error_reporting(error_reporting() & ~E_NOTICE);
 require_once __DIR__ . "/../jrbit/core.php";
 
-switch ($argv[1]) {
 
-    case "release":
+class CLI extends SplitbrainCLI
+{
+    // register options and arguments
+    protected function setup(Options $options)
+    {
+        $options->setHelp('Interact with CrispCMS');
+        /** Global Options */
+        $options->registerOption('version', 'print version', 'v');
+        /** Global Options */
 
-        echo RELEASE;
-        break;
+        /** Maintenance Command */
+        $options->registerCommand('maintenance', 'Get or Set the Maintenance Status of CrispCMS');
+        $options->registerOption('on', 'Turn on the Maintenance Mode', null, false, 'maintenance');
+        $options->registerOption('off', 'Turn off the Maintenance Mode', null, false, 'maintenance');
+        /** Maintenance Command */
 
-    case "cache":
+        /** Crisp Command */
+        $options->registerCommand('crisp', 'Perform various tasks in the core of crisp');
+        $options->registerOption('migrate', 'Run the Database Migrations', "m", false, 'crisp');
+        /** Crisp Command */
 
-        if ($argc < 3) {
-            Helper::Log(1, "Missing argument: action");
+
+        /** Theme Command */
+        $options->registerCommand('theme', 'Interact with your Theme for CrispCMS');
+        $options->registerOption('boot', 'Execute Boot files of your theme', "b", false, 'theme');
+        $options->registerOption('clear-cache', 'Clear Cache of the CMS', "c", false, 'theme');
+        $options->registerOption('migrate', 'Migrate the Database for your theme', "m", false, 'theme');
+        $options->registerOption('install', 'Install the Theme mounted to crisptheme', "i", false, 'theme');
+        $options->registerOption('uninstall', 'Uninstall the Theme mounted to crisptheme', "u", false, 'theme');
+        /** Theme Command */
+
+
+        /** Migration Command */
+        $options->registerCommand('migration', 'Interact with CrispCMS Migrations');
+        $options->registerOption('core', 'Create a new Core Migration File', "c", "migrationName", 'migration');
+        $options->registerOption('theme', 'Create a new Migration File for your Theme', "t", "migrationName", 'migration');
+        $options->registerArgument('migrationName', 'The name of your migration', true, 'migration');
+        /** Migration Command */
+
+        /** Storage Command */
+        $options->registerCommand('storage', 'Interact with Crisps KVS');
+        $options->registerOption('install', 'Initialize the KVS from the theme.json', "i", false, 'storage');
+        $options->registerOption('force', 'Overwrite the KVS from the theme.json', "f", false, 'storage');
+        $options->registerOption('uninstall', 'Delete all KVS Items from the database', "u", false, 'storage');
+        /** Storage Command */
+
+        /** Translations Command */
+        $options->registerCommand('translation', 'Interact with Crisps KVS');
+        $options->registerOption('install', 'Initialize the Translations from the theme.json', "i", false, 'translation');
+        $options->registerOption('uninstall', 'Delete all Translation Items from the database', "u", false, 'translation');
+        /** Translations Command */
+
+    }
+
+    // implement your code
+    protected function main(Options $options)
+    {
+        if($options->getOpt("version")){
+            Version::run($this);
             exit;
         }
 
-        switch ($argv[2]) {
-            case "clear":
-                Themes::clearCache();
-                Helper::Log(2, "Cleared Cache!");
+
+        switch ($options->getCmd()) {
+            case 'maintenance':
+                Maintenance::run($this, $options);
                 break;
-        }
-        break;
-
-    case "theme":
-        if ($argc < 3) {
-            Helper::Log(1, "Missing argument: enable/disable/reinstall/translations");
-            exit;
-        }
-
-        switch ($argv[2]) {
-
-            case "boot":
-                if($argc < 4) {
-                    Helper::Log(1, "Missing theme name");
-                    exit;
-                }
-
-                if (!crisp\core\Themes::isInstalled($argv[3])) {
-                    Helper::Log(1, "This theme is not installed");
-                    exit;
-                }
-                if (!crisp\core\Themes::isValid($argv[3])) {
-                    Helper::Log(1, "This theme does not exist");
-                    exit;
-                }
-                
-                if(!crisp\core\Themes::loadBootFiles()){
-              
-                    Helper::Log(1, "Failed loading boot files!");
-                    exit;
-                }
-                
-            break;
-                    
-                
-            case "migrate":
-
-                
-                if (!crisp\core\Themes::isInstalled(core::DEFAULT_THEME)) {
-                    Helper::Log(1, "This theme is not installed");
-                    exit;
-                }
-
-                if (!crisp\core\Themes::isValid(core::DEFAULT_THEME)) {
-                    Helper::Log(1, "This theme does not exist");
-                    exit;
-                }
-
-                $Migrations = new crisp\core\Migrations();
-                $Theme = Themes::getThemeMetadata(core::DEFAULT_THEME);
-
-                $Migrations->migrate(__DIR__ . '/../' . Config::get('theme_dir') . '/' .core::DEFAULT_THEME, core::DEFAULT_THEME);
-
+            case 'theme':
+                Theme::run($this, $options);
                 break;
-
-            case "reload":
-            case "refresh":
-
-                if (!crisp\core\Themes::isInstalled(core::DEFAULT_THEME)) {
-                    Helper::Log(1, "This theme is not installed");
-                    exit;
-                }
-                if (!crisp\core\Themes::isValid(core::DEFAULT_THEME)) {
-                    Helper::Log(1, "This theme does not exist");
-                    exit;
-                }
-
-
-                crisp\core\Themes::installKVStorage(Themes::getThemeMetadata(core::DEFAULT_THEME), isset($argv[3]) && $argv[3] === "overwrite");
-                crisp\core\Themes::installTranslations(core::DEFAULT_THEME, Themes::getThemeMetadata(core::DEFAULT_THEME));
-
+            case 'migration':
+                Migration::run($this, $options);
                 break;
-
-            case "storage":
-
-                if ($argc < 4) {
-                    Helper::Log(1, "Missing argument: reinstall");
-                    exit;
-                }
-                switch ($argv[3]) {
-                    case "reinstall":
-                    case "refresh":
-                        if (!crisp\core\Themes::isValid(core::DEFAULT_THEME)) {
-                            Helper::Log(1, "This theme does not exist");
-                            exit;
-                        }
-                        if (!crisp\core\Themes::isInstalled(core::DEFAULT_THEME)) {
-                            Helper::Log(1, "This theme is not installed");
-                            exit;
-                        }
-                        if (Config::set("maintenance_enabled", true)) {
-                            Helper::Log(2, "Maintenance Mode successfully enabled.");
-                        }
-                        $Start = microtime(true);
-                        if (Themes::installKVStorage(Themes::getThemeMetadata(core::DEFAULT_THEME))) {
-                            Helper::Log(2, "KV Storage refreshed!");
-                        } else {
-                            Helper::Log(1, "Failed to refresh KV Storage");
-                        }
-                        $End = microtime(true);
-                        Helper::Log(3, "Took " . Helper::truncateText($End - $Start, 6, false) . "ms");
-
-                        if (Config::set("maintenance_enabled", false)) {
-                            Helper::Log(1, "Maintenance Mode successfully disabled.");
-                        }
-                        break;
-                }
+            case 'crisp':
+                Crisp::run($this, $options);
                 break;
-            case "translations":
-
-                if ($argc < 4) {
-                    Helper::Log(1, "Missing argument: reinstall");
-                    exit;
-                }
-                switch ($argv[3]) {
-                    case "reinstall":
-                    case "refresh":
-                    case "reload":
-                        if (!crisp\core\Themes::isValid(core::DEFAULT_THEME)) {
-                            Helper::Log(1, "This theme does not exist");
-                            exit;
-                        }
-                        if (!crisp\core\Themes::isInstalled(core::DEFAULT_THEME)) {
-                            Helper::Log(1, "This theme is not installed");
-                            exit;
-                        }
-                        if (Config::set("maintenance_enabled", true)) {
-                            Helper::Log(2, "Maintenance Mode successfully enabled.");
-                        }
-                        $Start = microtime(true);
-                        if (Themes::installTranslations(core::DEFAULT_THEME, Themes::getThemeMetadata(core::DEFAULT_THEME))) {
-                            Helper::Log(2, "Translations refreshed!");
-                        } else {
-                            Helper::Log(1, "Failed to refresh translations");
-                        }
-                        $End = microtime(true);
-                        Helper::Log(3,  "Took " . Helper::truncateText($End - $Start, 6, false) . "ms");
-                        if (Config::set("maintenance_enabled", false)) {
-                            Helper::Log(2,  "Maintenance Mode successfully disabled.");
-                        }
-                        break;
-                }
+            case 'storage':
+                Storage::run($this, $options);
                 break;
-            case "install":
-            case "enable":
-                if (crisp\core\Themes::isInstalled(core::DEFAULT_THEME)) {
-                    Helper::Log(1, "This theme is already installed");
-                    exit;
-                }
-                if (!crisp\core\Themes::isValid(core::DEFAULT_THEME)) {
-                    Helper::Log(1, "This theme does not exist");
-                    exit;
-                }
-                if (Config::set("maintenance_enabled", true)) {
-                    Helper::Log(2, "Maintenance Mode successfully enabled.");
-                }
-
-            Helper::Log(2, "Installing Theme ". core::DEFAULT_THEME);
-
-                if (crisp\core\Themes::install(core::DEFAULT_THEME)) {
-                    Helper::Log(2, "Theme successfully installed");
-                } else {
-                    Helper::Log(1, "Failed to install theme");
-                }
-                if (Config::set("maintenance_enabled", false)) {
-                    Helper::Log(2, "Maintenance Mode successfully disabled.");
-                }
-                break;
-            case "uninstall":
-            case "remove":
-            case "delete":
-            case "disable":
-                if (!crisp\core\Themes::isInstalled(core::DEFAULT_THEME)) {
-                    echo "This theme is not installed" . PHP_EOL;
-                    exit;
-                }
-                if (!crisp\core\Themes::isValid(core::DEFAULT_THEME)) {
-                    echo "This theme does not exist" . PHP_EOL;
-                    exit;
-                }
-                if (crisp\core\Themes::uninstall(core::DEFAULT_THEME)) {
-                    echo "Theme successfully uninstalled" . PHP_EOL;
-                    exit;
-                }
-                echo "Failed to uninstall theme" . PHP_EOL;
-                break;
-            case "reinstall":
-                if (!crisp\core\Themes::isInstalled(core::DEFAULT_THEME)) {
-                    echo "This theme is not installed" . PHP_EOL;
-                    exit;
-                }
-                if (!crisp\core\Themes::isValid(core::DEFAULT_THEME)) {
-                    echo "This theme does not exist" . PHP_EOL;
-                    exit;
-                }
-                if (Config::set("maintenance_enabled", true)) {
-                    echo "Maintenance Mode successfully enabled." . PHP_EOL;
-                }
-                if (crisp\core\Themes::reinstall(core::DEFAULT_THEME)) {
-                    echo "Theme successfully reinstalled" . PHP_EOL;
-                } else {
-                    echo "Failed to reinstall theme" . PHP_EOL;
-                }
-                if (Config::set("maintenance_enabled", false)) {
-                    echo "Maintenance Mode successfully disabled." . PHP_EOL;
-                }
-                break;
-        }
-        break;
-    case "maintenance":
-
-        if ($argc < 3) {
-            echo "Missing argument: enable/disable" . PHP_EOL;
-        }
-
-        switch ($argv[2]) {
-            case "enable":
-            case "on":
-            case "true":
-                if (Config::set("maintenance_enabled", true)) {
-                    echo "Maintenance Mode successfully enabled." . PHP_EOL;
-                    exit;
-                }
-                echo "Failed to enable maintenance mode" . PHP_EOL;
-                break;
-            case "false":
-            case "disable":
-            case "off":
-                if (Config::set("maintenance_enabled", false)) {
-                    echo "Maintenance Mode successfully disabled." . PHP_EOL;
-                    exit;
-                }
-                echo "Failed to disable maintenance mode" . PHP_EOL;
+            case 'translation':
+                Translations::run($this, $options);
                 break;
             default:
-                if (Config::get("maintenance_enabled")) {
-                    echo "Maintenance Mode is currently enabled!" . PHP_EOL;
-                } else {
-                    echo "Maintenance Mode is currently disabled." . PHP_EOL;
+                if(strlen($options->getCmd()) > 0){
+                    $this->error(sprintf("\"%s\" command is not configured", $options->getCmd()));
                 }
-                break;
+                $options->useCompactHelp();
+                echo $options->help();
+                exit;
         }
-        break;
-    case "create_migration":
-
-        if ($argc < 3) {
-            echo "Missing argument: migration name" . PHP_EOL;
-            exit;
-        }
-        Migrations::create($argv[2]);
-        break;
-    case "migrate":
-        $Migrations = new crisp\core\Migrations();
-        $Migrations->migrate();
-        break;
-    default:
-        echo "Crisp CLI" . PHP_EOL;
-        echo "---------" . PHP_EOL;
-        echo "create_migration - Create a new migration file" . PHP_EOL;
-        echo "migrate - Migrate MySQL Tables" . PHP_EOL;
-        echo "---------" . PHP_EOL;
-        echo "cache - Actions regarding the cache" . PHP_EOL;
-        echo PHP_EOL;
-        echo "cache clear - Clear twig cache" . PHP_EOL;
-        echo "---------" . PHP_EOL;
-        echo "import - Import various stuff from files" . PHP_EOL;
-        echo PHP_EOL;
-        echo "import translations {File} - Import all translations from file" . PHP_EOL;
-        echo "---------" . PHP_EOL;
-        echo "theme - Manage themes on Crisp" . PHP_EOL;
-        echo PHP_EOL;
-        echo "theme enable - Enable a specific theme" . PHP_EOL;
-        echo "theme add - Enable a specific theme" . PHP_EOL;
-        echo "theme install - Enable a specific theme" . PHP_EOL;
-        echo "theme uninstall - Disable a specific theme" . PHP_EOL;
-        echo "theme storage - Interact with the kv storage of a theme" . PHP_EOL;
-        echo "theme storage reinstall - Reinstall the KV Storage of a theme" . PHP_EOL;
-        echo "theme translations - Interact with the translations of a theme" . PHP_EOL;
-        echo "theme refresh - Refresh a theme without uninstalling it" . PHP_EOL;
-        echo "theme translations reinstall - Reinstall the translations of a theme" . PHP_EOL;
-        echo "theme translations refresh - Reinstall the translations of a theme" . PHP_EOL;
-
-        echo "---------" . PHP_EOL;
-        echo "maintenance - Manage maintenance mode on crisp" . PHP_EOL;
-        echo PHP_EOL;
-        echo "maintenance on - Enable the maintenance mode" . PHP_EOL;
-        echo "maintenance off - Enable the maintenance mode" . PHP_EOL;
-        echo "maintenance status - Get the status of the maintenance mode" . PHP_EOL;
-
+    }
 }
+$cli = new CLI();
+$cli->run();

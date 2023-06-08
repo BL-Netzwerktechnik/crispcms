@@ -34,7 +34,7 @@ use crisp\core\RESTfulAPI;
 class BitmaskException extends \Exception {
 
     public function __construct($message, $code, \Exception $previous = null) {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, $code->value, $previous);
     }
 
     public function __toString() {

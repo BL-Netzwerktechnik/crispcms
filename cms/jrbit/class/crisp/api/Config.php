@@ -24,6 +24,7 @@
 
 namespace crisp\api;
 
+use crisp\core\LogTypes;
 use crisp\core\Postgres;
 use PDO;
 use function serialize;
@@ -55,6 +56,7 @@ class Config
         if (self::$Database_Connection === null) {
             self::initDB();
         }
+        Helper::Log(LogTypes::DEBUG, "Config::exists: SELECT value FROM Config WHERE key = :ID");
         $statement = self::$Database_Connection->prepare("SELECT value FROM Config WHERE key = :ID");
         $statement->execute(array(":ID" => $Key));
         return $statement->rowCount() > 0;
@@ -73,6 +75,8 @@ class Config
         }
 
         $GlobalOptions = [];
+        Helper::Log(LogTypes::DEBUG, "Getting key $Key");
+        Helper::Log(LogTypes::DEBUG, "Config::get: SELECT value, type FROM Config WHERE key = $Key");
 
         $statement = self::$Database_Connection->prepare("SELECT value, type FROM Config WHERE key = :ID");
         $statement->execute(array(":ID" => $Key));
@@ -115,6 +119,7 @@ class Config
         if (self::$Database_Connection === null) {
             self::initDB();
         }
+        Helper::Log(LogTypes::DEBUG, "Config::getTimestamp: SELECT last_changed, created_at FROM Config WHERE key = $Key");
         $statement = self::$Database_Connection->prepare("SELECT last_changed, created_at FROM Config WHERE key = :ID");
         $statement->execute(array(":ID" => $Key));
         if ($statement->rowCount() > 0) {
@@ -138,6 +143,7 @@ class Config
         if (self::exists($Key)) {
             return self::set($Key, $Value);
         }
+        Helper::Log(LogTypes::DEBUG, "Config::create: INSERT INTO Config (key) VALUES ($Key)");
 
         $statement = self::$Database_Connection->prepare("INSERT INTO Config (key) VALUES (:Key)");
         $statement->execute(array(":Key" => $Key));
@@ -155,6 +161,7 @@ class Config
         if (self::$Database_Connection === null) {
             self::initDB();
         }
+        Helper::Log(LogTypes::DEBUG, "Config::delete: DELETE FROM Config WHERE key = $Key");
         $statement = self::$Database_Connection->prepare("DELETE FROM Config WHERE key = :Key");
         return $statement->execute(array(":Key" => $Key));
     }
@@ -186,6 +193,7 @@ class Config
         }
 
 
+        Helper::Log(LogTypes::DEBUG, "Config::set: UPDATE Config SET value = $Value, type = $Type WHERE key = $Key");
         $statement = self::$Database_Connection->prepare("UPDATE Config SET value = :val, type = :type WHERE key = :key");
         $statement->execute(array(":val" => $Value, ":key" => $Key, ":type" => $Type));
 
@@ -203,6 +211,7 @@ class Config
             self::initDB();
         }
 
+        Helper::Log(LogTypes::DEBUG, "Config::list: SELECT key, value FROM Config");
         $statement = self::$Database_Connection->prepare("SELECT key, value FROM Config");
         $statement->execute();
 

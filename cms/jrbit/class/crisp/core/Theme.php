@@ -91,11 +91,10 @@ class Theme {
         $HookClass = null;
         $_vars = ($_vars ?? []);
 
-            if ($GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'theme_hooks_enabled')) {
-                $_HookFile = Themes::getThemeMetadata()->hookFile;
+                $_HookFile = ThemeMetadata->hookFile;
                 $_HookClass = substr($_HookFile, 0, -4);
 
-                require_once __DIR__ . "/../../../../".\crisp\api\Config::get("theme_dir")."/".\crisp\api\Config::get("theme")."/$_HookFile";
+                require_once Themes::getThemeDirectory() . "/$_HookFile";
 
                 if(class_exists($_HookClass, false)){
                     $HookClass = new $_HookClass();
@@ -104,14 +103,13 @@ class Theme {
                 if($HookClass !== null && method_exists($HookClass, 'preRender')){
                     $_vars = array_merge($_vars, $HookClass->preRender($_vars, $TwigTheme, $CurrentPage, $CurrentFile) ?? []);
                 }
-        }
 
 
 
-        if (Helper::templateExists(\crisp\api\Config::get("theme"), "/views/$CurrentPage.twig")) {
+        if (Helper::templateExists("/views/$CurrentPage.twig")) {
 
-                if(file_exists(__DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/includes/$CurrentPage.php")) {
-                    require __DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/includes/$CurrentPage.php";
+                if(file_exists(Themes::getThemeDirectory() . "/includes/$CurrentPage.php")) {
+                    require Themes::getThemeDirectory() . "/includes/$CurrentPage.php";
                 }
                 $PageClass = null;
 

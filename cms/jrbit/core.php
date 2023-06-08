@@ -78,6 +78,7 @@ try {
 
 
 
+    define("ThemeMetadata", Themes::getThemeMetadata());
 
     $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
     if (IS_DEV_ENV) {
@@ -147,6 +148,7 @@ try {
             ($_ENV['CI_BUILD'] ?? 0)
         );
         define('REQUEST_ID', Crypto::UUIDv4("R"));
+
 
 
 
@@ -230,7 +232,7 @@ try {
         session_start();
 
 
-        $CurrentTheme = Config::get('theme');
+        $CurrentTheme = core::DEFAULT_THEME;
         $CurrentFile = substr(substr($_SERVER['PHP_SELF'], 1), 0, -4);
         $CurrentPage = $GLOBALS['route']->Page;
         $CurrentPage = ($CurrentPage === '' ? 'start' : $CurrentPage);

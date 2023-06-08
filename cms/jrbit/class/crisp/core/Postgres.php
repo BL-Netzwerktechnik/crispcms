@@ -23,6 +23,7 @@
 
 namespace crisp\core;
 
+use crisp\api\Helper;
 use crisp\exceptions\BitmaskException;
 use Exception;
 use PDO;
@@ -55,6 +56,7 @@ class Postgres {
                             $db["pass"],
                             ltrim($db["path"], "/")
             ));
+            Helper::Log(LogTypes::DEBUG, "Created new PDO Session");
             $this->Database_Connection = $pdo;
         } catch (Exception $ex) {
             throw new BitmaskException($ex, Bitmask::POSTGRES_CONN_ERROR->value);

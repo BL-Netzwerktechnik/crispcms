@@ -28,4 +28,5 @@ enum LogTypes: int {
     case INFO = 2;
     case DEBUG = 3;
     case SUCCESS = 4;
+    case WARNING = 5;
 }
