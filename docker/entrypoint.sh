@@ -39,17 +39,12 @@ fi
 
 cd "$CRISP_WORKDIR" || exit 1
 
-echo "Migrating..."
 crisp-cli crisp -m || (echo "Failed to Migrate" && exit 1)
-echo "Installing Theme..."
 crisp-cli theme -u || (echo "Failed to install theme" && exit 1)
 crisp-cli theme -i || (echo "Failed to install theme" && exit 1)
-echo "Migrating theme..."
 crisp-cli theme -m || (echo "Failed to migrate theme" && exit 1)
-echo "Clearing cache..."
 crisp-cli theme -c || (echo "Failed to clear cache" && exit 1)
-echo "Executing Boot files..."
-crisp-cli theme -b
+crisp-cli theme -b || (echo "Failed to execute boot files" && exit 1)
 
 echo "Setting System Timezone..."
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
