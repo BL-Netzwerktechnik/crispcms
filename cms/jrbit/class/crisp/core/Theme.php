@@ -28,6 +28,7 @@ use crisp\exceptions\BitmaskException;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
+use crisp\routes;
 use Twig\Error\SyntaxError;
 
 /**
@@ -81,8 +82,9 @@ class Theme {
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws \Exception
      */
-    public function __construct(Environment $TwigTheme, string $CurrentFile, string $CurrentPage) {
+    public function __construct(Environment $TwigTheme, string $CurrentFile, string $CurrentPage, bool $Internal = false) {
         $this->TwigTheme = $TwigTheme;
         $this->CurrentFile = $CurrentFile;
         $this->CurrentPage = $CurrentPage;
@@ -104,9 +106,26 @@ class Theme {
                     $_vars = array_merge($_vars, $HookClass->preRender($_vars, $TwigTheme, $CurrentPage, $CurrentFile) ?? []);
                 }
 
+                if($Internal){
+
+                    require __DIR__ . "/../routes/$CurrentPage.php";
 
 
-        if (Helper::templateExists("/views/$CurrentPage.twig")) {
+                    $Class = "crisp\\routes\\$CurrentPage";
+
+                    if(class_exists($Class, false)){
+                        $PageClass = new $Class();
+
+                        if(!method_exists($PageClass, 'execute')){
+                            throw new \Exception("Failed to load $Class, missing execute!");
+                        }
+                    }else{
+                        throw new \Exception("Failed to load $Class, missing class!");
+                    }
+
+                    $PageClass->execute($CurrentPage, $TwigTheme);
+
+                }elseif (Helper::templateExists("/views/$CurrentPage.twig")) {
 
                 if(file_exists(Themes::getThemeDirectory() . "/includes/$CurrentPage.php")) {
                     require Themes::getThemeDirectory() . "/includes/$CurrentPage.php";

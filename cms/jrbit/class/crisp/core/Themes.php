@@ -109,8 +109,11 @@ class Themes
                     }
 
                 }
+                $SpecialPage = substr(strtoupper(substr($CurrentPage, 0, 2)) . substr($CurrentPage, 2), 1);
 
-                if (file_exists(Themes::getThemeDirectory() . "/includes/$CurrentPage.php") && Helper::templateExists("/views/$CurrentPage.twig")) {
+                if(str_starts_with($CurrentPage, "_") && file_exists(__DIR__ . "/../routes/$SpecialPage.php")){
+                    new Theme($TwigTheme, $CurrentFile, $SpecialPage, true);
+                }elseif (file_exists(Themes::getThemeDirectory() . "/includes/$CurrentPage.php") && Helper::templateExists("/views/$CurrentPage.twig")) {
                     new Theme($TwigTheme, $CurrentFile, $CurrentPage);
                 } else {
                     $GLOBALS["microtime"]["logic"]["end"] = microtime(true);
@@ -160,10 +163,10 @@ class Themes
         }
     }
 
-    public static function includeResource($File, bool $Prefix = true, $Theme = null): string
+    public static function includeResource($File, bool $Prefix = true, $Theme = null, int $cacheTTL = 60 * 60): string
     {
         if (str_starts_with($File, "//") || str_starts_with($File, "http://")  || str_starts_with($File, "https://")) {
-            return $File;
+            return sprintf("/_proxy/?url=%s&cache=%s", $File, $cacheTTL);
         }
         
         if (str_starts_with($File, "/")) {

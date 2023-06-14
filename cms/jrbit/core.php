@@ -61,6 +61,8 @@ class core
 
     public const DEFAULT_THEME = "crisptheme";
 
+    public const CACHE_DIR = __DIR__ . '/cache/';
+
 }
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -256,7 +258,7 @@ try {
         $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/$CurrentTheme/templates/"]);
         if (ENVIRONMENT === 'production') {
             $TwigTheme = new Environment($ThemeLoader, [
-                'cache' => __DIR__ . '/cache/'
+                'cache' => core::CACHE_DIR
             ]);
         } else {
             $TwigTheme = new Environment($ThemeLoader, []);
