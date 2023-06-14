@@ -76,8 +76,12 @@ class Themes
         }
     }
 
-    public static function getThemeDirectory(): string
+    public static function getThemeDirectory(bool $relative = false): string
     {
+        if($relative){
+            return sprintf("/themes/%s", core::DEFAULT_THEME);
+        }
+
         return realpath(sprintf(__DIR__. "/../../../../themes/%s", core::DEFAULT_THEME));
     }
     /**
@@ -163,7 +167,7 @@ class Themes
         }
     }
 
-    public static function includeResource($File, bool $Prefix = true, $Theme = null, int $cacheTTL = 60 * 60): string
+    public static function includeResource($File, int $cacheTTL = 60 * 60): string
     {
         if (str_starts_with($File, "//") || str_starts_with($File, "http://")  || str_starts_with($File, "https://")) {
             return sprintf("/_proxy/?url=%s&cache=%s", $File, $cacheTTL);
@@ -173,15 +177,12 @@ class Themes
             $File = substr($File, 1);
         }
 
-        if ($Theme === null) {
-            $Theme = \crisp\api\Config::get("theme");
+
+        if (!file_exists(self::getThemeDirectory() . "/$File")) {
+            return self::getThemeDirectory(true) . "/$File";
         }
 
-        if (!file_exists(Themes::getThemeDirectory() . "/$File")) {
-            return ($Prefix ? "/" . \crisp\api\Config::get("theme_dir") . "/" . $Theme : "") . "/$File";
-        }
-
-        return "/" . ($Prefix ? \crisp\api\Config::get("theme_dir") . "/" . $Theme : "") . "/$File?" . hash_file("sha256", __DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . $Theme . "/$File");
+        return self::getThemeDirectory(true) . "/$File?" . hash_file("sha256", self::getThemeDirectory() . "/$File");
     }
 
     public static function getThemeMetadata(): stdClass|null
