@@ -61,6 +61,7 @@ class CLI extends SplitbrainCLI
         /** Crisp Command */
         $options->registerCommand('crisp', 'Perform various tasks in the core of crisp');
         $options->registerOption('migrate', 'Run the Database Migrations', "m", false, 'crisp');
+        $options->registerOption('post-install', 'Run the Post Install Actions', "p", false, 'crisp');
         /** Crisp Command */
 
 

@@ -18,6 +18,12 @@ class Crisp {
             $Migrations = new core\Migrations();
             $Migrations->migrate();
             return true;
+        }elseif($options->getOpt("post-install")){
+            $minimal->success("Crisp has been successfully installed!");
+            if(ENVIRONMENT !== core\Environment::PRODUCTION->value){
+                $minimal->notice(sprintf("You can access the Debug menu at %s://%s/_debug", $_ENV["PROTO"], $_ENV["HOST"]));
+            }
+            return true;
         }
         $minimal->error("No action");
 

@@ -67,6 +67,9 @@ class Debug extends ThemeAPI  {
                 case "clear_cache":
                     $output = shell_exec("crisp-cli --no-colors theme -c 2>&1");
                     break;
+                case "postinstall":
+                    $output = shell_exec("crisp-cli --no-colors crisp -p 2>&1");
+                    break;
 
                 case "migrate_theme":
                     $output = shell_exec("crisp-cli --no-colors theme -m 2>&1");
