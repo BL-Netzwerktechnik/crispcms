@@ -40,7 +40,8 @@ class Proxy extends ThemeAPI  {
 
     public function execute(string $Interface, Environment $TwigTheme): void
     {
-        $ttlIncrease = ((int)$_GET["cache"]) ?? 300;
+        $ttlIncrease = ($_GET["cache"]) ?? 300;
+
         $ttl = time() + $ttlIncrease;
         $Url = urldecode($_GET["url"]);
 
@@ -59,20 +60,27 @@ class Proxy extends ThemeAPI  {
 
             $data = file_get_contents(urldecode($_GET["url"]));
 
+
+
             $bytes = strlen($data);
 
             if($bytes > 5 * pow(1024, 2)){
                 RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Proxy cannot serve files larger than 5 megabytes! Received ". number_format($bytes / 1024, 2). "kb", $paramArray);
                 exit;
             }
+            $headers = implode("\n", $http_response_header);
+            if (preg_match_all("/^content-type\s*:\s*(.*)$/mi", $headers, $matches)) {
+                $content_type = end($matches[1]);
+            }else{
 
-            $finfo = new finfo(FILEINFO_MIME);
+                $finfo = new finfo(FILEINFO_MIME);
 
-            $mimetype = $finfo->buffer($data);
+                $content_type = $finfo->buffer($data);
+            }
 
             $cacheData = [
                 "content" => $data,
-                "mimetype" => $mimetype
+                "mimetype" => $content_type
              ];
 
 

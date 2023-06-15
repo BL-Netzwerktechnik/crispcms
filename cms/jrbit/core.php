@@ -63,6 +63,8 @@ class core
 
     public const CACHE_DIR = __DIR__ . '/cache/';
 
+    public const THEME_BASE_DIR = __DIR__ . '/../themes';
+
 }
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -255,7 +257,11 @@ try {
             $GLOBALS['guid'] = $_COOKIE['guid'];
         }
 
-        $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/$CurrentTheme/templates/"]);
+        if(str_starts_with($CurrentPage, "_")){
+            $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/basic/templates/"]);
+        }else {
+            $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/$CurrentTheme/templates/"]);
+        }
         if (ENVIRONMENT === 'production') {
             $TwigTheme = new Environment($ThemeLoader, [
                 'cache' => core::CACHE_DIR

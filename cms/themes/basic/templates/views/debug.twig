@@ -1,0 +1,63 @@
+{% set pageTitle = "Debug" %}
+
+{% extends 'base.twig' %}
+
+
+{% block content %}
+    <div class="mt-5 d-grid gap-2">
+        <h1 class="text-center">Themes</h1>
+        <button type="button" data-action="reload_theme" class="btn btn-primary d-block mx-auto">Reload Theme</button>
+        <button type="button" data-action="migrate_theme" class="btn btn-primary d-block mx-auto">Migrate Theme</button>
+        <button type="button" data-action="reload_kv" class="btn btn-primary d-block mx-auto">Reload Storage</button>
+        <button type="button" data-action="reload_kv_force" class="btn btn-danger d-block mx-auto">Reload Storage (Overwrite)</button>
+        <button type="button" data-action="execute_boot" class="btn btn-warning d-block mx-auto">Execute Boot Files</button>
+        <button type="button" data-action="clear_cache" class="btn btn-primary d-block mx-auto">Clear Cache</button>
+        <h1 class="text-center mt-4">Core</h1>
+        <button type="button" data-action="migrate_crisp" class="btn btn-danger d-block mx-auto">Migrate Crisp</button>
+    </div>
+
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-body"id="result">
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+    <script>
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+
+        $(document).ready(function() {
+            $("button").on('click', function(){
+
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Queueing Command'
+                })
+                $.post( window.location.href, {action: $(this).data("action")}, function( data ) {
+                    $( "#result" ).html( data );
+
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Command Executed'
+                    })
+                });
+            }) ;
+        });
+    </script>
+{% endblock %}

@@ -170,7 +170,7 @@ class Themes
     public static function includeResource($File, int $cacheTTL = 60 * 60): string
     {
         if (str_starts_with($File, "//") || str_starts_with($File, "http://")  || str_starts_with($File, "https://")) {
-            return sprintf("/_proxy/?url=%s&cache=%s", $File, $cacheTTL);
+            return sprintf("/_proxy/?url=%s", $File, $cacheTTL);
         }
         
         if (str_starts_with($File, "/")) {
