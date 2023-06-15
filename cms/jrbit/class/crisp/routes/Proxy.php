@@ -40,9 +40,21 @@ class Proxy extends ThemeAPI  {
 
     public function execute(string $Interface, Environment $TwigTheme): void
     {
-
-
+        $ttlIncrease = ((int)$_GET["cache"]) ?? 300;
+        $ttl = time() + $ttlIncrease;
         $Url = urldecode($_GET["url"]);
+
+        $paramArray = [
+            "cache "=> $ttlIncrease,
+            "ttl" => $ttl,
+            "url" => $Url
+        ];
+
+        if($ttlIncrease <= 1){
+            RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "TTL cannot be smaller than or equal 1", $paramArray);
+            exit;
+        }
+
         if(Cache::isExpired($Url)){
 
             $data = file_get_contents(urldecode($_GET["url"]));
@@ -50,7 +62,7 @@ class Proxy extends ThemeAPI  {
             $bytes = strlen($data);
 
             if($bytes > 5 * pow(1024, 2)){
-                echo RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Proxy cannot serve files larger than 5 megabytes! Received ". number_format($bytes / 1024, 2). "kb");
+                RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Proxy cannot serve files larger than 5 megabytes! Received ". number_format($bytes / 1024, 2). "kb", $paramArray);
                 exit;
             }
 
@@ -63,7 +75,7 @@ class Proxy extends ThemeAPI  {
                 "mimetype" => $mimetype
              ];
 
-            $ttl = time() + ((int)$_GET["cache"]) ?? 300;
+
 
             Cache::write($Url, serialize($cacheData),  $ttl);
 

@@ -400,7 +400,7 @@ try {
     }
 
 
-    if (IS_API_ENDPOINT && $GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'enable_api')) {
+    if (IS_API_ENDPOINT) {
         RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
         exit;
     }
