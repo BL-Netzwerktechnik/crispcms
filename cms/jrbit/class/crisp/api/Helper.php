@@ -38,9 +38,46 @@ use stdClass;
 class Helper
 {
 
+    public static function getS3Url(string $bucket, string $region, string $template = null): string
+    {
+
+        if($template === null){
+            $template = "https://{{bucket}}.s3.{{region}}.amazonaws.com";
+        }
+
+        return strtr(
+            $template,
+            [
+                "{{bucket}}" => $bucket,
+                "{{region}}" => $region,
+            ]
+        );
+    }
 
 
+    /**
+     * @link https://stackoverflow.com/questions/24783862/list-all-the-files-and-folders-in-a-directory-with-php-recursive-function
+     * @param $dir
+     * @param $results
+     * @return array
+     */
+    public static function getDirRecursive($dir, &$results = array()): array {
+        $files = scandir($dir);
 
+        foreach ($files as $key => $value) {
+            $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
+            if (!is_dir($path)) {
+                $results[] = $path;
+            } else if ($value != "." && $value != "..") {
+                self::getDirRecursive($path, $results);
+                if(!is_dir($path)) {
+                    $results[] = $path;
+                }
+            }
+        }
+
+        return $results;
+    }
 
     public static function getRequestLog(): string
     {

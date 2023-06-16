@@ -23,6 +23,7 @@
 
 
 use crisp\api\Helper;
+use crisp\commands\Assets;
 use crisp\commands\Crisp;
 use crisp\commands\Maintenance;
 use crisp\commands\Migration;
@@ -62,6 +63,11 @@ class CLI extends SplitbrainCLI
         $options->registerCommand('crisp', 'Perform various tasks in the core of crisp');
         $options->registerOption('migrate', 'Run the Database Migrations', "m", false, 'crisp');
         $options->registerOption('post-install', 'Run the Post Install Actions', "p", false, 'crisp');
+        /** Crisp Command */
+
+        /** Crisp Command */
+        $options->registerCommand('assets', 'Perform various tasks for theme assets');
+        $options->registerOption('deploy-to-s3', 'Deploy the assets/ folder to s3', "d", false, 'assets');
         /** Crisp Command */
 
 
@@ -124,6 +130,9 @@ class CLI extends SplitbrainCLI
                 break;
             case 'translation':
                 Translations::run($this, $options);
+                break;
+            case 'assets':
+                Assets::run($this, $options);
                 break;
             default:
                 if(strlen($options->getCmd()) > 0){

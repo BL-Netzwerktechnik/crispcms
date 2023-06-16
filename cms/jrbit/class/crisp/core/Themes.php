@@ -182,7 +182,11 @@ class Themes
             return self::getThemeDirectory(true) . "/$File";
         }
 
-        return self::getThemeDirectory(true) . "/$File?" . hash_file("sha256", self::getThemeDirectory() . "/$File");
+
+        $hash = hash_file("sha256", self::getThemeDirectory() . "/$File");
+
+
+        return (isset($_ENV["ASSETS_S3_BUCKET"]) ? Helper::getS3Url($_ENV["ASSETS_S3_BUCKET"] ,$_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_URL"]) : self::getThemeDirectory(true)) . "/$File?$hash";
     }
 
     public static function getThemeMetadata(): stdClass|null
