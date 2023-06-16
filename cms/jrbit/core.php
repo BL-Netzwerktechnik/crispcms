@@ -80,6 +80,11 @@ try {
         default => 'production'
     });
 
+    if(!file_exists(core::PERSISTENT_DATA)){
+        Helper::createDir(core::PERSISTENT_DATA);
+    }
+
+
 
 
     define("ThemeMetadata", Themes::getThemeMetadata());
@@ -232,7 +237,11 @@ try {
         $GLOBALS['navbar'] = [];
         $GLOBALS['navbar_right'] = [];
         $GLOBALS['render'] = [];
-
+        /*
+        ini_set('session.save_path',core::PERSISTENT_DATA . "/sessions");
+        session_save_path(core::PERSISTENT_DATA . "/sessions");
+        ini_set('session.gc_probability', 1);
+        */
         session_start();
 
 

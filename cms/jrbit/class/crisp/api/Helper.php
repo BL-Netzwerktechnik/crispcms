@@ -38,6 +38,11 @@ use stdClass;
 class Helper
 {
 
+    public static function createDir(string $dir): bool
+    {
+        return mkdir($dir) && chown($dir, 33) && chgrp($dir, 33);
+    }
+
     public static function getS3Url(string $bucket, string $region, string $template = null): string
     {
 
