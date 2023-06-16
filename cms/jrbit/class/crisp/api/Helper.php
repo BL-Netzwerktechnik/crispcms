@@ -55,6 +55,26 @@ class Helper
     }
 
 
+    public static function detectMimetype(string $file){
+
+        $mime = mime_content_type($file);
+
+        $mappings = [
+            "css" => "text/css",
+            "js" => "text/javascript",
+            "json" => "application/json"
+        ];
+
+        $splitExt = explode(".", $file);
+        $extension = end($splitExt);
+
+        if(array_key_exists($extension, $mappings)){
+            return $mappings[$extension];
+        }
+
+        return $mime;
+    }
+
     /**
      * @link https://stackoverflow.com/questions/24783862/list-all-the-files-and-folders-in-a-directory-with-php-recursive-function
      * @param $dir

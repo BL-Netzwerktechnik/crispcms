@@ -16,7 +16,7 @@ class Assets {
     public static function run(CLI $minimal, Options $options): bool
     {
         if($options->getOpt("deploy-to-s3")){
-
+            
             if(!isset($_ENV["ASSETS_S3_BUCKET"], $_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_BUCKET"], $_ENV["ASSETS_S3_ACCESS_KEY"], $_ENV["ASSETS_S3_SECRET_KEY"])){
                 $minimal->fatal("Missing one of the following environment variables to deploy to s3: ASSETS_S3_BUCKET, ASSETS_S3_REGION, ASSETS_S3_BUCKET, ASSETS_S3_ACCESS_KEY, ASSETS_S3_SECRET_KEY");
                 return false;
@@ -53,7 +53,7 @@ class Assets {
                     'Bucket' => $_ENV["ASSETS_S3_BUCKET"],
                     'Key'    => $newFileName,
                     'SourceFile'   => $file,
-                    'ContentType' => mime_content_type($file)
+                    'ContentType' => Helper::detectMimetype($file)
                 ]);
 
 
