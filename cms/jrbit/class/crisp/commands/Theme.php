@@ -95,6 +95,8 @@ class Theme {
             return true;
         }elseif($options->getOpt("clear-cache")){
 
+            exec("rm -rf /tmp/symfony-cache");
+
             if(Themes::clearCache()){
                 $minimal->success("The cache has been successfully cleared!");
                 return true;
