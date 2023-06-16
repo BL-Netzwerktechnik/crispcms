@@ -13,6 +13,12 @@ then
   echo "# Additional environment variables below" > .env || exit 1
 fi
 
+if [[ -z "${ASSETS_S3_BUCKET}" ]]; then
+  echo "Not deploying to S3"
+else
+  crisp-cli assets --deploy-to-s3
+fi
+
 
 cd / || exit 1
 

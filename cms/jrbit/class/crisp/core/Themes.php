@@ -178,15 +178,18 @@ class Themes
         }
 
 
+        $baseDir = (isset($_ENV["ASSETS_S3_BUCKET"]) ? Helper::getS3Url($_ENV["ASSETS_S3_BUCKET"] ,$_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_URL"]) : self::getThemeDirectory(true));
+
+
         if (!file_exists(self::getThemeDirectory() . "/$File")) {
-            return self::getThemeDirectory(true) . "/$File";
+            return "$baseDir/$File";
         }
 
 
         $hash = hash_file("sha256", self::getThemeDirectory() . "/$File");
 
 
-        return (isset($_ENV["ASSETS_S3_BUCKET"]) ? Helper::getS3Url($_ENV["ASSETS_S3_BUCKET"] ,$_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_URL"]) : self::getThemeDirectory(true)) . "/$File?$hash";
+        return "$baseDir/$File?$hash";
     }
 
     public static function getThemeMetadata(): stdClass|null
