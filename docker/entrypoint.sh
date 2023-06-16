@@ -45,7 +45,6 @@ crisp-cli theme -i || (echo "Failed to install theme" && exit 1)
 crisp-cli theme -m || (echo "Failed to migrate theme" && exit 1)
 crisp-cli theme -c || (echo "Failed to clear cache" && exit 1)
 crisp-cli theme -b || (echo "Failed to execute boot files" && exit 1)
-crisp-cli crisp -p
 
 echo "Setting System Timezone..."
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -61,4 +60,5 @@ rm /tmp/* -R
 cd / || exit 1
 
 php-fpm -F -R -D || exit 1
+crisp-cli crisp -p
 nginx -c /etc/nginx/nginx.conf -g "daemon off;"

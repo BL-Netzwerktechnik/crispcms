@@ -100,5 +100,4 @@ RUN ["/bin/bash", "-c", "/opt/entrypoint.d/bootstrap.sh"]
 
 RUN rm /tmp/symfony-cache/ -R -f
 
-
 ENTRYPOINT ["/bin/bash", "-c", "/opt/entrypoint.d/entrypoint.sh"]
