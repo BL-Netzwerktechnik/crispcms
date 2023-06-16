@@ -285,12 +285,16 @@ class Themes
      * Clear the theme cache
      * @return boolean
      */
-    public static function clearCache(): bool
+    public static function clearCache(string $dir = core::CACHE_DIR): bool
     {
-        if(!file_exists(__DIR__ . "/../../../cache/")){
-            return false;
+        if(!file_exists($dir)){
+            mkdir($dir);
         }
-        $it = new RecursiveDirectoryIterator(realpath(__DIR__ . "/../../../cache/"), FilesystemIterator::SKIP_DOTS);
+        chown($dir, 33);
+        chgrp($dir, 33);
+
+
+        $it = new RecursiveDirectoryIterator(realpath($dir), FilesystemIterator::SKIP_DOTS);
         $files = new RecursiveIteratorIterator($it,
             RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($files as $file) {
@@ -299,6 +303,10 @@ class Themes
             } else {
                 unlink($file->getRealPath());
             }
+        }
+
+        if($dir !== "/tmp/symfony-cache"){
+            return self::clearCache("/tmp/symfony-cache");
         }
         return true;
     }

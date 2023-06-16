@@ -61,7 +61,7 @@ class core
 
     public const DEFAULT_THEME = "crisptheme";
 
-    public const CACHE_DIR = __DIR__ . '/cache/';
+    public const CACHE_DIR = '/tmp/crisp-cache/';
 
     public const THEME_BASE_DIR = __DIR__ . '/../themes';
 
