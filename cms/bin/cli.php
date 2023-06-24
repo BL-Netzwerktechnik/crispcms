@@ -67,6 +67,8 @@ class CLI extends SplitbrainCLI
         $options->registerOption('info', 'Get Info from your current '. core::PERSISTENT_DATA. "/license.key", "i", false, 'license');
         $options->registerOption('generate-test', 'Generate a Test License to '. core::PERSISTENT_DATA. "/license.key", "t", false, 'license');
         $options->registerOption('expired', 'Generate an Expired License', "e", false, 'license');
+        $options->registerOption('no-expiry', 'Don\'t Expire the Test License', null, false, 'license');
+        $options->registerOption('invalid-instance', 'Generate an invalid instance license', null, false, 'license');
         $options->registerOption('delete', 'Delete the License Key', "d", false, 'license');
         $options->registerOption('delete-issuer', 'Delete the License Key', null, false, 'license');
         /** Maintenance Command */

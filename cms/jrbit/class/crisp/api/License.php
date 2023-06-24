@@ -68,7 +68,7 @@ class License
 
     public function isValid(): bool {
         return !$this->isExpired()
-            && $this->isDomainAllowed($_SERVER["HTTP_HOST"])
+            && $this->isDomainAllowed($_SERVER["HTTP_HOST"] ?? $_ENV["HOST"])
             && $this->isInstanceAllowed()
             && $this->verifySignature();
     }

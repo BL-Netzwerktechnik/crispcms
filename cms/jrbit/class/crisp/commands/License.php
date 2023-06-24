@@ -49,10 +49,12 @@ class License {
                 date(DATE_RFC7231, $license->getIssuedAt()),
                 Carbon::parse($license->getIssuedAt())->diffForHumans()
             ));
-            $minimal->notice(sprintf("Expires At: %s (%s)",
-                ($license->getExpiresAt() ? date(DATE_RFC7231, $license->getExpiresAt()) : "No Expiry Date"),
-                Carbon::parse($license->getExpiresAt())->diffForHumans()
-            ));
+            if($license->canExpire()) {
+                $minimal->notice(sprintf("Expires At: %s (%s)",
+                    ($license->getExpiresAt() ? date(DATE_RFC7231, $license->getExpiresAt()) : "No Expiry Date"),
+                    Carbon::parse($license->getExpiresAt())->diffForHumans()
+                ));
+            }
             $minimal->notice("Data: ". json_encode($license->getData()));
 
             if(\crisp\api\License::GEN_VERSION > $license->getVersion()){
@@ -79,6 +81,8 @@ class License {
             }
             if(!$license->isValid()){
                 $minimal->alert("License is not valid!");
+            }else{
+                $minimal->success("License is valid!");
             }
 
             return true;
@@ -90,6 +94,20 @@ class License {
                 $domains[] = $_ENV["HOST"];
             }
 
+            $expiry = time() + 3600;
+            $instance = Helper::getInstanceId();
+
+            if($options->getOpt("expired")){
+                $expiry = time() - 3600;
+            }elseif($options->getOpt("no-expiry")){
+                $expiry = null;
+            }
+
+            if($options->getOpt("invalid-instance")){
+                $instance = core\Crypto::UUIDv4("I");
+            }
+
+
             $license = new \crisp\api\License(
                 version: \crisp\api\License::GEN_VERSION,
                 uuid: core\Crypto::UUIDv4(),
@@ -98,9 +116,9 @@ class License {
                 name: "Test License",
                 issuer: "Acme Inc.",
                 issued_at: time(),
-                expires_at: $options->getOpt("expired") ? time() - 3600 : time() + 3600,
+                expires_at: $expiry,
                 data: null,
-                instance: Helper::getInstanceId()
+                instance: $instance
             );
 
             if(!$license->sign()){
