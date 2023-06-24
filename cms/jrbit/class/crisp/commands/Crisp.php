@@ -23,6 +23,10 @@ class Crisp {
             if(ENVIRONMENT !== core\Environment::PRODUCTION->value){
                 $minimal->notice(sprintf("You can access the Debug menu at %s://%s/_debug", $_ENV["PROTO"], $_ENV["HOST"]));
             }
+            $minimal->success(sprintf("Your instance id is: %s", Helper::getInstanceId()));
+            if($_ENV["REQUIRE_LICENSE"] && !\crisp\api\License::isLicenseAvailable()){
+                $minimal->warning("Your Distributor Requires a valid License but none is installed - You will be prompted to install a License Key");
+            }
             return true;
         }elseif($options->getOpt("instance")){
                 $minimal->success(sprintf("Your instance id is: %s", Helper::getInstanceId()));
