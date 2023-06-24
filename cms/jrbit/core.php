@@ -272,7 +272,8 @@ try {
         if($_ENV['REQUIRE_LICENSE'] && !IS_SPECIAL_PAGE){
             $GLOBALS["license"] = api\License::fromFile(core::PERSISTENT_DATA. "/license.key");
 
-            if(!$GLOBALS["license"]->isValid()){
+
+            if(!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()){
                 header("Location: _license#renew");
                 exit;
             }
