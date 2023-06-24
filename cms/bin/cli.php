@@ -23,6 +23,7 @@
 
 
 use crisp\api\Helper;
+use crisp\commands\License;
 use crisp\commands\Assets;
 use crisp\commands\Crisp;
 use crisp\commands\Maintenance;
@@ -31,6 +32,7 @@ use crisp\commands\Storage;
 use crisp\commands\Theme;
 use crisp\commands\Translations;
 use crisp\commands\Version;
+use crisp\core;
 use splitbrain\phpcli\CLI as SplitbrainCLI;
 use splitbrain\phpcli\Options;
 
@@ -57,6 +59,13 @@ class CLI extends SplitbrainCLI
         $options->registerCommand('maintenance', 'Get or Set the Maintenance Status of CrispCMS');
         $options->registerOption('on', 'Turn on the Maintenance Mode', null, false, 'maintenance');
         $options->registerOption('off', 'Turn off the Maintenance Mode', null, false, 'maintenance');
+        /** Maintenance Command */
+
+        /** Maintenance Command */
+        $options->registerCommand('license', 'Manage the Licensing System on CrispCMS');
+        $options->registerOption('generate-private-key', 'Generates a new key pair and saves it to '. core::PERSISTENT_DATA, "c", false, 'license');
+        $options->registerOption('info', 'Get Info from your current '. core::PERSISTENT_DATA. "/license.key", "i", false, 'license');
+        $options->registerOption('generate-test', 'Generate a Test License to '. core::PERSISTENT_DATA. "/license.key", "t", false, 'license');
         /** Maintenance Command */
 
         /** Crisp Command */
@@ -133,6 +142,9 @@ class CLI extends SplitbrainCLI
                 break;
             case 'assets':
                 Assets::run($this, $options);
+                break;
+            case 'license':
+                License::run($this, $options);
                 break;
             default:
                 if(strlen($options->getCmd()) > 0){

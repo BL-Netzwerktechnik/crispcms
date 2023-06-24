@@ -1,0 +1,65 @@
+{% set pageTitle = "License" %}
+
+{% extends 'base.twig' %}
+
+
+{% block content %}
+    <div class="mt-5 d-grid gap-2">
+        <h1 class="text-center">
+            {% if license.getWhitelabel() %}
+
+            {% else %}
+                <img width="50" src="/themes/basic/crisp.svg"/> CrispCMS</h1>
+            {% endif %}
+
+        <h2 class="text-center">This Instance is licensed to: </h2>
+    </div>
+
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-body">
+                <p>License ID: {% include 'components/license_fields.twig' with {'field': license.getUuid()} %}</p>
+                <p>Issuer: {% include 'components/license_fields.twig' with {'field': license.getIssuer()} %}</p>
+                <p>Domains: {% include 'components/license_fields.twig' with {'field': license.getDomains()} %}</p>
+                <p>License ID: {% include 'components/license_fields.twig' with {'field': license.getUuid()} %}</p>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+    <script>
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+
+        $(document).ready(function() {
+            $("button").on('click', function(){
+
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Queueing Command'
+                })
+                $.post( window.location.href, {action: $(this).data("action")}, function( data ) {
+                    $( "#result" ).html( data );
+
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Command Executed'
+                    })
+                });
+            }) ;
+        });
+    </script>
+{% endblock %}
