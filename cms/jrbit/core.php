@@ -194,26 +194,6 @@ try {
             define('USES_FLAGSMITH', false);
         }
 
-        /** @var \Flagsmith\Flagsmith */
-        $GLOBALS['flagsmith_server'] = Flagsmith::Client('CRISP_FLAGSMITH_API_KEY', 'CRISP_FLAGSMITH_APP_URL', 300);
-
-
-            $ServerID = (new Identity(Helper::getInstanceId()))
-                ->withTrait((new IdentityTrait('commit'))
-                    ->withValue(Helper::getCommitHash()))
-                ->withTrait((new IdentityTrait('hostname'))
-                    ->withValue(gethostname()))
-                ->withTrait((new IdentityTrait('crisp_version'))
-                    ->withValue(core::CRISP_VERSION))
-                ->withTrait((new IdentityTrait('api_version'))
-                    ->withValue(core::API_VERSION))
-                ->withTrait((new IdentityTrait('environment'))
-                    ->withValue(ENVIRONMENT));
-
-            $GLOBALS['flagsmith_server_identity'] = $ServerID;
-        
-
-        $GLOBALS['flagsmith_server']->setTraitsByIdentity($GLOBALS['flagsmith_server_identity']);
 
 
         header('X-Request-ID: ' . REQUEST_ID);
@@ -281,22 +261,6 @@ try {
 
 
 
-            $AnonymousID = (new Identity($GLOBALS['guid']))
-                ->withTrait((new IdentityTrait('session_id'))
-                    ->withValue($GLOBALS['guid'] ?? 'unknown'))
-                ->withTrait((new IdentityTrait('route'))
-                    ->withValue($GLOBALS['route']->Page ?? 'unknown'))
-                ->withTrait((new IdentityTrait('locale'))
-                    ->withValue($Locale ?? $_ENV['DEFAULT_LOCALE']))
-                ->withTrait((new IdentityTrait('country_code'))
-                    ->withValue($_ENV["GEOIP_COUNTRY_CODE"] ?? 'NONE'))
-                ->withTrait((new IdentityTrait('country_code3'))
-                    ->withValue($_ENV["GEOIP_COUNTRY_CODE3"] ?? 'NONE'))
-                ->withTrait((new IdentityTrait('country_name'))
-                    ->withValue($_ENV["GEOIP_COUNTRY_NAME"] ?? 'NONE'));
-
-            $GLOBALS['flagsmith_identity'] = $AnonymousID;
-
 
 
         /* Twig Globals */
@@ -327,9 +291,8 @@ try {
         $TwigTheme->addFunction(new TwigFunction('prettyDump', [new Helper(), 'prettyDump']));
         $TwigTheme->addExtension(new StringLoaderExtension());
 
-        if ($GLOBALS['flagsmith_server']->isFeatureEnabledByIdentity($GLOBALS['flagsmith_server_identity'], 'version_string_v1')) {
-            $TwigTheme->addGlobal('VERSION_STRING', $GLOBALS['flagsmith_server']->getFeatureValueByIdentity($GLOBALS['flagsmith_server_identity'], 'version_string_v1'));
-        }
+        $TwigTheme->addGlobal('VERSION_STRING', "{{ SERVER.ENVIRONMENT |upper }} | Theme@{{ ENV.THEME_GIT_COMMIT }} | CIP: {{ VM_IP }}@{{ CLUSTER }} | CV: {{ CRISP_VERSION }}@{{ ENV.GIT_COMMIT }} | AV: {{ API_VERSION }}@{{ ENV.GIT_COMMIT }} | RID: {{ REQUEST_ID }}");
+
 
         if (USES_FLAGSMITH) {
             $TwigTheme->addFunction(new TwigFunction('Flagsmith', [new Flagsmith()]));
@@ -339,6 +302,24 @@ try {
             $TwigTheme->addFunction(new TwigFunction('fsFeatureGetValue', [new Flagsmith(), 'getFeatureValueByIdentity']));
             $TwigTheme->addFunction(new TwigFunction('fsFeatureGetValueGlobally', [Flagsmith::Client(), 'getFeatureValue']));
             $TwigTheme->addFunction(new TwigFunction('fsFeatureGetValueByIdentity', [new Flagsmith(), 'getFeatureValueByIdentity']));
+
+
+            $AnonymousID = (new Identity($GLOBALS['guid']))
+                ->withTrait((new IdentityTrait('session_id'))
+                    ->withValue($GLOBALS['guid'] ?? 'unknown'))
+                ->withTrait((new IdentityTrait('route'))
+                    ->withValue($GLOBALS['route']->Page ?? 'unknown'))
+                ->withTrait((new IdentityTrait('locale'))
+                    ->withValue($Locale ?? $_ENV['DEFAULT_LOCALE']))
+                ->withTrait((new IdentityTrait('country_code'))
+                    ->withValue($_ENV["GEOIP_COUNTRY_CODE"] ?? 'NONE'))
+                ->withTrait((new IdentityTrait('country_code3'))
+                    ->withValue($_ENV["GEOIP_COUNTRY_CODE3"] ?? 'NONE'))
+                ->withTrait((new IdentityTrait('country_name'))
+                    ->withValue($_ENV["GEOIP_COUNTRY_NAME"] ?? 'NONE'));
+
+            $GLOBALS['flagsmith_identity'] = $AnonymousID;
+
             Flagsmith::setTraitsByIdentity();
         }
         $TwigTheme->addFunction(new TwigFunction('microtime', 'microtime'));
@@ -377,6 +358,10 @@ try {
         $TwigTheme->addFilter(new TwigFilter('time', 'time'));
         $TwigTheme->addFilter(new TwigFilter('formattime', [new Helper(), 'FormatTime']));
 
+
+        if($_ENV['REQUIRE_LICENSE']){
+            // @TODO
+        }
 
 
         if (IS_API_ENDPOINT) {

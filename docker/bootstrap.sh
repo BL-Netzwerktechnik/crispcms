@@ -19,6 +19,9 @@ else
   crisp-cli assets --deploy-to-s3
 fi
 
+sed -i -e "s/# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
+dpkg-reconfigure --frontend=noninteractive locales
+update-locale LANG="$LANG"
 
 cd / || exit 1
 

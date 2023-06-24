@@ -16,14 +16,17 @@ ENV SKIP_COMPOSER ""
 ENV HOST ""
 ENV PROTO "https"
 ENV TZ "UTC"
+ENV DEFAULT_LOCALE "en"
+ENV LANG "en_US.UTF.8"
 
 ARG CRISP_WORKDIR="/var/www/crisp"
 ARG BUILD_TYPE=0
 ARG IS_DOCKER=true
+ARG REQUIRE_LICENSE=false
 ARG GIT_COMMIT=not_set
 ARG CI_BUILD=0
-ARG DEFAULT_LOCALE="en"
-ARG LANG="en_US.UTF.8"
+#ARG DEFAULT_LOCALE="en"
+#ARG LANG="en_US.UTF.8"
 ARG CRISP_FLAGSMITH_APP_URL="https://flagsmith.internal.jrbit.de/api/v1/"
 ARG CRISP_FLAGSMITH_API_KEY="PDj3dJjVc6XPjK4f6FStPz"
 ARG CRISP_THEME="crisptheme"
@@ -34,8 +37,6 @@ ENV CRISP_WORKDIR "$CRISP_WORKDIR"
 ENV CI_BUILD "$CI_BUILD"
 ENV BUILD_TYPE "$BUILD_TYPE"
 ENV CRISP_THEME "$CRISP_THEME"
-ENV DEFAULT_LOCALE "$DEFAULT_LOCALE"
-ENV LANG "$LANG"
 ENV CRISP_FLAGSMITH_APP_URL "$CRISP_FLAGSMITH_APP_URL"
 ENV CRISP_FLAGSMITH_API_KEY "$CRISP_FLAGSMITH_API_KEY"
 ENV CRISP_THEME "$CRISP_THEME"
@@ -66,9 +67,6 @@ RUN apt-get update && \
             locales \
             nodejs \
             nginx && \
-            sed -i -e "s/# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen && \
-            dpkg-reconfigure --frontend=noninteractive locales && \
-            update-locale LANG="$LANG" && \
             pecl install -o -f redis && \
             docker-php-ext-configure gd --with-freetype --with-jpeg && \
             docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
