@@ -24,6 +24,9 @@ class Crisp {
                 $minimal->notice(sprintf("You can access the Debug menu at %s://%s/_debug", $_ENV["PROTO"], $_ENV["HOST"]));
             }
             return true;
+        }elseif($options->getOpt("instance")){
+                $minimal->success(sprintf("Your instance id is: %s", Helper::getInstanceId()));
+            return true;
         }
         $minimal->error("No action");
 

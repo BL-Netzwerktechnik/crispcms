@@ -66,12 +66,16 @@ class CLI extends SplitbrainCLI
         $options->registerOption('generate-private-key', 'Generates a new key pair and saves it to '. core::PERSISTENT_DATA, "c", false, 'license');
         $options->registerOption('info', 'Get Info from your current '. core::PERSISTENT_DATA. "/license.key", "i", false, 'license');
         $options->registerOption('generate-test', 'Generate a Test License to '. core::PERSISTENT_DATA. "/license.key", "t", false, 'license');
+        $options->registerOption('expired', 'Generate an Expired License', "e", false, 'license');
+        $options->registerOption('delete', 'Delete the License Key', "d", false, 'license');
+        $options->registerOption('delete-issuer', 'Delete the License Key', null, false, 'license');
         /** Maintenance Command */
 
         /** Crisp Command */
         $options->registerCommand('crisp', 'Perform various tasks in the core of crisp');
         $options->registerOption('migrate', 'Run the Database Migrations', "m", false, 'crisp');
         $options->registerOption('post-install', 'Run the Post Install Actions', "p", false, 'crisp');
+        $options->registerOption('instance', 'Get your instance ID', "i", false, 'crisp');
         /** Crisp Command */
 
         /** Crisp Command */

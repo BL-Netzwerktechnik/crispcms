@@ -25,11 +25,13 @@
 namespace crisp\routes;
 
 use crisp\api\Cache;
+use crisp\api\Helper;
 use crisp\core;
 use crisp\core\Bitmask;
 use crisp\core\RESTfulAPI;
 use crisp\models\ThemeAPI;
 use finfo;
+use splitbrain\phpcli\Exception;
 use Twig\Environment;
 
 /**
@@ -42,7 +44,53 @@ class License extends ThemeAPI  {
     public function execute(string $Interface, Environment $TwigTheme): void
     {
 
-        echo $TwigTheme->render("views/license.twig");
+        if($_SERVER["REQUEST_METHOD"] === "POST"){
+
+            if(count($_FILES) === 0){
+                RESTfulAPI::response(Bitmask::MISSING_PARAMETER->value, "Missing Licenses", HTTP: 400);
+                exit;
+
+            }
+
+
+            if(!empty($_FILES["license"])){
+
+
+                if(\crisp\api\License::isLicenseAvailable() && !isset($_POST["instance"])){
+                    RESTfulAPI::response(Bitmask::MISSING_PARAMETER->value, "Missing Instance ID", HTTP: 400);
+                    exit;
+                }elseif(\crisp\api\License::isLicenseAvailable() && $_POST["instance"] !== Helper::getInstanceId()){
+                    RESTfulAPI::response(Bitmask::INVALID_PARAMETER->value, "Invalid Instance ID", HTTP: 401);
+                    exit;
+                }
+
+                Helper::Log(core\LogTypes::INFO, "Installing new License Key...");
+                if(!copy($_FILES["license"]["tmp_name"], core::PERSISTENT_DATA. "/license.key")){
+                    throw new Exception("Permission denied writing to ". core::PERSISTENT_DATA);
+                }
+
+            }
+            if(!empty($_FILES["issuer"])){
+
+
+                if(\crisp\api\License::isIssuerAvailable()){
+                    RESTfulAPI::response(Bitmask::MISSING_PARAMETER->value, "Issuer already available!", HTTP: 401);
+                    exit;
+                }
+
+                Helper::Log(core\LogTypes::INFO, "Installing new Issuer Key...");
+                if(!copy($_FILES["issuer"]["tmp_name"], core::PERSISTENT_DATA. "/issuer.pub")){
+                    throw new Exception("Permission denied writing to ". core::PERSISTENT_DATA);
+                }
+
+            }
+
+            echo "OK";
+
+            exit;
+        }
+
+        echo $TwigTheme->render("views/license.twig", ["license" => \crisp\api\License::fromFile(core::PERSISTENT_DATA. "/license.key"), "IssuerAvailable" => \crisp\api\License::isIssuerAvailable(), "LicenseAvailable" => \crisp\api\License::isLicenseAvailable()]);
         exit;
 
     }

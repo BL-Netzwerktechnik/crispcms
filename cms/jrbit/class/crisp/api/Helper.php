@@ -23,6 +23,7 @@
 
 namespace crisp\api;
 
+use Carbon\Carbon;
 use crisp\api\lists\Languages;
 use crisp\core\Logger;
 use crisp\core\LogTypes;
@@ -615,74 +616,9 @@ class Helper
         return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
     }
 
-
     public static function in_array_any($needles, $haystack): bool
     {
         return !empty(array_intersect($needles, $haystack));
-    }
-
-    public static function FormatTime($timestamp): string
-    {
-        setlocale(LC_TIME, "de_DE.utf8");
-        // Get time difference and setup arrays
-        $difference = time() - $timestamp;
-        $periods = array("Sekunde", "Minute", "Stunde", "Tag", "Woche", "Monat", "Jahr");
-        $lengths = array("60", "60", "24", "7", "4.35", "12");
-
-        // Past or present
-        if ($difference >= 0) {
-            $ending = "vor";
-        } else {
-            $difference = -$difference;
-            $ending = "in";
-        }
-
-        // Figure out difference by looping while less than array length
-        // and difference is larger than lengths.
-        $arr_len = count($lengths);
-        for ($j = 0; $j < $arr_len && $difference >= $lengths[$j]; $j++) {
-            $difference /= $lengths[$j];
-        }
-
-        // Round up
-        $difference = round($difference);
-
-        // Make plural if needed
-        if ($difference != 1) {
-            $periods[$j] .= "n";
-        }
-
-        // Default format
-        $text = "$ending $difference $periods[$j]";
-
-        // over 24 hours
-        if ($j > 2) {
-            // future date over a day formate with year
-            if ($ending === "im") {
-                if ($j == 3 && $difference == 1) {
-                    $text = "Morgen um " . strftime("%H:%M", $timestamp);
-                } else {
-                    $text = date("%e %B, %Y um %H:%M", $timestamp);
-                }
-                return $text;
-            }
-
-            if ($j == 3 && $difference == 1) // Yesterday
-            {
-                $text = "Gestern um " . strftime("%H:%M", $timestamp);
-            } else if ($j == 3) // Less than a week display -- Monday at 5:28pm
-            {
-                $text = strftime("%A um %H:%M", $timestamp);
-            } else if ($j < 6 && !($j == 5 && $difference == 12)) // Less than a year display -- June 25 at 5:23am
-            {
-                $text = strftime("%e %B um %H:%M", $timestamp);
-            } else // if over a year or the same month one year ago -- June 30, 2010 at 5:34pm
-            {
-                $text = strftime("%e %B, %Y um %H:%M", $timestamp);
-            }
-        }
-
-        return $text;
     }
 
 

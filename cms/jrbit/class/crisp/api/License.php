@@ -39,22 +39,65 @@ use crisp\core\RESTfulAPI;
 class License
 {
 
-    public const GEN_VERSION = 1;
+    public const GEN_VERSION = 2;
 
     public function __construct(
         private readonly int     $version,
         private readonly ?string $uuid = null,
         private readonly ?string $whitelabel = null,
-        private readonly array $domains = [],
+        private readonly array   $domains = [],
         private readonly ?string $name = null,
         private readonly ?string $issuer = null,
-        private readonly ?int $issued_at = null,
-        private readonly ?int $expires_at = null,
+        private readonly ?int    $issued_at = null,
+        private readonly ?int    $expires_at = null,
         private readonly ?string $data = null,
-        private ?string $signature = null,
+        private readonly ?string $instance = null,
+        private ?string          $signature = null,
 
     ){
 
+    }
+
+    public static function isLicenseAvailable(): bool {
+        return file_exists(core::PERSISTENT_DATA . "/license.key");
+    }
+
+    public static function isIssuerAvailable(): bool {
+        return file_exists(core::PERSISTENT_DATA . "/issuer.pub");
+    }
+
+    public function isValid(): bool {
+        return !$this->isExpired()
+            && $this->isDomainAllowed($_SERVER["HTTP_HOST"])
+            && $this->isInstanceAllowed()
+            && $this->verifySignature();
+    }
+
+    public function canExpire(): bool {
+        if($this->expires_at === null || $this->expires_at === 0) return false;
+
+        return true;
+    }
+
+    public function isInstanceAllowed(): bool {
+        if($this->instance === null) return true;
+
+        return Helper::getInstanceId() === $this->instance;
+    }
+
+    public function isExpired(): bool {
+        if(!$this->canExpire()) return false;
+
+        return $this->expires_at < time();
+    }
+
+    public function isDomainAllowed(string $currentDomain): bool {
+        if(count($this->domains) === 0) return true;
+
+        foreach($this->domains as $allowedDomain){
+            if(fnmatch($allowedDomain, $currentDomain)) return true;
+        }
+        return false;
     }
 
     public function sign(): bool {
@@ -93,22 +136,29 @@ class License
             $license["issued_at"],
             $license["expires_at"],
             $license["data"],
+            $license["instance"],
             $signature
         );
     }
 
     private function encode(): string {
-        return json_encode([
-           "version" => $this->version,
-           "uuid" => $this->uuid,
-           "whitelabel" => $this->whitelabel,
-           "domains" => $this->domains,
-           "name" => $this->name,
-           "issuer" => $this->issuer,
-           "issued_at" => $this->issued_at,
-           "expires_at" => $this->expires_at,
-           "data" => $this->data,
-        ]);
+
+        $fields = [
+            "version" => $this->version,
+            "uuid" => $this->uuid,
+            "whitelabel" => $this->whitelabel,
+            "domains" => $this->domains,
+            "name" => $this->name,
+            "issuer" => $this->issuer,
+            "issued_at" => $this->issued_at,
+            "expires_at" => $this->expires_at,
+            "data" => $this->data,
+        ];
+
+        if($this->version >= 2){
+            $fields["instance"] = $this->instance;
+        }
+        return json_encode($fields);
     }
 
     public function exportToString(): string {
@@ -116,10 +166,10 @@ class License
     }
 
     public static function getPublicKey(): \OpenSSLAsymmetricKey|false {
-        if(!file_exists(core::PERSISTENT_DATA . "/license.pub")){
+        if(!file_exists(core::PERSISTENT_DATA . "/issuer.pub")){
             return false;
         }
-        return openssl_pkey_get_public(file_get_contents(core::PERSISTENT_DATA . "/license.pub"));
+        return openssl_pkey_get_public(file_get_contents(core::PERSISTENT_DATA . "/issuer.pub"));
     }
 
 
@@ -136,7 +186,7 @@ class License
             return false;
         }
 
-        return openssl_verify($this->serialize(), $this->signature, $publicKey);
+        return openssl_verify($this->encode(), $this->signature, $publicKey);
     }
 
     /**
@@ -220,6 +270,14 @@ class License
     public function getSignature(): ?string
     {
         return $this->signature;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getInstance(): ?string
+    {
+        return $this->instance;
     }
 
 }

@@ -23,6 +23,7 @@
 
 namespace crisp;
 
+use Carbon\Carbon;
 use CompileError;
 use crisp\api\{Config, Flagsmith, Helper, lists\Languages, Translation};
 use crisp\core\{Bitmask, Crypto, LogTypes, Redis, RESTfulAPI, Security, Sessions, Themes, License};
@@ -113,7 +114,7 @@ try {
     $dotenv->required(['REDIS_INDEX', 'REDIS_PORT'])->isInteger();
     $dotenv->required('POSTGRES_URI')->allowedRegexValues('/^(?:([^:\/?#\s]+):\/{2})?(?:([^@\/?#\s]+)@)?([^\/?#\s]+)?(?:\/([^?#\s]*))?(?:[?]([^#\s]+))?\S*$/i');
 
-
+    Helper::getInstanceId();
 
     $GLOBALS['dotenv'] = $dotenv;
 
@@ -246,11 +247,18 @@ try {
             $GLOBALS['guid'] = $_COOKIE['guid'];
         }
 
+
+
         if(str_starts_with($CurrentPage, "_")){
+            define("IS_SPECIAL_PAGE", true);
             $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/basic/templates/"]);
         }else {
+            define("IS_SPECIAL_PAGE", false);
             $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/$CurrentTheme/templates/"]);
         }
+
+
+
         if (ENVIRONMENT === 'production') {
             $TwigTheme = new Environment($ThemeLoader, [
                 'cache' => core::CACHE_DIR
@@ -260,6 +268,15 @@ try {
         }
 
 
+
+        if($_ENV['REQUIRE_LICENSE'] && !IS_SPECIAL_PAGE){
+            $GLOBALS["license"] = api\License::fromFile(core::PERSISTENT_DATA. "/license.key");
+
+            if(!$GLOBALS["license"]->isValid()){
+                header("Location: _license#renew");
+                exit;
+            }
+        }
 
 
 
@@ -337,6 +354,7 @@ try {
         $TwigTheme->addFunction(new TwigFunction('strftime', 'strftime'));
         $TwigTheme->addFunction(new TwigFunction('strtotime', 'strtotime'));
         $TwigTheme->addFunction(new TwigFunction('time', 'time'));
+        $TwigTheme->addFunction(new TwigFunction('parseTime', [Carbon::class, 'parse']));
 
 
         $Translation = new Translation($Locale);
@@ -359,9 +377,6 @@ try {
         $TwigTheme->addFilter(new TwigFilter('formattime', [new Helper(), 'FormatTime']));
 
 
-        if($_ENV['REQUIRE_LICENSE']){
-            // @TODO
-        }
 
 
         if (IS_API_ENDPOINT) {

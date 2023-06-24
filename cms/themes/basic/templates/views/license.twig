@@ -7,24 +7,119 @@
     <div class="mt-5 d-grid gap-2">
         <h1 class="text-center">
             {% if license.getWhitelabel() %}
-
+            {{ license.getWhiteLabel() }}
             {% else %}
                 <img width="50" src="/themes/basic/crisp.svg"/> CrispCMS</h1>
             {% endif %}
 
-        <h2 class="text-center">This Instance is licensed to: </h2>
     </div>
 
-    <div class="container mt-5">
-        <div class="card">
-            <div class="card-body">
-                <p>License ID: {% include 'components/license_fields.twig' with {'field': license.getUuid()} %}</p>
-                <p>Issuer: {% include 'components/license_fields.twig' with {'field': license.getIssuer()} %}</p>
-                <p>Domains: {% include 'components/license_fields.twig' with {'field': license.getDomains()} %}</p>
-                <p>License ID: {% include 'components/license_fields.twig' with {'field': license.getUuid()} %}</p>
+
+        <div class="container mt-5">
+            <h1>Enter License</h1>
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" action="" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="license">License File</label>
+                                <input name="license" class="form-control" type="file" id="license">
+                                <small id="license" class="form-text text-muted">The <code>license.key</code> File as received by your Distributor</small>
+                            </div>
+                        </div>
+                        {% if not IssuerAvailable %}
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="issuer">Issuer File</label>
+                                <input name="issuer" class="form-control" type="file" id="issuer">
+                                <small id="issuer" class="form-text text-muted">The <code>issuer.pub</code> File as received by your Distributor</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if LicenseAvailable %}
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="instance">Instance ID</label>
+                                <input name="instance" class="form-control" type="text" id="instance">
+                                <small id="instance" class="form-text text-muted">Execute <code>crisp-cli crisp -i</code> in your container</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                        <div class="d-grid gap-2 mt-4">
+                            <button class="btn btn-primary" type="submit">Upload</button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
         </div>
-    </div>
+    {% if license.getVersion() is defined %}
+        <h2 class="text-center mt-4">This Instance is licensed to: </h2>
+        <h3 class="text-center">{% include 'components/license_fields.twig' with {'field': license.getName()} %}</h3>
+        <div class="container mt-3">
+            <div class="card">
+                <div class="card-body">
+                    <p>
+                        License Version: {% include 'components/license_fields.twig' with {'field': license.getVersion()} %}
+                    </p>
+                    <p>
+                        License ID: {% include 'components/license_fields.twig' with {'field': license.getUuid()} %}
+                    </p>
+                    <p>
+                        Issuer: {% include 'components/license_fields.twig' with {'field': license.getIssuer()} %}
+                    </p>
+                    <p>
+                        Domains: {% include 'components/license_fields.twig' with {'field': license.getDomains()|join(", ")} %}
+                        {% if not license.isDomainAllowed(SERVER.HTTP_HOST) and license.getDomains() is defined %}
+                            <span class="text-danger">(<b>{{ SERVER.HTTP_HOST }}</b> is not permitted)</span>
+                        {% endif %}
+                    </p>
+                    <p>
+                        Issued At:
+                        {% if license.getIssuedAt() is defined %}
+                            {% include 'components/license_fields.twig' with {'field': license.getIssuedAt()|date()} %} ({{ parseTime(license.getIssuedAt()).diffForHumans() }})
+                        {% else %}
+                            {% include 'components/license_fields.twig' with {'field': null} %}
+                        {% endif %}
+                    </p>
+                    <p>
+                        Expires At:
+                        {% if license.getExpiresAt() is defined %}
+                            {% include 'components/license_fields.twig' with {'field': license.getExpiresAt()|date(), 'color': license.isExpired() ? 'text-danger': 'text-success'} %}
+                            {% if license.canExpire() %}
+                            {% set ExpiredHuman = parseTime(license.getExpiresAt()).diffForHumans() %}
+                                {% if license.isExpired() %}
+                                    <span class="text-danger">(Expired {{ ExpiredHuman }})</span>
+                                {% else %}
+                                    ({{ ExpiredHuman }})
+                                {% endif %}
+                            {% endif %}
+
+                        {% else %}
+                            {% include 'components/license_fields.twig' with {'field': null} %}
+                        {% endif %}
+                    </p>
+                    <p>
+                        Instance: {% include 'components/license_fields.twig' with {'field': license.getInstance()} %}
+                    </p>
+                    <p>
+                        Signature:
+                        {% if license.verifySignature() %}
+                            <span class="text-success">VALID</span>{% else %}<span class="text-danger">INVALID</span>
+                        {% endif %}
+                    </p>
+                    <p>
+                        Status:
+                        {% if license.isValid() %}
+                            <span class="text-success">VALID</span>{% else %}<span class="text-danger">INVALID</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 
 {% endblock %}
 
@@ -45,19 +140,40 @@
 
 
         $(document).ready(function() {
-            $("button").on('click', function(){
-
+            $("form").on('submit', function(e){
+                e.preventDefault();
                 Toast.fire({
                     icon: 'warning',
-                    title: 'Queueing Command'
+                    title: 'Uploading License... Please wait'
                 })
-                $.post( window.location.href, {action: $(this).data("action")}, function( data ) {
-                    $( "#result" ).html( data );
 
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Command Executed'
-                    })
+                let fd = new FormData();
+                fd.append('license', $('#license')[0].files[0]);
+
+                if($("#issuer").length) {
+                    fd.append('issuer', $('#issuer')[0].files[0]);
+                }
+
+                if($("#instance").length) {
+                    fd.append('instance', $('#instance').val());
+                }
+
+                $.ajax({
+                    url: window.location.href,
+                    type: 'post',
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function(response){
+                        window.location.reload();
+                    },
+                    error: function() {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'An error occurred installing the license Key!'
+                        })
+
+                    }
                 });
             }) ;
         });

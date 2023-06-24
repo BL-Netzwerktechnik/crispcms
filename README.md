@@ -1,3 +1,5 @@
+EQUIR
+
 
 
 # CrispCMS Dockerized

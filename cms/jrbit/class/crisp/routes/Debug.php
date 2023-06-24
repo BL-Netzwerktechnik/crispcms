@@ -79,6 +79,13 @@ class Debug extends ThemeAPI  {
                     $output = shell_exec("crisp-cli --no-colors crisp -m 2>&1");
                     break;
 
+                case "deletelicense":
+                    $output = shell_exec("crisp-cli --no-colors license -d 2>&1");
+                    break;
+                case "deleteissuer":
+                    $output = shell_exec("crisp-cli --no-colors license --delete-issuer 2>&1");
+                    break;
+
 
             }
 

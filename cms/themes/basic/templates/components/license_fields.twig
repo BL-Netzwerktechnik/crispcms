@@ -1,5 +1,5 @@
 {% if field is empty %}
 <span class="text-danger">NOT SET</span>
 {% else %}
-    <span class="text-success">{{ field }}</span>
+    <span class="{{ color|default('text-success') }}">{{ field }}</span>
 {% endif %}
