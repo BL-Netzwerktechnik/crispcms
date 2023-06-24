@@ -42,6 +42,14 @@ class Version extends ThemeAPI  {
     public function execute(string $Interface, Environment $TwigTheme): void
     {
 
+        $license = null;
+
+        if(\crisp\api\License::isLicenseAvailable()){
+            $licobj = \crisp\api\License::fromFile(core::PERSISTENT_DATA. "/license.key");
+            $license = json_decode($licobj->encode(), true);
+
+            $license["valid"] = $licobj->isValid();
+        }
 
         RESTfulAPI::response(Bitmask::REQUEST_SUCCESS->value, "This site is running CrispCMS!", [
             "version" => [
@@ -52,7 +60,8 @@ class Version extends ThemeAPI  {
             ],
             "release" => RELEASE,
             "environment" => ENVIRONMENT,
-            "build" => BUILD_TYPE
+            "build" => BUILD_TYPE,
+            "installed_license" => $license
         ]);
         exit;
 

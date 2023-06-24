@@ -141,7 +141,7 @@ class License
         );
     }
 
-    private function encode(): string {
+    public function encode(): string {
 
         $fields = [
             "version" => $this->version,
