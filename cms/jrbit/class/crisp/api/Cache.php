@@ -54,6 +54,19 @@ class Cache
         );
     }
 
+    public static function getExpiryDate(string $key): int|false {
+
+        if(!self::isCached($key)){
+            return false;
+        }
+        $Hash = self::getHash($key);
+
+        $Dir = self::calculateCacheDir($Hash);
+
+
+        return json_decode(file_get_contents(core::CACHE_DIR . "/crisp/". $Dir . "/" . $Hash . ".cache"))->expires;
+    }
+
     private static function isCached(string $key): bool
     {
 
@@ -103,6 +116,17 @@ class Cache
         $timestamp = json_decode(file_get_contents(core::CACHE_DIR . "/crisp/". $Dir . "/" . $Hash . ".cache"))->expires;
 
         return $timestamp < time();
+    }
+
+    public static function delete(string $key): bool {
+        $Hash = self::getHash($key);
+        $Dir = self::calculateCacheDir($Hash);
+
+        if(!Cache::isCached($key)){
+            return false;
+        }
+
+        return unlink(core::CACHE_DIR . "/crisp/$Dir/$Hash.cache");
     }
 
     public static function get(string $key): string|false

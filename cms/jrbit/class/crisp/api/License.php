@@ -39,7 +39,7 @@ use crisp\core\RESTfulAPI;
 class License
 {
 
-    public const GEN_VERSION = 2;
+    public const GEN_VERSION = 3;
 
     public function __construct(
         private readonly int     $version,
@@ -52,24 +52,108 @@ class License
         private readonly ?int    $expires_at = null,
         private readonly ?string $data = null,
         private readonly ?string $instance = null,
+        private readonly ?string $ocsp = null,
         private ?string          $signature = null,
 
     ){
 
     }
 
+    public function getTimestampNextOCSP(): int|null {
+        if(!$this->ocsp) return null;
+        return Cache::getExpiryDate("license_ocsp_response");
+    }
+
+    public function getHttpCodeOCSP(): int|null {
+        if(!$this->ocsp) return null;
+
+
+        $this->validateOCSP($httpCode);
+
+        return $httpCode;
+
+    }
+    public function getGraceOCSP(): int|null {
+        if(!$this->ocsp) return null;
+
+
+        return Config::get("license_ocsp_response_grace");
+
+    }
+
+    public function validateOCSP(&$httpCode = NULL): bool {
+
+        if(!$this->ocsp) return true;
+
+        Config::deleteCache("license_ocsp_response_grace");
+
+
+        if(!Cache::isExpired("license_ocsp_response")){
+            $httpCode = Cache::get("license_ocsp_response");
+        }else {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, strtr($this->ocsp, ["{{uuid}}" => $this->uuid, "{{instance}}" => $this->instance]));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            curl_exec($ch);
+
+            if (curl_errno($ch)) {
+                return false;
+            }
+
+            $httpCode = (string)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+            if(str_starts_with($httpCode, "5")){
+                Config::deleteCache("license_ocsp_response_grace");
+                Config::set("license_ocsp_response_grace", (Config::get("license_ocsp_response_grace") ?? 1 ) + 1);
+            }
+
+            Cache::write("license_ocsp_response", $httpCode, time() + 1800);
+            curl_close($ch);
+        }
+
+        if(Config::get("license_ocsp_response_grace") >= 3 && str_starts_with($httpCode, "5")){
+            $httpCode = Cache::get("license_ocsp_response");
+            return false;
+        }elseif(str_starts_with($httpCode, "2")) {
+            Config::delete("license_ocsp_response_grace");
+            return true;
+        }elseif(str_starts_with($httpCode, "5")){
+            return true;
+        }
+        return false;
+
+    }
+
     public static function isLicenseAvailable(): bool {
-        return file_exists(core::PERSISTENT_DATA . "/license.key");
+        return Config::exists("license_key");
+    }
+
+    public static function generateIssuer(): bool {
+
+        Helper::Log(core\LogTypes::INFO, "Generating Isser Keys...");
+        $private_key = openssl_pkey_new(array('private_key_bits' => 2048));
+        if(Config::set("license_issuer_public_key", openssl_pkey_get_details($private_key)['key']) && openssl_pkey_export($private_key, $pkey) && Config::set("license_issuer_private_key", $pkey)){
+            return true;
+        }
+
+        Config::delete("license_issuer_public_key");
+        Config::delete("license_issuer_private_key");
+        return false;
     }
 
     public static function isIssuerAvailable(): bool {
-        return file_exists(core::PERSISTENT_DATA . "/issuer.pub");
+        return Config::exists("license_issuer_public_key");
+    }
+    public static function isIssuerPrivateAvailable(): bool {
+        return Config::exists("license_issuer_private_key");
     }
 
     public function isValid(): bool {
         return !$this->isExpired()
             && $this->isDomainAllowed($_SERVER["HTTP_HOST"] ?? $_ENV["HOST"])
             && $this->isInstanceAllowed()
+            && $this->validateOCSP()
             && $this->verifySignature();
     }
 
@@ -111,11 +195,11 @@ class License
         return openssl_sign($this->encode(), $this->signature, $key);
     }
 
-    public static function fromFile(string $file): License|false {
-        if(!file_exists($file)){
+    public static function fromDB(): License|false {
+        if(!Config::exists("license_key")){
             return false;
         }
-        $data = file_get_contents($file);
+        $data = Config::get("license_key");
 
         $exploded = explode(".", $data);
 
@@ -137,6 +221,7 @@ class License
             $license["expires_at"],
             $license["data"],
             $license["instance"],
+            $license["ocsp"],
             $signature
         );
     }
@@ -158,6 +243,9 @@ class License
         if($this->version >= 2){
             $fields["instance"] = $this->instance;
         }
+        if($this->version >= 3){
+            $fields["ocsp"] = $this->ocsp;
+        }
         return json_encode($fields);
     }
 
@@ -166,18 +254,18 @@ class License
     }
 
     public static function getPublicKey(): \OpenSSLAsymmetricKey|false {
-        if(!file_exists(core::PERSISTENT_DATA . "/issuer.pub")){
+        if(!self::isIssuerAvailable()){
             return false;
         }
-        return openssl_pkey_get_public(file_get_contents(core::PERSISTENT_DATA . "/issuer.pub"));
+        return openssl_pkey_get_public(Config::get("license_issuer_public_key"));
     }
 
 
     public static function getPrivateKey(): \OpenSSLAsymmetricKey|false {
-        if(!file_exists(core::PERSISTENT_DATA . "/issuer.key")){
+        if(!self::isIssuerPrivateAvailable()){
             return false;
         }
-        return openssl_pkey_get_private(file_get_contents(core::PERSISTENT_DATA . "/issuer.key"));
+        return openssl_pkey_get_private(Config::get("license_issuer_private_key"));
     }
 
     public function verifySignature(): bool {
@@ -278,6 +366,14 @@ class License
     public function getInstance(): ?string
     {
         return $this->instance;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getOcsp(): ?string
+    {
+        return $this->ocsp;
     }
 
 }

@@ -4,19 +4,54 @@
 
 
 {% block content %}
-    <div class="mt-5 d-grid gap-2">
-        <h1 class="text-center">Themes</h1>
-        <button type="button" data-action="reload_theme" class="btn btn-primary d-block mx-auto">Reload Theme</button>
-        <button type="button" data-action="migrate_theme" class="btn btn-primary d-block mx-auto">Migrate Theme</button>
-        <button type="button" data-action="reload_kv" class="btn btn-primary d-block mx-auto">Reload Storage</button>
-        <button type="button" data-action="reload_kv_force" class="btn btn-danger d-block mx-auto">Reload Storage (Overwrite)</button>
-        <button type="button" data-action="execute_boot" class="btn btn-warning d-block mx-auto">Execute Boot Files</button>
-        <button type="button" data-action="clear_cache" class="btn btn-primary d-block mx-auto">Clear Cache</button>
+    <div class="mt-5 container">
+        <h1 class="text-center mb-4">Themes</h1>
+        <div class="row row-cols-auto">
+            <div class="col">
+                <button type="button" data-action="reload_theme" class="btn btn-primary d-block mx-auto">Reload Theme</button>
+            </div>
+            <div class="col">
+                <button type="button" data-action="migrate_theme" class="btn btn-primary d-block mx-auto">Migrate Theme</button>
+            </div>
+            <div class="col">
+                <button type="button" data-action="reload_kv" class="btn btn-primary d-block mx-auto">Reload Storage</button>
+            </div>
+            <div class="col">
+                <button type="button" data-action="reload_kv_force" class="btn btn-danger d-block mx-auto">Reload Storage (Overwrite)</button>
+            </div>
+            <div class="col">
+                <button type="button" data-action="execute_boot" class="btn btn-warning d-block mx-auto">Execute Boot Files</button>
+            </div>
+        </div>
+
+
         <h1 class="text-center mt-4">Core</h1>
-        <button type="button" data-action="migrate_crisp" class="btn btn-danger d-block mx-auto">Migrate Crisp</button>
-        <button type="button" data-action="postinstall" class="btn btn-primary d-block mx-auto">Execute Post Install</button>
-        <button type="button" data-action="deletelicense" class="btn btn-danger d-block mx-auto">Delete License</button>
-        <button type="button" data-action="deleteissuer" class="btn btn-danger d-block mx-auto">Delete Issuer</button>
+        <div class="row row-cols-auto">
+            <div class="col">
+                <button type="button" data-action="migrate_crisp" class="btn btn-danger d-block mx-auto">Migrate Crisp</button>
+            </div>
+            <div class="col">
+                <button type="button" data-action="postinstall" class="btn btn-primary d-block mx-auto">Execute Post Install</button>
+            </div>
+            <div class="col">
+                <button type="button" data-action="clear_cache" class="btn btn-primary d-block mx-auto">Clear Cache</button>
+            </div>
+        </div>
+
+
+        <h1 class="text-center mt-4">License</h1>
+        <div class="row row-cols-auto">
+            <div class="col">
+                <button type="button" data-action="deletelicense" class="btn btn-danger d-block mx-auto">Delete License</button>
+            </div>
+            <div class="col">
+                <button type="button" data-action="deleteissuerpublic" class="btn btn-danger d-block mx-auto">Delete Issuer Public</button>
+            </div>
+            <div class="col">
+                <button type="button" data-action="deleteissuerprivate" class="btn btn-danger d-block mx-auto">Delete Issuer Private</button>
+            </div>
+        </div>
+
     </div>
 
     <div class="container mt-5">

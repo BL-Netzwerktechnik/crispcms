@@ -71,6 +71,7 @@ class CLI extends SplitbrainCLI
         $options->registerOption('invalid-instance', 'Generate an invalid instance license', null, false, 'license');
         $options->registerOption('delete', 'Delete the License Key', "d", false, 'license');
         $options->registerOption('delete-issuer', 'Delete the License Key', null, false, 'license');
+        $options->registerOption('delete-issuer-private', 'Delete the License Key', null, false, 'license');
         /** Maintenance Command */
 
         /** Crisp Command */

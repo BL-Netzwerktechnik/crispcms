@@ -82,14 +82,18 @@ class Debug extends ThemeAPI  {
                 case "deletelicense":
                     $output = shell_exec("crisp-cli --no-colors license -d 2>&1");
                     break;
-                case "deleteissuer":
+                case "deleteissuerpublic":
                     $output = shell_exec("crisp-cli --no-colors license --delete-issuer 2>&1");
+                    break;
+
+                case "deleteissuerprivate":
+                    $output = shell_exec("crisp-cli --no-colors license --delete-issuer-private 2>&1");
                     break;
 
 
             }
 
-            echo nl2br($output);
+            echo implode("<br>", array_reverse(explode(PHP_EOL, $output)));
             exit;
         }
 

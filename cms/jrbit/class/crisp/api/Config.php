@@ -38,6 +38,8 @@ use crisp\core\RESTfulAPI;
 class Config
 {
 
+    private static int $TTL = 120;
+
     private static ?PDO $Database_Connection = null;
 
     private static function initDB(): void
@@ -73,9 +75,15 @@ class Config
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-
-        $GlobalOptions = [];
         Helper::Log(LogTypes::DEBUG, "Getting key $Key");
+
+        if(!Cache::isExpired("Config::get::$Key")){
+            Helper::Log(LogTypes::DEBUG, "Cache::Config::get::$Key");
+            return self::evaluateRow(json_decode(Cache::get("Config::get::$Key"), true), $UserOptions);
+        }
+
+
+
         Helper::Log(LogTypes::DEBUG, "Config::get: SELECT value, type FROM Config WHERE key = $Key");
 
         $statement = self::$Database_Connection->prepare("SELECT value, type FROM Config WHERE key = :ID");
@@ -84,29 +92,37 @@ class Config
 
             $Result = $statement->fetch(PDO::FETCH_ASSOC);
 
-            $Value = $Result["value"];
+            Cache::write("Config::get::$Key", json_encode($Result), time() + self::$TTL);
 
-            if ($Result["type"] !== 'serialized') {
-
-                foreach (self::list(true) as $Item) {
-                    $GlobalOptions["{{ config.{$Item['key']} }}"] = $Item["value"];
-                }
-
-                $Options = array_merge($UserOptions, $GlobalOptions);
-
-                $Value = strtr($Value, $Options);
-
-            }
-
-            return match ($Result["type"]) {
-                'serialized' => unserialize($Value),
-                'boolean' => (bool)$Value,
-                'integer' => (int)$Value,
-                'double' => (double)$Value,
-                default => $Value,
-            };
+            return self::evaluateRow($Result, $UserOptions);
         }
         return false;
+    }
+
+    private static function evaluateRow($Result, $UserOptions){
+
+        $GlobalOptions = [];
+        $Value = $Result["value"];
+
+        if ($Result["type"] !== 'serialized') {
+
+            foreach (self::list(true) as $Item) {
+                $GlobalOptions["{{ config.{$Item['key']} }}"] = $Item["value"];
+            }
+
+            $Options = array_merge($UserOptions, $GlobalOptions);
+
+            $Value = strtr($Value, $Options);
+
+        }
+
+        return match ($Result["type"]) {
+            'serialized' => unserialize($Value),
+            'boolean' => (bool)$Value,
+            'integer' => (int)$Value,
+            'double' => (double)$Value,
+            default => $Value,
+        };
     }
 
     /**
@@ -163,7 +179,12 @@ class Config
         }
         Helper::Log(LogTypes::DEBUG, "Config::delete: DELETE FROM Config WHERE key = $Key");
         $statement = self::$Database_Connection->prepare("DELETE FROM Config WHERE key = :Key");
+        self::deleteCache("Config::get::$Key");
         return $statement->execute(array(":Key" => $Key));
+    }
+
+    public static function deleteCache(string $Key): bool{
+        return Cache::delete("Config::get::$Key");
     }
 
     /**
@@ -192,7 +213,7 @@ class Config
             $Value = ($Value ? 1 : 0);
         }
 
-
+        self::deleteCache("Config::get::$Key");
         Helper::Log(LogTypes::DEBUG, "Config::set: UPDATE Config SET value = $Value, type = $Type WHERE key = $Key");
         $statement = self::$Database_Connection->prepare("UPDATE Config SET value = :val, type = :type WHERE key = :key");
         $statement->execute(array(":val" => $Value, ":key" => $Key, ":type" => $Type));
@@ -211,6 +232,13 @@ class Config
             self::initDB();
         }
 
+
+        if(!Cache::isExpired("Config::list")){
+            Helper::Log(LogTypes::DEBUG, "Cache::Config::list");
+            return json_decode(Cache::get("Config::list"), true);
+        }
+
+
         Helper::Log(LogTypes::DEBUG, "Config::list: SELECT key, value FROM Config");
         $statement = self::$Database_Connection->prepare("SELECT key, value FROM Config");
         $statement->execute();
@@ -224,7 +252,11 @@ class Config
 
             return $Array;
         }
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
+
+
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        Cache::write("Config::list", json_encode($result), time() + self::$TTL);
+        return $result;
     }
 
 }

@@ -270,7 +270,7 @@ try {
 
 
         if($_ENV['REQUIRE_LICENSE'] && !IS_SPECIAL_PAGE){
-            $GLOBALS["license"] = api\License::fromFile(core::PERSISTENT_DATA. "/license.key");
+            $GLOBALS["license"] = api\License::fromDB();
 
 
             if(!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()){

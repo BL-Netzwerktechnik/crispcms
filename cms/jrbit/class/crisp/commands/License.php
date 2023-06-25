@@ -18,18 +18,17 @@ class License {
     public static function run(CLI $minimal, Options $options): bool
     {
         if($options->getOpt("generate-private-key")){
-            $private_key = openssl_pkey_new(array('private_key_bits' => 2048));
-            if(file_put_contents(core::PERSISTENT_DATA . "/issuer.pub", openssl_pkey_get_details($private_key)['key'])){
-                $minimal->success("Public Key has been saved to " . core::PERSISTENT_DATA . "/issuer.pub");
+
+            if(\crisp\api\License::generateIssuer()){
+                $minimal->success("Public Key has been saved");
                 $minimal->info("You must ship this public key to your customer");
-            }
-            if(openssl_pkey_export_to_file($private_key, core::PERSISTENT_DATA . "/issuer.key")){
-                $minimal->success("Private Key has been saved to " . core::PERSISTENT_DATA . "/issuer.key");
+                $minimal->success("Private Key has been saved");
                 $minimal->warning("Keep this key private at all costs!");
+                return true;
             }
-            return true;
+            return false;
         }elseif($options->getOpt("info")){
-            $license = \crisp\api\License::fromFile(core::PERSISTENT_DATA . "/license.key");
+            $license = \crisp\api\License::fromDB();
 
             if(!$license){
                 $minimal->fatal("Could not load license!");
@@ -45,6 +44,7 @@ class License {
             $minimal->notice("Issued To: ". $license->getName());
             $minimal->notice("Issuer: ". $license->getIssuer());
             $minimal->notice("Instance: ". $license->getInstance());
+            $minimal->notice("OCSP: ". $license->getOcsp());
             $minimal->notice(sprintf("Issued At: %s (%s)",
                 date(DATE_RFC7231, $license->getIssuedAt()),
                 Carbon::parse($license->getIssuedAt())->diffForHumans()
@@ -118,7 +118,8 @@ class License {
                 issued_at: time(),
                 expires_at: $expiry,
                 data: null,
-                instance: $instance
+                instance: $instance,
+                ocsp: sprintf("%s://%s/_debug_ocsp",$_ENV["PROTO"], $_ENV["HOST"])
             );
 
             if(!$license->sign()){
@@ -126,16 +127,16 @@ class License {
                 return false;
             }
 
-            if(!file_put_contents(core::PERSISTENT_DATA. "/license.key", $license->exportToString())){
+            if(!Config::set("license_key", $license->exportToString())){
                 $minimal->fatal("Could not save license!");
                 return false;
             }
 
-            $minimal->success("License has been saved to ". core::PERSISTENT_DATA. "/license.key");
+            $minimal->success("License has been saved");
             return true;
         }elseif($options->getOpt("delete")){
 
-            if(!unlink(core::PERSISTENT_DATA. "/license.key")){
+            if(!Config::delete("license_key")){
                 $minimal->fatal("Could not delete license!");
                 return false;
             }
@@ -144,7 +145,16 @@ class License {
             return true;
         }elseif($options->getOpt("delete-issuer")){
 
-            if(!unlink(core::PERSISTENT_DATA. "/issuer.pub")){
+            if(!Config::delete("license_issuer_public_key")){
+                $minimal->fatal("Could not delete issuer!");
+                return false;
+            }
+
+            $minimal->success("Issuer has been deleted!");
+            return true;
+        }elseif($options->getOpt("delete-issuer-private")){
+
+            if(!Config::delete("license_issuer_private_key")){
                 $minimal->fatal("Could not delete issuer!");
                 return false;
             }

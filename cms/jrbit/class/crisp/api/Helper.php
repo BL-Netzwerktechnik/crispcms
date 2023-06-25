@@ -25,6 +25,8 @@ namespace crisp\api;
 
 use Carbon\Carbon;
 use crisp\api\lists\Languages;
+use crisp\core;
+use crisp\core\Crypto;
 use crisp\core\Logger;
 use crisp\core\LogTypes;
 use crisp\core\Postgres;
@@ -154,12 +156,12 @@ class Helper
     public static function getInstanceId(): string
     {
 
-        if(file_exists(\crisp\core::PERSISTENT_DATA . "/.instance_id")){
-            return file_get_contents(\crisp\core::PERSISTENT_DATA . "/.instance_id");
+        if(Config::exists("instance_id")){
+            return Config::get("instance_id");
         }
-        $InstanceId = \crisp\core\Crypto::UUIDv4("I");
+        $InstanceId = Crypto::UUIDv4("I");
 
-        file_put_contents(\crisp\core::PERSISTENT_DATA . "/.instance_id", $InstanceId);
+        Config::set("instance_id", $InstanceId);
 
         return $InstanceId;
     }
