@@ -24,6 +24,7 @@
 
 namespace crisp\routes;
 
+use Carbon\Carbon;
 use crisp\api\Cache;
 use crisp\api\Config;
 use crisp\api\Helper;
@@ -46,6 +47,7 @@ class License extends ThemeAPI  {
     {
 
         if($_SERVER["REQUEST_METHOD"] === "POST") {
+
 
             if ($_POST["action"] === "enter_license") {
                 if (count($_FILES) === 0) {
@@ -81,16 +83,15 @@ class License extends ThemeAPI  {
                     }
 
                     Helper::Log(core\LogTypes::INFO, "Installing new Issuer Key...");
-                    if (!copy($_FILES["issuer"]["tmp_name"], core::PERSISTENT_DATA . "/issuer.pub")) {
-                        throw new Exception("Permission denied writing to " . core::PERSISTENT_DATA);
+                    if (!Config::set("license_issuer_public_key", file_get_contents($_FILES["issuer"]["tmp_name"]))) {
+                        throw new Exception("Failed to save issuer key");
                     }
 
                 }
 
                 echo "OK";
 
-                exit;
-            }elseif ($_POST["action"] === "generate_license") {
+            }elseif ($_POST["action"] === "generate_issuer") {
                 if (\crisp\api\License::isIssuerPrivateAvailable()) {
                     RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Issuer Key already exists!", HTTP: 401);
                     exit;
@@ -101,12 +102,65 @@ class License extends ThemeAPI  {
                 }
                 echo "OK";
 
-                exit;
+            }elseif ($_POST["action"] === "generate_license") {
+                if (!\crisp\api\License::isIssuerPrivateAvailable()) {
+                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Issuer Key does not exist!", HTTP: 401);
+                    exit;
+                }
+
+
+                if (\crisp\api\License::isLicenseAvailable() && !isset($_POST["instance"])) {
+                    RESTfulAPI::response(Bitmask::MISSING_PARAMETER->value, "Missing Instance ID", HTTP: 400);
+                    exit;
+                } elseif (\crisp\api\License::isLicenseAvailable() && $_POST["instance"] !== Helper::getInstanceId()) {
+                    RESTfulAPI::response(Bitmask::INVALID_PARAMETER->value, "Invalid Instance ID", HTTP: 401);
+                    exit;
+                }
+
+
+                $expiry = null;
+
+                if(isset($_POST["license_has_expiry"])){
+                    $expiry = Carbon::parse($_POST["license_expiry_date"])->unix();
+                }
+                
+                
+
+                $license = new \crisp\api\License(
+                    version: \crisp\api\License::GEN_VERSION,
+                    uuid: core\Crypto::UUIDv4(),
+                    whitelabel: empty($_POST["license_whitelabel"]) ? null : $_POST["license_whitelabel"],
+                    domains: $_POST["license_domains"] ? array_map('trim', explode(",", $_POST["license_domains"])) : null,
+                    name: empty($_POST["license_name"]) ? null : $_POST["license_name"],
+                    issuer: empty($_POST["license_issuer"]) ? null : $_POST["license_issuer"],
+                    issued_at: time(),
+                    expires_at: $expiry,
+                    data: empty($_POST["license_data"]) ? null : $_POST["license_data"],
+                    instance: empty($_POST["license_instance"]) ? null : $_POST["license_instance"],
+                    ocsp: empty($_POST["license_ocsp"]) ? null : $_POST["license_ocsp"],
+                );
+
+                if(!$license->sign()){
+                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Could not sign license", HTTP: 500);
+                    exit;
+                }
+
+                if(!Config::set("license_key", $license->exportToString())){
+                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Could not save license", HTTP: 500);
+                    exit;
+                }
+                RESTfulAPI::response(Bitmask::REQUEST_SUCCESS->value, "OK", [
+                    "license" => $license->exportToString(),
+                    "issuerpub" => Config::get("license_issuer_public_key")
+                ]);
+
             }else{
                 RESTfulAPI::response(Bitmask::INVALID_PARAMETER->value, "Unknown Action", HTTP: 404);
-                exit;
             }
+            exit;
         }
+
+        Cache::delete("license_key");
 
         echo $TwigTheme->render("views/license.twig", [
             "license" => \crisp\api\License::fromDB(),

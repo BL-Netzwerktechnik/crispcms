@@ -4,12 +4,12 @@
 {% endif %}
 
     <h1>Enter License</h1>
-            <form method="post" action="" enctype="multipart/form-data">
+            <form id="entlic" method="post" action="" enctype="multipart/form-data">
                 <div class="row">
                     <div class="col">
                         <div class="form-group">
                             <label for="license">License File</label>
-                            <input name="license" class="form-control" type="file" id="license">
+                            <input name="license" class="form-control" type="file" id="license" required>
                             <small id="license" class="form-text text-muted">The <code>license.key</code> File as received by your Distributor</small>
                         </div>
                     </div>
@@ -17,7 +17,7 @@
                         <div class="col">
                             <div class="form-group">
                                 <label for="issuer">Issuer File</label>
-                                <input name="issuer" class="form-control" type="file" id="issuer">
+                                <input name="issuer" class="form-control" type="file" id="issuer" required>
                                 <small id="issuer" class="form-text text-muted">The <code>issuer.pub</code> File as received by your Distributor</small>
                             </div>
                         </div>
@@ -26,7 +26,7 @@
                         <div class="col">
                             <div class="form-group">
                                 <label for="instance">Instance ID</label>
-                                <input name="instance" class="form-control" type="text" id="instance">
+                                <input name="instance" class="form-control" type="text" id="instance" required>
                                 <small id="instance" class="form-text text-muted">Execute <code>crisp-cli crisp -i</code> in your container</small>
                             </div>
                         </div>

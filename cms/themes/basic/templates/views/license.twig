@@ -97,7 +97,7 @@
 
                         {% if license.validateOCSP() and license.getHttpCodeOCSP()|slice(0,1) == 2 %}
                             <span class="text-success">(VALID)</span>
-                        {% else %}
+                        {% elseif license.getOcsp() %}
                             <span class="text-danger">(FAILED with {{ license.getHttpCodeOCSP() }}) Attempt {{ license.getGraceOCSP()|default(1) }}/3</span>
                         {% endif %}
                         {% if license.getOcsp() and license.getTimestampNextOCSP() > time() %}
@@ -119,7 +119,22 @@
 
 
 {% block scripts %}
+
+
     <script>
+
+        function download(filename, text) {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+        }
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -134,7 +149,7 @@
 
 
         $(document).ready(function() {
-            $("form").on('submit', function(e){
+            $("#entlic").on('submit', function(e){
                 e.preventDefault();
                 Toast.fire({
                     icon: 'warning',
@@ -182,7 +197,7 @@
 
                 let fd = new FormData();
 
-                fd.append('action', "generate_license");
+                fd.append('action', "generate_issuer");
 
                 $.ajax({
                     url: window.location.href,
@@ -202,6 +217,32 @@
                     }
                 });
             });
+
+            $("#genlic").on('submit', function(e){
+                e.preventDefault();
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Generating License... Please wait'
+                })
+
+                $.post(window.location.href,  $(this).serialize())
+                    .done(function(response){
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Licenses have been generated and will be downloaded!'
+                        });
+
+                        download("issuer.pub", response.parameters.issuerpub);
+                        download("license.key", response.parameters.license);
+                    })
+                    .fail(function() {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'An error occurred generating the license Key!'
+                        })
+
+                    });
+                });
         });
     </script>
 {% endblock %}

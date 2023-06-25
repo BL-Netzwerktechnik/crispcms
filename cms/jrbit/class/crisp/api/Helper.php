@@ -156,12 +156,12 @@ class Helper
     public static function getInstanceId(): string
     {
 
-        if(Config::exists("instance_id")){
-            return Config::get("instance_id");
+        if(file_exists(core::PERSISTENT_DATA . "/.instance_id")){
+            return file_get_contents(core::PERSISTENT_DATA . "/.instance_id");
         }
         $InstanceId = Crypto::UUIDv4("I");
 
-        Config::set("instance_id", $InstanceId);
+        file_put_contents(core::PERSISTENT_DATA . "/.instance_id", $InstanceId);
 
         return $InstanceId;
     }
