@@ -8,7 +8,9 @@ use CLI;
 use crisp\api\Config;
 use crisp\api\Helper;
 use crisp\core;
+use crisp\core\Bitmask;
 use crisp\core\Migrations;
+use crisp\core\RESTfulAPI;
 use crisp\core\Themes;
 use Minimal;
 use PHPUnit\TextUI\Help;
@@ -18,6 +20,11 @@ class License {
     public static function run(CLI $minimal, Options $options): bool
     {
         if($options->getOpt("generate-private-key")){
+
+            if($_ENV["REQUIRE_LICENSE"]){
+                $minimal->fatal("Issuers cannot be generated on this instance!");
+                return false;
+            }
 
             if(\crisp\api\License::generateIssuer()){
                 $minimal->success("Public Key has been saved");
@@ -88,6 +95,11 @@ class License {
             return true;
         }elseif($options->getOpt("generate-test")){
 
+            if($_ENV["REQUIRE_LICENSE"]){
+                $minimal->fatal("Licenses cannot be generated on this instance!");
+                return false;
+            }
+
             $domains = ["*.example.com", "example.com"];
 
             if($_ENV["HOST"]){
@@ -144,6 +156,11 @@ class License {
             $minimal->success("License has been deleted!");
             return true;
         }elseif($options->getOpt("delete-issuer")){
+
+            if($_ENV["REQUIRE_LICENSE"]){
+                $minimal->fatal("Issuers cannot be deleted on this instance!");
+                return false;
+            }
 
             if(!Config::delete("license_issuer_public_key")){
                 $minimal->fatal("Could not delete issuer!");

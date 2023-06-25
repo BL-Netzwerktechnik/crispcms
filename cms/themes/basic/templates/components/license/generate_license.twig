@@ -1,12 +1,14 @@
 
 <h1>Generate License</h1>
 
-{% if not IssuerPrivateAvailable %}
+{% if not IssuerPrivateAvailable and not ENV.REQUIRE_LICENSE %}
     <h3 class="text-danger text-center">You don't have an Issuer Key Installed</h3>
     <h4 class="text-danger text-center">Generate one below</h4>
     <div class="d-grid gap-2 mt-4">
         <button id="generate_issuer" class="btn btn-primary">Generate</button>
     </div>
+{% elseif ENV.REQUIRE_LICENSE %}
+    <h3 class="text-danger text-center">Licenses cannot be generated on this instance</h3>
 {% else %}
 
     <form id="genlic" method="post" action="">

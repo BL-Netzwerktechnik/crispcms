@@ -27,7 +27,10 @@ namespace crisp\api;
 use crisp\core;
 use crisp\core\LogTypes;
 use crisp\core\Postgres;
+use FilesystemIterator;
 use PDO;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use function serialize;
 use function unserialize;
 use crisp\core\Bitmask;
@@ -116,6 +119,32 @@ class Cache
         $timestamp = json_decode(file_get_contents(core::CACHE_DIR . "/crisp/". $Dir . "/" . $Hash . ".cache"))->expires;
 
         return $timestamp < time();
+    }
+
+    public static function clear(string $dir = core::CACHE_DIR): bool {
+
+        if(!file_exists($dir)){
+            mkdir($dir);
+        }
+        chown($dir, 33);
+        chgrp($dir, 33);
+
+
+        $it = new RecursiveDirectoryIterator(realpath($dir), FilesystemIterator::SKIP_DOTS);
+        $files = new RecursiveIteratorIterator($it,
+            RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($files as $file) {
+            if ($file->isDir()) {
+                rmdir($file->getRealPath());
+            } else {
+                unlink($file->getRealPath());
+            }
+        }
+
+        if($dir !== "/tmp/symfony-cache"){
+            return self::clear("/tmp/symfony-cache");
+        }
+        return true;
     }
 
     public static function delete(string $key): bool {

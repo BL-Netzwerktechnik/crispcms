@@ -59,7 +59,6 @@ class License extends ThemeAPI  {
 
                 if (!empty($_FILES["license"])) {
 
-
                     if (\crisp\api\License::isLicenseAvailable() && !isset($_POST["instance"])) {
                         RESTfulAPI::response(Bitmask::MISSING_PARAMETER->value, "Missing Instance ID", HTTP: 400);
                         exit;
@@ -89,6 +88,8 @@ class License extends ThemeAPI  {
 
                 }
 
+                Cache::clear();
+
                 echo "OK";
 
             }elseif ($_POST["action"] === "generate_issuer") {
@@ -105,6 +106,11 @@ class License extends ThemeAPI  {
             }elseif ($_POST["action"] === "generate_license") {
                 if (!\crisp\api\License::isIssuerPrivateAvailable()) {
                     RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Issuer Key does not exist!", HTTP: 401);
+                    exit;
+                }
+
+                if($_ENV["REQUIRE_LICENSE"]){
+                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Licenses cannot be generated on this instance!", HTTP: 401);
                     exit;
                 }
 
@@ -130,7 +136,7 @@ class License extends ThemeAPI  {
                     version: \crisp\api\License::GEN_VERSION,
                     uuid: core\Crypto::UUIDv4(),
                     whitelabel: empty($_POST["license_whitelabel"]) ? null : $_POST["license_whitelabel"],
-                    domains: $_POST["license_domains"] ? array_map('trim', explode(",", $_POST["license_domains"])) : null,
+                    domains: $_POST["license_domains"] ? array_map('trim', explode(",", $_POST["license_domains"])) : [],
                     name: empty($_POST["license_name"]) ? null : $_POST["license_name"],
                     issuer: empty($_POST["license_issuer"]) ? null : $_POST["license_issuer"],
                     issued_at: time(),
@@ -153,6 +159,8 @@ class License extends ThemeAPI  {
                     "license" => $license->exportToString(),
                     "issuerpub" => Config::get("license_issuer_public_key")
                 ]);
+
+                Cache::clear();
 
             }else{
                 RESTfulAPI::response(Bitmask::INVALID_PARAMETER->value, "Unknown Action", HTTP: 404);
