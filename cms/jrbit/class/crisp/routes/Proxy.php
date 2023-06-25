@@ -42,6 +42,16 @@ class Proxy extends ThemeAPI  {
     {
         $ttlIncrease = ($_GET["cache"]) ?? 300;
 
+        if(empty($_GET["url"])){
+            RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "URL Cannot be empty");
+            exit;
+        }
+
+        if(!str_starts_with($_GET["url"], "https://") && !str_starts_with($_GET["url"], "http://")){
+            RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "URL must be using the http(s) protocol!", HTTP: 400);
+            exit;
+        }
+
         $ttl = time() + $ttlIncrease;
         $Url = urldecode($_GET["url"]);
 
