@@ -340,7 +340,7 @@ try {
                 try {
                 $AnonymousID->withTrait((new IdentityTrait('country_code'))
                     ->withValue($GLOBALS["GeoIP_Country"]->country(Helper::getRealIpAddr())->country->isoCode ?? 'NONE'));
-                } catch (AddressNotFoundException $e) {
+                } catch (\Exception $e) {
                     
                 }
 
