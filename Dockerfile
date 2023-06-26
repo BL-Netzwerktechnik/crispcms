@@ -52,6 +52,8 @@ VOLUME /data
 
 RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
 
+RUN echo 'pm.max_children = 100' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    echo 'pm.start_servers = 25' >> /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Install Dependencies
 RUN apt-get update && \
