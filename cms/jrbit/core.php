@@ -318,12 +318,6 @@ try {
 
         }
 
-        if (USES_FLAGSMITH) {
-            $TwigTheme->addFunction(new TwigFunction('Flagsmith', [new Flagsmith()]));
-            $TwigTheme->addFunction(new TwigFunction('fsFeatureEnabled', [new Flagsmith(), 'isFeatureEnabled']));
-            $TwigTheme->addFunction(new TwigFunction('fsFeatureGetValue', [new Flagsmith(), 'getFeatureValue']));
-
-        }
         $TwigTheme->addFunction(new TwigFunction('microtime', 'microtime'));
         $TwigTheme->addFunction(new TwigFunction('includeResource', [new Themes(), 'includeResource']));
         $TwigTheme->addFunction(new TwigFunction('generateLink', [new Helper(), 'generateLink']));
