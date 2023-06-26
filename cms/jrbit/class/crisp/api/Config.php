@@ -232,13 +232,6 @@ class Config
             self::initDB();
         }
 
-
-        if(!Cache::isExpired("Config::list")){
-            Helper::Log(LogTypes::DEBUG, "Cache::Config::list");
-            return json_decode(Cache::get("Config::list"), true);
-        }
-
-
         Helper::Log(LogTypes::DEBUG, "Config::list: SELECT key, value FROM Config");
         $statement = self::$Database_Connection->prepare("SELECT key, value FROM Config");
         $statement->execute();
@@ -255,7 +248,6 @@ class Config
 
 
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);
-        Cache::write("Config::list", json_encode($result), time() + self::$TTL);
         return $result;
     }
 
