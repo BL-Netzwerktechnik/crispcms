@@ -337,8 +337,12 @@ try {
                     ->withValue($Locale ?? $_ENV['DEFAULT_LOCALE']));
 
             if(GeoIP::isAvailable()) {
+                try {
                 $AnonymousID->withTrait((new IdentityTrait('country_code'))
                     ->withValue($GLOBALS["GeoIP_Country"]->country(Helper::getRealIpAddr())->country->isoCode ?? 'NONE'));
+                } catch (AddressNotFoundException $e) {
+                    
+                }
 
             }
 
