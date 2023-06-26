@@ -67,7 +67,7 @@ RUN apt-get update && \
             libicu-dev \
             locales \
             nodejs \
-            nginx && \
+            nginx \
             wget && \
             pecl install -o -f redis && \
             docker-php-ext-configure gd --with-freetype --with-jpeg && \
