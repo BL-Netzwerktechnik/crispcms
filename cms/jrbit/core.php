@@ -304,7 +304,6 @@ try {
         $TwigTheme->addGlobal('RELEASE_ICON', RELEASE_ICON);
         $TwigTheme->addGlobal('RELEASE_ART', RELEASE_ART);
         $TwigTheme->addGlobal('CRISP_ICON', CRISP_ICON);
-        $TwigTheme->addGlobal('GLOBAL_IDENTITY', $GLOBALS['flagsmith_identity']);
 
         $TwigTheme->addFunction(new TwigFunction('prettyDump', [new Helper(), 'prettyDump']));
         $TwigTheme->addExtension(new StringLoaderExtension());
