@@ -25,13 +25,11 @@ namespace crisp;
 
 use Carbon\Carbon;
 use CompileError;
-use crisp\api\{Config, Flagsmith, GeoIP, Helper, lists\Languages, Translation};
+use crisp\api\{Config, GeoIP, Helper, lists\Languages, Translation};
 use crisp\core\{Bitmask, Crypto, LogTypes, Redis, RESTfulAPI, Security, Sessions, Themes, License};
 use Dotenv\Dotenv;
 use Error;
 use Exception;
-use Flagsmith\Models\Identity;
-use Flagsmith\Models\IdentityTrait;
 use ParseError;
 use RateLimit\{Rate, RedisRateLimiter};
 use Sentry\SentrySdk;
@@ -100,8 +98,6 @@ try {
         'REDIS_PORT',
         'REDIS_INDEX',
         'DEFAULT_LOCALE',
-        'CRISP_FLAGSMITH_APP_URL',
-        'CRISP_FLAGSMITH_API_KEY',
         'CRISP_THEME',
         'ENVIRONMENT',
         'HOST',
@@ -109,7 +105,6 @@ try {
         'TZ',
         'DEFAULT_LOCALE',
         'LANG',
-        'CRISP_FLAGSMITH_APP_URL',
     ])->notEmpty();
     $dotenv->required(['REDIS_INDEX', 'REDIS_PORT'])->isInteger();
     $dotenv->required('POSTGRES_URI')->allowedRegexValues('/^(?:([^:\/?#\s]+):\/{2})?(?:([^@\/?#\s]+)@)?([^\/?#\s]+)?(?:\/([^?#\s]*))?(?:[?]([^#\s]+))?\S*$/i');
@@ -299,14 +294,6 @@ try {
         $TwigTheme->addExtension(new StringLoaderExtension());
 
         $TwigTheme->addGlobal('VERSION_STRING', "{{ SERVER.ENVIRONMENT |upper }} | Theme@{{ ENV.THEME_GIT_COMMIT }} | CIP: {{ VM_IP }}@{{ CLUSTER }} | CV: {{ CRISP_VERSION }}@{{ ENV.GIT_COMMIT }} | AV: {{ API_VERSION }}@{{ ENV.GIT_COMMIT }} | RID: {{ REQUEST_ID }}");
-
-
-        if(GeoIP::isAvailable()) {
-            $GLOBALS["GeoIP_ASN"] = GeoIP::ASN();
-            $GLOBALS["GeoIP_City"] = GeoIP::City();
-            $GLOBALS["GeoIP_Country"] = GeoIP::Country();
-
-        }
 
         $TwigTheme->addFunction(new TwigFunction('microtime', 'microtime'));
         $TwigTheme->addFunction(new TwigFunction('includeResource', [new Themes(), 'includeResource']));
