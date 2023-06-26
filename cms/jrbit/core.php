@@ -187,16 +187,6 @@ try {
         define('CRISP_ICON', file_get_contents(__DIR__ . '/../themes/basic/crisp.svg'));
         define('RELEASE_ART', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".art"));
 
-        if (!empty($_ENV['FLAGSMITH_API_KEY']) && !empty($_ENV['FLAGSMITH_APP_URL'])) {
-            define('USES_FLAGSMITH', true);
-            $GLOBALS['Flagsmith'] = Flagsmith::Client();
-
-        } else {
-            define('USES_FLAGSMITH', false);
-        }
-
-
-
         header('X-Request-ID: ' . REQUEST_ID);
 
         if(!$_ENV['DONT_EXPOSE_CRISP']){
