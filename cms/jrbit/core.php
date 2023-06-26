@@ -321,34 +321,9 @@ try {
 
         if (USES_FLAGSMITH) {
             $TwigTheme->addFunction(new TwigFunction('Flagsmith', [new Flagsmith()]));
-            $TwigTheme->addFunction(new TwigFunction('fsFeatureEnabledGlobally', [Flagsmith::Client(), 'isFeatureEnabled']));
-            $TwigTheme->addFunction(new TwigFunction('fsFeatureEnabled', [new Flagsmith(), 'isFeatureEnabledByIdentity']));
-            $TwigTheme->addFunction(new TwigFunction('fsFeatureEnabledByIdentity', [new Flagsmith(), 'isFeatureEnabledByIdentity']));
-            $TwigTheme->addFunction(new TwigFunction('fsFeatureGetValue', [new Flagsmith(), 'getFeatureValueByIdentity']));
-            $TwigTheme->addFunction(new TwigFunction('fsFeatureGetValueGlobally', [Flagsmith::Client(), 'getFeatureValue']));
-            $TwigTheme->addFunction(new TwigFunction('fsFeatureGetValueByIdentity', [new Flagsmith(), 'getFeatureValueByIdentity']));
+            $TwigTheme->addFunction(new TwigFunction('fsFeatureEnabled', [new Flagsmith(), 'isFeatureEnabled']));
+            $TwigTheme->addFunction(new TwigFunction('fsFeatureGetValue', [new Flagsmith(), 'getFeatureValue']));
 
-            $AnonymousID = (new Identity($GLOBALS['guid']))
-                ->withTrait((new IdentityTrait('session_id'))
-                    ->withValue($GLOBALS['guid'] ?? 'unknown'))
-                ->withTrait((new IdentityTrait('route'))
-                    ->withValue($GLOBALS['route']->Page ?? 'unknown'))
-                ->withTrait((new IdentityTrait('locale'))
-                    ->withValue($Locale ?? $_ENV['DEFAULT_LOCALE']));
-
-            if(GeoIP::isAvailable()) {
-                try {
-                $AnonymousID->withTrait((new IdentityTrait('country_code'))
-                    ->withValue($GLOBALS["GeoIP_Country"]->country(Helper::getRealIpAddr())->country->isoCode ?? 'NONE'));
-                } catch (\Exception $e) {
-                    
-                }
-
-            }
-
-            $GLOBALS['flagsmith_identity'] = $AnonymousID;
-
-            Flagsmith::setTraitsByIdentity();
         }
         $TwigTheme->addFunction(new TwigFunction('microtime', 'microtime'));
         $TwigTheme->addFunction(new TwigFunction('includeResource', [new Themes(), 'includeResource']));
