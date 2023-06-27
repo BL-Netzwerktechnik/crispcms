@@ -39,13 +39,18 @@ fi
 
 cd "$CRISP_WORKDIR" || exit 1
 
-crisp-cli crisp -m || (echo "Failed to Migrate" && exit 1)
-crisp-cli theme -u || (echo "Failed to install theme" && exit 1)
-crisp-cli theme -i || (echo "Failed to install theme" && exit 1)
-crisp-cli theme -m || (echo "Failed to migrate theme" && exit 1)
-crisp-cli theme -c || (echo "Failed to clear cache" && exit 1)
-crisp-cli theme -b || (echo "Failed to execute boot files" && exit 1)
-
+crisp-cli crisp --migrate || (echo "Failed to Migrate" && exit 1)
+sleep 2
+crisp-cli theme --uninstall
+sleep 2
+crisp-cli theme --install || (echo "Failed to install theme" && exit 1)
+sleep 2
+crisp-cli theme --migrate || (echo "Failed to migrate theme" && exit 1)
+sleep 2
+crisp-cli theme --clear-cache || (echo "Failed to clear cache" && exit 1)
+sleep 2
+crisp-cli theme --boot || (echo "Failed to execute boot files" && exit 1)
+sleep 2
 if [[ -z "${ASSETS_S3_BUCKET}" ]]; then
   echo "Not deploying to S3"
 else

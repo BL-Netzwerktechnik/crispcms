@@ -103,6 +103,7 @@ RUN rm /etc/nginx/sites-enabled/default
 RUN ["chmod", "+x", "/opt/entrypoint.d/entrypoint.sh"]
 RUN ["chmod", "+x", "/opt/entrypoint.d/bootstrap.sh"]
 RUN ["chmod", "+x", "/usr/local/bin/crisp-cli"]
+RUN ["ln", "-s", "/usr/local/bin/crisp-cli", "/usr/local/bin/crisp"]
 
 
 RUN ["/bin/bash", "-c", "/opt/entrypoint.d/bootstrap.sh"]
