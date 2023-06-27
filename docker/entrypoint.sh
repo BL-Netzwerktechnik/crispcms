@@ -37,30 +37,18 @@ if [ -z "$DEFAULT_LOCALE" ]; then
 fi
 
 
+sed -i -e "s/# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
+dpkg-reconfigure --frontend=noninteractive locales
+update-locale LANG="$LANG"
+
+
 cd "$CRISP_WORKDIR" || exit 1
 
-crisp-cli crisp --migrate || (echo "Failed to Migrate" && exit 1)
-sleep 2
-crisp-cli theme --uninstall
-sleep 2
-crisp-cli theme --install || (echo "Failed to install theme" && exit 1)
-sleep 2
-crisp-cli theme --migrate || (echo "Failed to migrate theme" && exit 1)
-sleep 2
-crisp-cli theme --clear-cache || (echo "Failed to clear cache" && exit 1)
-sleep 2
-crisp-cli theme --boot || (echo "Failed to execute boot files" && exit 1)
-sleep 2
 if [[ -z "${ASSETS_S3_BUCKET}" ]]; then
   echo "Not deploying to S3"
 else
   crisp-cli assets --deploy-to-s3
 fi
-
-
-sed -i -e "s/# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
-dpkg-reconfigure --frontend=noninteractive locales
-update-locale LANG="$LANG"
 
 if [[ -z "${MAXMIND_LICENSE}" || -z "${MAXMIND_ACCOUNT_ID}" || -z "${MAXMIND_EDITION_IDS}" ]]; then
   echo "No Maxmind credentials found, not updating geoip"
@@ -79,6 +67,20 @@ echo "Setting PHP Timezone..."
 printf "[Date]\ndate.timezone = \"$TZ\"\n" > /usr/local/etc/php/conf.d/timezone.ini
 
 rm /tmp/* -R
+
+
+crisp-cli crisp --migrate || (echo "Failed to Migrate" && exit 1)
+sleep 2
+crisp-cli theme --uninstall
+sleep 2
+crisp-cli theme --install || (echo "Failed to install theme" && exit 1)
+sleep 2
+crisp-cli theme --migrate || (echo "Failed to migrate theme" && exit 1)
+sleep 2
+crisp-cli theme --clear-cache || (echo "Failed to clear cache" && exit 1)
+sleep 2
+crisp-cli theme --boot || (echo "Failed to execute boot files" && exit 1)
+sleep 2
 
 cd / || exit 1
 
