@@ -43,23 +43,30 @@ class Postgres {
      */
     public function __construct($EnvKey = 'POSTGRES_URI') {
 
-        if (isset($_ENV[$EnvKey]) && !empty($_ENV[$EnvKey])) {
-            $db = parse_url($_ENV[$EnvKey]);
-        }
+        if(!is_null($GLOBALS["DBConn"][$EnvKey])){
+            $this->Database_Connection = $GLOBALS["DBConn"][$EnvKey];
+        }else{
 
-        try {
-            $pdo = new PDO("pgsql:" . sprintf(
-                            "host=%s;port=%s;user=%s;password=%s;dbname=%s",
-                            $db["host"],
-                            $db["port"],
-                            $db["user"],
-                            $db["pass"],
-                            ltrim($db["path"], "/")
-            ));
-            Helper::Log(LogTypes::DEBUG, "Created new PDO Session");
-            $this->Database_Connection = $pdo;
-        } catch (Exception $ex) {
-            throw new BitmaskException($ex, Bitmask::POSTGRES_CONN_ERROR->value);
+
+            if (isset($_ENV[$EnvKey]) && !empty($_ENV[$EnvKey])) {
+                $db = parse_url($_ENV[$EnvKey]);
+            }
+
+            try {
+                $pdo = new PDO("pgsql:" . sprintf(
+                                "host=%s;port=%s;user=%s;password=%s;dbname=%s",
+                                $db["host"],
+                                $db["port"],
+                                $db["user"],
+                                $db["pass"],
+                                ltrim($db["path"], "/")
+                ));
+                Helper::Log(LogTypes::DEBUG, "Created new PDO Session");
+                $this->Database_Connection = $pdo;
+                $GLOBALS["DBConn"][$EnvKey] = $pdo;
+            } catch (Exception $ex) {
+                throw new BitmaskException($ex, Bitmask::POSTGRES_CONN_ERROR->value);
+            }
         }
     }
 
