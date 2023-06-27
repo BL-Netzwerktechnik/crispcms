@@ -203,14 +203,6 @@ class Translation
             self::initDB();
         }
 
-        $GlobalOptions = [];
-        foreach (Config::list(true) as $Item) {
-            $GlobalOptions["{{ config.{$Item['key']} }}"] = $Item["value"];
-        }
-
-        $Options = array_merge($UserOptions, $GlobalOptions);
-
-
         $statement = self::$Database_Connection->prepare("SELECT * FROM Translations WHERE key = :Key");
         $statement->execute(array(
             ":Key" => $Key,
@@ -228,7 +220,7 @@ class Translation
                 return $Translation[$_ENV['DEFAULT_LOCALE'] ?? 'en'];
             }
 
-            return strtr($Translation[strtolower(self::$Language)], $Options);
+            return strtr($Translation[strtolower(self::$Language)], $UserOptions);
         }
         return $Key;
     }
@@ -248,14 +240,6 @@ class Translation
             self::initDB();
         }
 
-        $GlobalOptions = [];
-
-        foreach (Config::list(true) as $Item) {
-            $GlobalOptions["{{ config.{$Item['key']} }}"] = $Item["value"];
-        }
-
-        $Options = array_merge($UserOptions, $GlobalOptions);
-
 
         $statement = self::$Database_Connection->prepare("SELECT * FROM Translations WHERE key = :Key");
         $statement->execute(array(
@@ -269,10 +253,10 @@ class Translation
                 if (self::$Language === $_ENV['DEFAULT_LOCALE'] ?? 'en' || !$Translation[$_ENV['DEFAULT_LOCALE'] ?? 'en']) {
                     return $Key . ".plural";
                 }
-                return strtr($Translation[$_ENV['DEFAULT_LOCALE'] ?? 'en'], $Options);
+                return strtr($Translation[$_ENV['DEFAULT_LOCALE'] ?? 'en'], $UserOptions);
             }
 
-            return strtr($Translation[strtolower(self::$Language)], $Options);
+            return strtr($Translation[strtolower(self::$Language)], $UserOptions);
         }
         return $Key . ".plural";
     }
