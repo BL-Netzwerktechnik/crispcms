@@ -70,7 +70,7 @@ class Config
      * @param array $UserOptions
      * @return mixed The value as string, on failure FALSE
      */
-    public static function get(string $Key, array $UserOptions = array()): mixed
+    public static function get(string $Key): mixed
     {
         if (self::$Database_Connection === null) {
             self::initDB();
@@ -79,7 +79,7 @@ class Config
 
         if(!Cache::isExpired("Config::get::$Key")){
             Helper::Log(LogTypes::DEBUG, "Cache::Config::get::$Key");
-            return self::evaluateRow(json_decode(Cache::get("Config::get::$Key"), true), $UserOptions);
+            return self::evaluateRow(json_decode(Cache::get("Config::get::$Key"), true));
         }
 
 
@@ -94,34 +94,18 @@ class Config
 
             Cache::write("Config::get::$Key", json_encode($Result), time() + self::$TTL);
 
-            return self::evaluateRow($Result, $UserOptions);
+            return self::evaluateRow($Result);
         }
         return false;
     }
 
-    private static function evaluateRow($Result, $UserOptions){
-
-        $GlobalOptions = [];
-        $Value = $Result["value"];
-
-        if ($Result["type"] !== 'serialized') {
-
-            foreach (self::list(true) as $Item) {
-                $GlobalOptions["{{ config.{$Item['key']} }}"] = $Item["value"];
-            }
-
-            $Options = array_merge($UserOptions, $GlobalOptions);
-
-            $Value = strtr($Value, $Options);
-
-        }
-
+    private static function evaluateRow($Result){
         return match ($Result["type"]) {
-            'serialized' => unserialize($Value),
-            'boolean' => (bool)$Value,
-            'integer' => (int)$Value,
-            'double' => (double)$Value,
-            default => $Value,
+            'serialized' => unserialize($Result["value"]),
+            'boolean' => (bool)$Result["value"],
+            'integer' => (int)$Result["value"],
+            'double' => (double)$Result["value"],
+            default => $Result["value"],
         };
     }
 
