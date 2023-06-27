@@ -65,12 +65,12 @@ migrate-and-test:
   - php bin/cli.php theme -i
   - rm /tmp/ci/composer
   #- "./vendor/bin/phpunit --bootstrap vendor/autoload.php --log-junit results.xml tests"
-  artifacts:
-    when: always
-    paths:
-      - cms/results.xml
-    reports:
-      junit: cms/results.xml
+  #artifacts:
+  #  when: always
+  #  paths:
+  #    - cms/results.xml
+  #  reports:
+  #    junit: cms/results.xml
 
 nightly:
   stage: publish
