@@ -75,9 +75,9 @@ crisp-cli theme --uninstall
 sleep 2
 crisp-cli theme --install || (echo "Failed to install theme" && exit 1)
 sleep 2
-crisp-cli theme --migrate || (echo "Failed to migrate theme" && exit 1)
-sleep 2
 crisp-cli theme --clear-cache || (echo "Failed to clear cache" && exit 1)
+sleep 2
+crisp-cli theme --migrate || (echo "Failed to migrate theme" && exit 1)
 sleep 2
 crisp-cli theme --boot || (echo "Failed to execute boot files" && exit 1)
 sleep 2
