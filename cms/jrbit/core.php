@@ -243,7 +243,6 @@ try {
         }
 
 
-
         if (ENVIRONMENT === 'production') {
             $TwigTheme = new Environment($ThemeLoader, [
                 'cache' => core::CACHE_DIR
@@ -369,7 +368,7 @@ try {
     }
 
 
-    if (IS_API_ENDPOINT) {
+    if (defined("IS_API_ENDPOINT")) {
         RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
         exit;
     }

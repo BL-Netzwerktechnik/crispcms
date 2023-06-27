@@ -25,6 +25,7 @@
 namespace crisp\routes;
 
 use crisp\api\Cache;
+use crisp\api\Helper;
 use crisp\core\Bitmask;
 use crisp\core\RESTfulAPI;
 use crisp\models\ThemeAPI;
@@ -70,6 +71,7 @@ class Proxy extends ThemeAPI  {
 
             $data = file_get_contents(urldecode($_GET["url"]));
 
+            $content_type = null;
 
 
             $bytes = strlen($data);
@@ -78,14 +80,22 @@ class Proxy extends ThemeAPI  {
                 RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Proxy cannot serve files larger than 5 megabytes! Received ". number_format($bytes / 1024, 2). "kb", $paramArray);
                 exit;
             }
-            $headers = implode("\n", $http_response_header);
-            if (preg_match_all("/^content-type\s*:\s*(.*)$/mi", $headers, $matches)) {
-                $content_type = end($matches[1]);
-            }else{
+            if(isset($_GET["type"])) {
+                $content_type = Helper::generateUpToDateMimeArray()[$_GET["type"]];
+            }
 
-                $finfo = new finfo(FILEINFO_MIME);
 
-                $content_type = $finfo->buffer($data);
+            if(!$content_type) {
+                $headers = implode("\n", $http_response_header);
+                if (preg_match_all("/^content-type\s*:\s*(.*)$/mi", $headers, $matches)) {
+                    $content_type = end($matches[1]);
+                } else {
+                    $finfo = new finfo(FILEINFO_MIME);
+                    $content_type = $finfo->buffer($data);
+                    if($content_type === "text/plain"){
+                        $content_type = (Helper::detectMimetype($_GET["url"]) ?? $content_type);
+                    }
+                }
             }
 
             $cacheData = [
@@ -97,14 +107,13 @@ class Proxy extends ThemeAPI  {
 
             Cache::write($Url, serialize($cacheData),  $ttl);
 
-            header("Content-Type: ". $mimetype);
+            header("Content-Type: ". $content_type);
             header("X-Cached: no");
             echo $data;
             exit;
         }
 
         $cache = unserialize(Cache::get($Url));
-
         header("Content-Type: ". $cache["mimetype"]);
         header("X-Cached: yes");
 

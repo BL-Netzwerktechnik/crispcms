@@ -62,25 +62,41 @@ class Helper
         );
     }
 
+    /**
+     * @link https://www.php.net/manual/en/function.mime-content-type.php
+     * @param string $url
+     * @return array
+     */
+    public static function generateUpToDateMimeArray(string $url = "https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types"): array
+    {
 
-    public static function detectMimetype(string $file){
+        if(!Cache::isExpired("mime_types")){
+            return json_decode(Cache::get("mime_types"), true);
+        }
 
-        $mime = mime_content_type($file);
+        $mimetypes = [];
+        foreach(explode("\n", file_get_contents($url)) as $line) {
+            $line = trim($line);
+            if (str_starts_with($line, "#") || $line == "") continue;
+            $explodedLine = preg_split('/\s+/', $line);
+            list($mimetype, $extension) = $explodedLine;
+            $mimetypes[$extension] = $mimetype;
+        }
 
-        $mappings = [
-            "css" => "text/css",
-            "js" => "text/javascript",
-            "json" => "application/json"
-        ];
+        Cache::write("mime_types", json_encode($mimetypes), time() + 3600);
+
+        return $mimetypes;
+    }
+
+    public static function detectMimetype(string $file): string|null {
+
+        $mappings = self::generateUpToDateMimeArray();
+
 
         $splitExt = explode(".", $file);
         $extension = end($splitExt);
 
-        if(array_key_exists($extension, $mappings)){
-            return $mappings[$extension];
-        }
-
-        return $mime;
+        return $mappings[$extension];
     }
 
     /**
