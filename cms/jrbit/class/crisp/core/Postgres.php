@@ -44,7 +44,7 @@ class Postgres {
     public function __construct($EnvKey = 'POSTGRES_URI') {
 
 
-        if(!is_null($GLOBALS["DBConn_$EnvKey"])){
+        if($GLOBALS["DBConn_$EnvKey"] !== null){
             $this->Database_Connection = $GLOBALS["DBConn_$EnvKey"];
         }else{
 
