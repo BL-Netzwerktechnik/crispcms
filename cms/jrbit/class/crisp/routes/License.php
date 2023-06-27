@@ -150,11 +150,7 @@ class License extends ThemeAPI  {
                     RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Could not sign license", HTTP: 500);
                     exit;
                 }
-
-                if(!Config::set("license_key", $license->exportToString())){
-                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Could not save license", HTTP: 500);
-                    exit;
-                }
+                
                 RESTfulAPI::response(Bitmask::REQUEST_SUCCESS->value, "OK", [
                     "license" => $license->exportToString(),
                     "issuerpub" => Config::get("license_issuer_public_key")
