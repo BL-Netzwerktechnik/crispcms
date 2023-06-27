@@ -93,7 +93,7 @@ nightly-license:
     - ''
   script:
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-    --destination "${CI_REGISTRY_IMAGE}/licensed:dev" --destination "${CI_REGISTRY_IMAGE}:latest"
+    --destination "${CI_REGISTRY_IMAGE}/licensed:dev" --destination "${CI_REGISTRY_IMAGE}/licensed:latest"
     --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA} --build-arg REQUIRE_LICENSE=true --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
   - if: $CI_COMMIT_REF_NAME == "master"
