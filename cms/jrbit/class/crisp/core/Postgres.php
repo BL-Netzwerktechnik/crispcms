@@ -45,7 +45,7 @@ class Postgres {
 
 
         if(!is_null($GLOBALS["DBConn_$EnvKey"])){
-            $this->Database_Connection = $GLOBALS["DBConn_$EnvKey"]);
+            $this->Database_Connection = $GLOBALS["DBConn_$EnvKey"];
         }else{
 
 
@@ -64,7 +64,7 @@ class Postgres {
                 ));
                 Helper::Log(LogTypes::DEBUG, "Created new PDO Session");
                 $this->Database_Connection = $pdo;
-                $GLOBALS["DBConn_$EnvKey"]) = $pdo;
+                $GLOBALS["DBConn_$EnvKey"] = $pdo;
             } catch (Exception $ex) {
                 throw new BitmaskException($ex, Bitmask::POSTGRES_CONN_ERROR->value);
             }
