@@ -45,7 +45,7 @@ class Version extends ThemeAPI  {
         $license = null;
 
         if(\crisp\api\License::isLicenseAvailable()){
-            $licobj = \crisp\api\License::fromFile(core::PERSISTENT_DATA. "/license.key");
+            $licobj = \crisp\api\License::fromDB();
             $license = json_decode($licobj->encode(), true);
 
             $license["valid"] = $licobj->isValid();
