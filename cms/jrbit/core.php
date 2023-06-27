@@ -251,7 +251,7 @@ try {
             $TwigTheme = new Environment($ThemeLoader, []);
         }
 
-
+        $_ENV['REQUIRE_LICENSE'] = $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
 
         if($_ENV['REQUIRE_LICENSE'] && !IS_SPECIAL_PAGE){
             $GLOBALS["license"] = api\License::fromDB();
