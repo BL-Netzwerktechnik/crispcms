@@ -2,7 +2,6 @@ cms/jrbit/cache/*
 !/cms/jrbit/cache/.keep
 cms/.env
 cms/vendor
-.vscode
 .idea/
 composer.phar
 licensekey.dat
