@@ -41,11 +41,25 @@ use stdClass;
 class Helper
 {
 
+    /**
+     * Create a directory with the correct permissions
+     *
+     * @param string $dir
+     * @return boolean
+     */
     public static function createDir(string $dir): bool
     {
         return mkdir($dir) && chown($dir, 33) && chgrp($dir, 33);
     }
 
+    /**
+     * Generate the S3 URL
+     *
+     * @param string $bucket
+     * @param string $region
+     * @param string|null $template
+     * @return string
+     */
     public static function getS3Url(string $bucket, string $region, string $template = null): string
     {
 
@@ -63,6 +77,7 @@ class Helper
     }
 
     /**
+     * Generate an up to date mime array
      * @link https://www.php.net/manual/en/function.mime-content-type.php
      * @param string $url
      * @return array
@@ -88,6 +103,12 @@ class Helper
         return $mimetypes;
     }
 
+    /**
+     * Detect the mimetype of a file
+     *
+     * @param string $file
+     * @return string|null
+     */
     public static function detectMimetype(string $file): string|null {
 
         $mappings = self::generateUpToDateMimeArray();
@@ -100,6 +121,7 @@ class Helper
     }
 
     /**
+     * Get a list of all files in a directory recursively
      * @link https://stackoverflow.com/questions/24783862/list-all-the-files-and-folders-in-a-directory-with-php-recursive-function
      * @param $dir
      * @param $results
@@ -123,6 +145,11 @@ class Helper
         return $results;
     }
 
+    /**
+     * Generate a nginx like access log
+     *
+     * @return string
+     */
     public static function getRequestLog(): string
     {
         return sprintf('%s - [%s] "%s %s %s" %s "%s"',
@@ -136,6 +163,13 @@ class Helper
         );
     }
 
+    /**
+     * Logger component
+     *
+     * @param LogTypes|integer $type
+     * @param [type] $message
+     * @return void
+     */
     public static function Log(LogTypes|int $type, $message): void
     {
 
@@ -169,6 +203,11 @@ class Helper
             }
     }
 
+    /**
+     * Get the Crisp Instance ID
+     *
+     * @return string
+     */
     public static function getInstanceId(): string
     {
 
@@ -310,40 +349,12 @@ class Helper
 
     }
 
-    public static function LoremIpsum($count = 1, $max = 20)
-    {
 
-        $out = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, ' .
-            'sed do eiusmod tempor incididunt ut labore et dolore magna ' .
-            'aliqua.';
-        $rnd = explode(' ',
-            'a ab ad accusamus adipisci alias aliquam amet animi aperiam ' .
-            'architecto asperiores aspernatur assumenda at atque aut beatae ' .
-            'blanditiis cillum commodi consequatur corporis corrupti culpa ' .
-            'cum cupiditate debitis delectus deleniti deserunt dicta ' .
-            'dignissimos distinctio dolor ducimus duis ea eaque earum eius ' .
-            'eligendi enim eos error esse est eum eveniet ex excepteur ' .
-            'exercitationem expedita explicabo facere facilis fugiat harum ' .
-            'hic id illum impedit in incidunt ipsa iste itaque iure iusto ' .
-            'laborum laudantium libero magnam maiores maxime minim minus ' .
-            'modi molestiae mollitia nam natus necessitatibus nemo neque ' .
-            'nesciunt nihil nisi nobis non nostrum nulla numquam occaecati ' .
-            'odio officia omnis optio pariatur perferendis perspiciatis ' .
-            'placeat porro possimus praesentium proident quae quia quibus ' .
-            'quo ratione recusandae reiciendis rem repellat reprehenderit ' .
-            'repudiandae rerum saepe sapiente sequi similique sint soluta ' .
-            'suscipit tempora tenetur totam ut ullam unde vel veniam vero ' .
-            'vitae voluptas');
-        $max = $max <= 3 ? 4 : $max;
-        for ($i = 0, $add = $count - (int)$std; $i < $add; $i++) {
-            shuffle($rnd);
-            $words = array_slice($rnd, 0, mt_rand(3, $max));
-            $out .= (!$std && $i == 0 ? '' : ' ') . ucfirst(implode(' ', $words)) . '.';
-        }
-        return $out;
-    }
-
-
+    /**
+     * Get the current commit hash
+     *
+     * @return string|null
+     */
     public static function getCommitHash(): ?string
     {
         return $_ENV['GIT_COMMIT'] ?: trim(exec('git log --pretty="%h" -n1 HEAD'));
@@ -352,6 +363,7 @@ class Helper
 
 
     /**
+     * Generate a link with locale
      * @param string $Path
      * @param false $External
      * @return string

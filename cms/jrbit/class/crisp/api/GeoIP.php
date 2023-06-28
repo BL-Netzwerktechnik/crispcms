@@ -36,26 +36,50 @@ use PDO;
 use splitbrain\phpcli\CLI;
 use stdClass;
 
+
 /**
- * Some useful helper functions
+ * GeoIP API
  */
 class GeoIP
 {
 
+    /**
+     * Check if the GeoIP database is available
+     *
+     * @return boolean
+     */
     public static function isAvailable(): bool {
         return count(glob("/usr/share/GeoIP/*.mmdb")) > 0;
     }
 
+    /**
+     * Get the GeoIP database City
+     *
+     * @param string $defaultDB
+     * @return Reader
+     */
     public static function City(string $defaultDB = "GeoLite2-City.mmdb"): Reader
     {
         return new Reader("/usr/share/GeoIP/$defaultDB");
     }
 
+    /**
+     * Get the GeoIP database ASN
+     *
+     * @param string $defaultDB
+     * @return Reader
+     */
     public static function ASN(string $defaultDB = "GeoLite2-ASN.mmdb"): Reader
     {
         return new Reader("/usr/share/GeoIP/$defaultDB");
     }
 
+    /**
+     * Get the GeoIP database Country
+     *
+     * @param string $defaultDB
+     * @return Reader
+     */
     public static function Country(string $defaultDB = "GeoLite2-Country.mmdb"): Reader
     {
         return new Reader("/usr/share/GeoIP/$defaultDB");

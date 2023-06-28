@@ -38,10 +38,25 @@ use crisp\core\RESTfulAPI;
 class Config
 {
 
+    /**
+     * The time to live for the cache
+     *
+     * @var integer
+     */
     private static int $TTL = 120;
 
+    /**
+     * Database connection
+     *
+     * @var PDO|null
+     */
     private static ?PDO $Database_Connection = null;
 
+    /**
+     * Initialize the database connection
+     *
+     * @return void
+     */
     private static function initDB(): void
     {
         $DB = new Postgres();

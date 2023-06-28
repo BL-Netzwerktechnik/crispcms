@@ -50,18 +50,40 @@ class core
 {
     /* Some important constants */
 
+    /**
+     * The current version of crispCMS
+     */
     public const CRISP_VERSION = '13.0.1';
 
+    /**
+     * The current version of the API
+     */
     public const API_VERSION = '3.0.0';
 
+    /**
+     * The codename of the current release
+     */
     public const RELEASE_NAME = "Bitterlemon";
 
+    /**
+     * Location of the Persistent Storage
+     */
     public const PERSISTENT_DATA = "/data";
 
+
+    /**
+     * Default Theme
+     */
     public const DEFAULT_THEME = "crisptheme";
 
+    /**
+     * Default Cache Location
+     */
     public const CACHE_DIR = '/tmp/crisp-cache/';
 
+    /**
+     * Default Theme Root Folder
+     */
     public const THEME_BASE_DIR = __DIR__ . '/../themes';
 
 }

@@ -43,10 +43,23 @@ class Cache
 {
 
 
+    /**
+     * Calculate the cache directory for a given level
+     * @param string $name
+     * @param integer $level
+     * @return string
+     */
     private static function calculateSingleLevel(string $name, int $level): string
     {
         return $name[$level - 1];
     }
+
+    /**
+     * Calculate the cache directory for a given key
+     *
+     * @param string $name
+     * @return string
+     */
     private static function calculateCacheDir(string $name): string
     {
         return sprintf("%s/%s/%s/%s",
@@ -57,6 +70,12 @@ class Cache
         );
     }
 
+    /**
+     * Get the expiry date of a given cache key
+     *
+     * @param string $key
+     * @return integer|false
+     */
     public static function getExpiryDate(string $key): int|false {
 
         if(!self::isCached($key)){
@@ -70,6 +89,12 @@ class Cache
         return json_decode(file_get_contents(core::CACHE_DIR . "/crisp/". $Dir . "/" . $Hash . ".cache"))->expires;
     }
 
+    /**
+     * Check if a given key is cached
+     *
+     * @param string $key
+     * @return boolean
+     */
     private static function isCached(string $key): bool
     {
 
@@ -79,20 +104,47 @@ class Cache
 
     }
 
+    /**
+     * Create a directory for a given key
+     *
+     * @param string $name
+     * @return boolean
+     */
     private static function createDir(string $name): bool
     {
         return mkdir(core::CACHE_DIR . "/crisp/$name", recursive: true);
     }
 
+    /**
+     * Get the hash of given data
+     *
+     * @param string $data
+     * @return string
+     */
     public static function getHash(string $data): string
     {
         return hash("sha512", $data);
     }
 
+    /**
+     * Generate a cache file
+     *
+     * @param integer $expires
+     * @param string $data
+     * @return void
+     */
     private static function generateFile(int $expires, string $data){
         return json_encode(["expires" => $expires, "data" => base64_encode($data)]);
     }
 
+    /**
+     * Write data to the cache
+     *
+     * @param string $key The key to write to
+     * @param string $data The data to write
+     * @param integer $expires The expiry date of the cache
+     * @return boolean True if the cache was written successfully
+     */
     public static function write(string $key, string $data, int $expires): bool
     {
         $Hash = self::getHash($key);
@@ -107,6 +159,12 @@ class Cache
 
     }
 
+    /**
+     * Check if a given cache is expired
+     *
+     * @param string $key The cache to check
+     * @return boolean True if the cache is expired
+     */
     public static function isExpired(string $key): bool
     {
 
@@ -121,6 +179,12 @@ class Cache
         return $timestamp < time();
     }
 
+    /**
+     * Clear the cache
+     *
+     * @param [type] $dir
+     * @return boolean
+     */
     public static function clear(string $dir = core::CACHE_DIR): bool {
 
         if(!file_exists($dir)){
@@ -147,6 +211,12 @@ class Cache
         return true;
     }
 
+    /**
+     * Delete a given cache
+     *
+     * @param string $key
+     * @return boolean
+     */
     public static function delete(string $key): bool {
         $Hash = self::getHash($key);
         $Dir = self::calculateCacheDir($Hash);
@@ -158,6 +228,12 @@ class Cache
         return unlink(core::CACHE_DIR . "/crisp/$Dir/$Hash.cache");
     }
 
+    /**
+     * Get the data of a given cache
+     *
+     * @param string $key
+     * @return string|false
+     */
     public static function get(string $key): string|false
     {
         $Hash = self::getHash($key);
