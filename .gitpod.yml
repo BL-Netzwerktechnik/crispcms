@@ -39,7 +39,7 @@ ports:
     onOpen: notify
 tasks:
 
-  - command: gp preview $(gp url 80)_debug
+  - command: gp preview $(gp url 80)/_debug
 
   - name: Postgres
     init: docker pull postgres
@@ -55,8 +55,7 @@ tasks:
     command: 'docker run -p 1025:1025 -p 8025:8025 --name mailhog --net="host" --rm mailhog/mailhog'
 
   - name: Docsify
-    init: npm i docsify-cli -g
-    command: 'docsify serve ./docs'
+    command: 'npm i docsify-cli -g && docsify serve ./docs'
 
   - name: CrispCMS
     init: docker build -t crispcms . && git clone https://gitlab.jrbit.de/crispcms/theme-template theme && mv theme/theme cms/themes/crisptheme && rm -rf theme

@@ -43,6 +43,13 @@ class Cache
 {
 
 
+    public static function getCrispCacheDir(string $Key): string {
+        return sprintf("%s/crisp/%s", core::CACHE_DIR, self::calculateCacheDir(self::getHash($Key)));
+    }
+    public static function getCrispCacheFile(string $Key): string {
+        return sprintf("%s/%s.cache", self::getCrispCacheDir($Key), self::getHash($Key));
+    }
+
     /**
      * Calculate the cache directory for a given level
      * @param string $name
@@ -81,12 +88,9 @@ class Cache
         if(!self::isCached($key)){
             return false;
         }
-        $Hash = self::getHash($key);
-
-        $Dir = self::calculateCacheDir($Hash);
 
 
-        return json_decode(file_get_contents(core::CACHE_DIR . "/crisp/". $Dir . "/" . $Hash . ".cache"))->expires;
+        return json_decode(file_get_contents(self::getCrispCacheFile($key)))->expires;
     }
 
     /**
@@ -97,11 +101,8 @@ class Cache
      */
     private static function isCached(string $key): bool
     {
-
-        $Hash = self::getHash($key);
-        Helper::Log(LogTypes::DEBUG, "Checking cache ". core::CACHE_DIR . "/crisp/". self::calculateCacheDir($Hash). "/$Hash.cache");
-        return file_exists(core::CACHE_DIR . "/crisp/". self::calculateCacheDir($Hash). "/$Hash.cache");
-
+        Helper::Log(LogTypes::DEBUG, sprintf("Checking cache %s (%s)", self::getCrispCacheFile($key), $key));
+        return file_exists(self::getCrispCacheFile($key));
     }
 
     /**
@@ -110,9 +111,10 @@ class Cache
      * @param string $name
      * @return boolean
      */
-    private static function createDir(string $name): bool
+    private static function createDir(string $key): bool
     {
-        return mkdir(core::CACHE_DIR . "/crisp/$name", recursive: true);
+        Helper::Log(LogTypes::DEBUG, sprintf("Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
+        return mkdir(self::getCrispCacheDir($key), recursive: true);
     }
 
     /**
@@ -147,14 +149,10 @@ class Cache
      */
     public static function write(string $key, string $data, int $expires): bool
     {
-        $Hash = self::getHash($key);
+        self::createDir($key);
 
-        $Dir = self::calculateCacheDir($Hash);
-
-        self::createDir($Dir);
-
-        Helper::Log(LogTypes::DEBUG, "Writing Cache ". core::CACHE_DIR . "/crisp/". $Dir . "/" . $Hash . ".cache");
-        return file_put_contents(core::CACHE_DIR . "/crisp/". $Dir . "/" . $Hash . ".cache", self::generateFile($expires, $data));
+        Helper::Log(LogTypes::DEBUG, "Writing Cache ". self::getCrispCacheFile($key));
+        return file_put_contents(self::getCrispCacheFile($key), self::generateFile($expires, $data));
 
 
     }
@@ -168,15 +166,20 @@ class Cache
     public static function isExpired(string $key): bool
     {
 
-        $Hash = self::getHash($key);
+        $CacheFile = self::getCrispCacheFile($key);
+        if(!self::isCached($key)) {
+            Helper::Log(LogTypes::DEBUG, "Cache $CacheFile does not exist");
+            return true;
+        }
+        $timestamp = json_decode(file_get_contents($CacheFile))->expires;
 
-        $Dir = self::calculateCacheDir($Hash);
+        if(time() > $timestamp){
+            Helper::Log(LogTypes::DEBUG, "Cache $CacheFile has expired");
+            return true;
+        }
 
-        if(!self::isCached($key)) return true;
-
-        $timestamp = json_decode(file_get_contents(core::CACHE_DIR . "/crisp/". $Dir . "/" . $Hash . ".cache"))->expires;
-
-        return $timestamp < time();
+        Helper::Log(LogTypes::DEBUG, "Cache $CacheFile did not expire");
+        return false;
     }
 
     /**
@@ -218,14 +221,11 @@ class Cache
      * @return boolean
      */
     public static function delete(string $key): bool {
-        $Hash = self::getHash($key);
-        $Dir = self::calculateCacheDir($Hash);
-
         if(!Cache::isCached($key)){
             return false;
         }
 
-        return unlink(core::CACHE_DIR . "/crisp/$Dir/$Hash.cache");
+        return unlink(self::getCrispCacheFile($key));
     }
 
     /**
@@ -236,15 +236,11 @@ class Cache
      */
     public static function get(string $key): string|false
     {
-        $Hash = self::getHash($key);
-
-        $Dir = self::calculateCacheDir($Hash);
-
         if(!Cache::isCached($key)){
             return false;
         }
 
-        return base64_decode(json_decode(file_get_contents(core::CACHE_DIR . "/crisp/". $Dir . "/" . $Hash . ".cache"))->data);
+        return base64_decode(json_decode(file_get_contents(self::getCrispCacheFile($key)))->data);
 
 
     }

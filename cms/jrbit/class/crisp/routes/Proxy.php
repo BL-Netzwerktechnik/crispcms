@@ -42,19 +42,20 @@ class Proxy extends ThemeAPI  {
     public function execute(string $Interface, Environment $TwigTheme): void
     {
         $ttlIncrease = ($_GET["cache"]) ?? 300;
+        $Url = urldecode($_GET["url"]);
 
-        if(empty($_GET["url"])){
+
+        if(empty($Url)){
             RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "URL Cannot be empty");
             exit;
         }
 
-        if(!str_starts_with($_GET["url"], "https://") && !str_starts_with($_GET["url"], "http://")){
+        if(!str_starts_with($Url, "https://") && !str_starts_with($Url, "http://")){
             RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "URL must be using the http(s) protocol!", HTTP: 400);
             exit;
         }
 
         $ttl = time() + $ttlIncrease;
-        $Url = urldecode($_GET["url"]);
 
         $paramArray = [
             "cache "=> $ttlIncrease,
@@ -69,7 +70,7 @@ class Proxy extends ThemeAPI  {
 
         if(Cache::isExpired($Url)){
 
-            $data = file_get_contents(urldecode($_GET["url"]));
+            $data = file_get_contents($Url);
 
             $content_type = null;
 
@@ -84,10 +85,8 @@ class Proxy extends ThemeAPI  {
                 $content_type = Helper::generateUpToDateMimeArray()[$_GET["type"]];
             }
 
-
             if(!$content_type) {
-                $headers = implode("\n", $http_response_header);
-                if (preg_match_all("/^content-type\s*:\s*(.*)$/mi", $headers, $matches)) {
+                if (is_array($http_response_header) && preg_match_all("/^content-type\s*:\s*(.*)$/mi", implode("\n", $http_response_header), $matches)) {
                     $content_type = end($matches[1]);
                 } else {
                     $finfo = new finfo(FILEINFO_MIME);

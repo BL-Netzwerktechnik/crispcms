@@ -20,3 +20,5 @@ The Structure of a Theme is as follows:
 
 
 !> The `includes/` folder must always match the `views/` folder - A `start.twig` cannot be displayed without an `start.php`
+
+?> An Example and a Theme Template are available on [Github](https://github.com/JRB-IT/theme-template)
