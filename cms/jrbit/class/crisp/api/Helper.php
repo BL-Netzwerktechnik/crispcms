@@ -239,20 +239,9 @@ class Helper
      */
     public static function getRealIpAddr(): string
     {
-        if (!empty($_SERVER['HTTP_X_REAL_IP'])) {
-            return $_SERVER['HTTP_X_REAL_IP'];
-        }
 
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {   //to check ip is pass from proxy
             return $_SERVER['HTTP_X_FORWARDED_FOR'];
-        }
-
-        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {   //check ip from share internet
-            return $_SERVER['HTTP_CLIENT_IP'];
-        }
-
-        if (!empty($_SERVER['REMOTE_ADDR'])) {
-            return $_SERVER['REMOTE_ADDR'];
         }
 
         return "0.0.0.0";
