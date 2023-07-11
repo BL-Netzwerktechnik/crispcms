@@ -73,6 +73,7 @@ RUN apt-get update && \
             libsodium-dev \
             libzip-dev \
             libicu-dev \
+            libssl-dev \
             locales \
             nodejs \
             nginx \
