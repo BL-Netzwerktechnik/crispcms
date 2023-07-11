@@ -179,6 +179,14 @@ class RESTfulAPI
         return getallheaders()["Content-Type"] == $contenttype;
     }
 
+    public static function BodyParameterExists(string $key): bool
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        return array_key_exists($key, $data);
+    }
+
+
     public static function getBodyParameter(string $key): mixed
     {
         $data = json_decode(file_get_contents('php://input'), true);
