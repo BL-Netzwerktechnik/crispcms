@@ -156,6 +156,43 @@ class RESTfulAPI
         exit;
     }
 
+    public static function getRequestMethod(): string
+    {
+        return $_SERVER["REQUEST_METHOD"];
+    }
+
+    public static function getVersion(): ?string
+    {
+        list($Interface, $Version) = array_filter(explode("/", $GLOBALS["route"]->Raw));
+
+        return $Version;
+    }
+    public static function getInterface(): ?string
+    {
+        list($Interface, $Version) = array_filter(explode("/", $GLOBALS["route"]->Raw));
+
+        return $Interface;
+    }
+
+    public static function isRequestContentType(string $contenttype = "application/json"): bool
+    {
+        return getallheaders()["Content-Type"] == $contenttype;
+    }
+
+    public static function getBodyParameter(string $key): mixed
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        return $data[$key] ?? null;
+    }
+
+    public static function getBody(): mixed
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        return $data ?? null;
+    }
+
     /**
      * Send a JSON response
      * @param int|null $Errors Error array or false
@@ -165,11 +202,18 @@ class RESTfulAPI
      * @param int $HTTP
      * @throws \JsonException
      */
-    public static function response(int $Errors = null, string $message, array $Parameters = [], constant $Flags = null, int $HTTP = 200)
+    public static function response(Bitmask|int $Errors = null, string $message, array $Parameters = [], mixed $Flags = null, int $HTTP = 200)
     {
         header("Content-Type: application/json");
         http_response_code($HTTP);
-        echo json_encode(array("error" => $Errors ?? Bitmask::NONE->value, "message" => $message, "parameters" => $Parameters), JSON_THROW_ON_ERROR | $Flags);
+
+        if($Errors instanceof Bitmask){
+            $Error = $Errors->value;
+        }else{
+            $Error = $Errors;
+        }
+
+        echo json_encode(array("error" => $Error ?? Bitmask::NONE->value, "message" => $message, "parameters" => $Parameters), JSON_THROW_ON_ERROR | $Flags);
     }
 
 }
