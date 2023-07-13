@@ -91,7 +91,6 @@ class Theme {
 
 
         $HookClass = null;
-        $_vars = ($_vars ?? []);
 
                 $_HookFile = ThemeMetadata->hookFile;
                 $_HookClass = substr($_HookFile, 0, -4);
@@ -103,7 +102,7 @@ class Theme {
                 }
 
                 if($HookClass !== null && method_exists($HookClass, 'preRender')){
-                    $_vars = array_merge($_vars, $HookClass->preRender($_vars, $TwigTheme, $CurrentPage, $CurrentFile) ?? []);
+                    $HookClass->preRender($CurrentPage, $CurrentFile);
                 }
 
                 if($Internal){
@@ -123,7 +122,7 @@ class Theme {
                         throw new \Exception("Failed to load $Class, missing class!");
                     }
 
-                    $PageClass->execute($CurrentPage, $TwigTheme);
+                    $PageClass->execute($CurrentPage);
 
                 }elseif (Helper::templateExists("/views/$CurrentPage.twig")) {
 
@@ -141,7 +140,7 @@ class Theme {
 
 
                 if($PageClass !== null && method_exists($PageClass, 'preRender')){
-                    $_vars = array_merge($_vars, $PageClass->preRender($_vars, $TwigTheme) ?? []);
+                    $PageClass->preRender();
                 }
 
 
@@ -149,13 +148,13 @@ class Theme {
                 $GLOBALS["microtime"]["template"]["start"] = microtime(true);
                 $TwigTheme->addGlobal("LogicMicroTime", ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
                 header("X-CMS-LogicTime: " . ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
-                echo $TwigTheme->render("views/$CurrentPage.twig", $_vars);
+                echo $TwigTheme->render("views/$CurrentPage.twig", ThemeVariables::getAll());
 
                 if($PageClass !== null && method_exists($PageClass, 'postRender')){
-                    $PageClass->postRender($_vars, $TwigTheme);
+                    $PageClass->postRender($CurrentPage, $CurrentFile);
                 }
                 if($HookClass !== null && method_exists($HookClass, 'postRender')){
-                    $HookClass->postRender($_vars, $TwigTheme, $CurrentPage, $CurrentFile);
+                    $HookClass->postRender($CurrentPage, $CurrentFile);
                 }
         } else {
             throw new BitmaskException("Failed to load template " . $this->CurrentPage . ": Missing includes file", Bitmask::THEME_MISSING_INCLUDES);

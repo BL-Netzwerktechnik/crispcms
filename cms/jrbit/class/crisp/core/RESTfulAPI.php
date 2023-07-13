@@ -48,7 +48,7 @@ class RESTfulAPI
     {
         $this->Interface = Helper::filterAlphaNum($Interface);
         $this->TwigTheme = $ThemeLoader;
-        $this->ThemePath = realpath(__DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/");
+        $this->ThemePath = Themes::getThemeDirectory();
 
         $HookClass = null;
 
@@ -72,16 +72,20 @@ class RESTfulAPI
 
 
             if($HookClass !== null && method_exists($HookClass, 'preExecute')){
-                $HookClass->preExecute($Interface, $ThemeLoader);
+                throw new \Exception("preExecute is missing in api/$_NFFile");
             }
 
             if($PageClass !== null && method_exists($PageClass, 'execute')){
-                $PageClass->execute($this->Interface, $ThemeLoader);
+                throw new \Exception("execute is missing in api/$_NFFile");
             }
 
             if($HookClass !== null && method_exists($HookClass, 'postExecute')){
-                $HookClass->postExecute($Interface, $ThemeLoader);
+                throw new \Exception("postExecute is missing in api/$_NFFile");
             }
+            
+            $HookClass->preExecute($Interface);
+            $PageClass->execute($Interface);
+            $HookClass->postExecute($Interface);
 
         } else {
             $_RootFile = Themes::getThemeMetadata()->api->pages->root;
@@ -104,17 +108,20 @@ class RESTfulAPI
 
 
                 if($HookClass !== null && method_exists($HookClass, 'preExecute')){
-                    $HookClass->preExecute($Interface, $ThemeLoader);
+                    throw new \Exception("preExecute is missing in api/$_NFFile");
                 }
 
                 if($PageClass !== null && method_exists($PageClass, 'execute')){
-                    $PageClass->execute($this->Interface, $ThemeLoader);
+                    throw new \Exception("execute is missing in api/$_NFFile");
                 }
 
                 if($HookClass !== null && method_exists($HookClass, 'postExecute')){
-                    $HookClass->postExecute($Interface, $ThemeLoader);
+                    throw new \Exception("postExecute is missing in api/$_NFFile");
                 }
 
+                $HookClass->preExecute($Interface);
+                $PageClass->execute($Interface);
+                $HookClass->postExecute($Interface);
                 exit;
             }
 
@@ -138,16 +145,20 @@ class RESTfulAPI
                 }
 
                 if($HookClass !== null && method_exists($HookClass, 'preExecute')){
-                    $HookClass->preExecute($Interface, $ThemeLoader);
+                    throw new \Exception("preExecute is missing in api/$_NFFile");
                 }
 
                 if($PageClass !== null && method_exists($PageClass, 'execute')){
-                    $PageClass->execute($this->Interface, $ThemeLoader);
+                    throw new \Exception("execute is missing in api/$_NFFile");
                 }
 
                 if($HookClass !== null && method_exists($HookClass, 'postExecute')){
-                    $HookClass->postExecute($Interface, $ThemeLoader);
+                    throw new \Exception("postExecute is missing in api/$_NFFile");
                 }
+
+                $HookClass->preExecute($Interface);
+                $PageClass->execute($Interface);
+                $HookClass->postExecute($Interface);
                 exit;
             }
 

@@ -26,7 +26,7 @@ namespace crisp;
 use Carbon\Carbon;
 use CompileError;
 use crisp\api\{Config, GeoIP, Helper, lists\Languages, Translation};
-use crisp\core\{Bitmask, Crypto, LogTypes, Redis, RESTfulAPI, Security, Sessions, Themes, License};
+use crisp\core\{Bitmask, Crypto, LogTypes, Redis, RESTfulAPI, Security, Sessions, Themes, License, ThemeVariables};
 use Dotenv\Dotenv;
 use Error;
 use Exception;
@@ -272,6 +272,9 @@ try {
         } else {
             $TwigTheme = new Environment($ThemeLoader, []);
         }
+
+        $GLOBALS["Crisp_ThemeLoader"] = $TwigTheme;
+        ThemeVariables::register($TwigTheme);
 
         $_ENV['REQUIRE_LICENSE'] = $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
 

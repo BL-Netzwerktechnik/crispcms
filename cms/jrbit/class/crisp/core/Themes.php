@@ -77,6 +77,11 @@ class Themes
         }
     }
 
+    public static function getRenderer(): Environment
+    {
+        return $GLOBALS["Crisp_ThemeLoader"];
+    }
+
     public static function getThemeDirectory(bool $relative = false): string
     {
         if($relative){
@@ -473,7 +478,6 @@ class Themes
         }
         return false;
     }
-
     /**
      * @param string $ThemeName
      * @param stdClass ThemeMetadata
