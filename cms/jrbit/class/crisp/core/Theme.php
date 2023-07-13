@@ -35,7 +35,8 @@ use Twig\Error\SyntaxError;
  * Used internally, plugin loader
  *
  */
-class Theme {
+class Theme
+{
 
     use Hook;
 
@@ -60,14 +61,14 @@ class Theme {
 
             $GLOBALS["navbar_right"][$ID] = array("ID" => $ID, "html" => $Text, "href" => $Link, "target" => $Target, "order" => $Order);
 
-            usort($GLOBALS["navbar_right"], static function($a, $b) {
+            usort($GLOBALS["navbar_right"], static function ($a, $b) {
                 return $a['order'] <=> $b['order'];
             });
             return true;
         }
         $GLOBALS["navbar"][$ID] = array("ID" => $ID, "html" => $Text, "href" => $Link, "target" => $Target, "order" => $Order);
 
-        usort($GLOBALS["navbar"], static function($a, $b) {
+        usort($GLOBALS["navbar"], static function ($a, $b) {
             return $a['order'] <=> $b['order'];
         });
         return true;
@@ -84,7 +85,8 @@ class Theme {
      * @throws SyntaxError
      * @throws \Exception
      */
-    public function __construct(Environment $TwigTheme, string $CurrentFile, string $CurrentPage, bool $Internal = false) {
+    public function __construct(Environment $TwigTheme, string $CurrentFile, string $CurrentPage, bool $Internal = false)
+    {
         $this->TwigTheme = $TwigTheme;
         $this->CurrentFile = $CurrentFile;
         $this->CurrentPage = $CurrentPage;
@@ -92,73 +94,78 @@ class Theme {
 
         $HookClass = null;
 
-                $_HookFile = ThemeMetadata->hookFile;
-                $_HookClass = substr($_HookFile, 0, -4);
+        $_HookFile = ThemeMetadata->hookFile;
+        $_HookClass = substr($_HookFile, 0, -4);
 
-                require_once Themes::getThemeDirectory() . "/$_HookFile";
+        if ($Internal) {
 
-                if(class_exists($_HookClass, false)){
-                    $HookClass = new $_HookClass();
+            require __DIR__ . "/../routes/$CurrentPage.php";
+
+
+            $Class = "crisp\\routes\\$CurrentPage";
+
+            if (class_exists($Class, false)) {
+                $PageClass = new $Class();
+
+                if (!method_exists($PageClass, 'execute')) {
+                    throw new \Exception("Failed to load $Class, missing execute!");
                 }
+            } else {
+                throw new \Exception("Failed to load $Class, missing class!");
+            }
 
-                if($HookClass !== null && method_exists($HookClass, 'preRender')){
-                    $HookClass->preRender($CurrentPage, $CurrentFile);
-                }
-
-                if($Internal){
-
-                    require __DIR__ . "/../routes/$CurrentPage.php";
+            $PageClass->execute($CurrentPage);
+        } elseif (Helper::templateExists("/views/$CurrentPage.twig")) {
 
 
-                    $Class = "crisp\\routes\\$CurrentPage";
+            require_once Themes::getThemeDirectory() . "/$_HookFile";
 
-                    if(class_exists($Class, false)){
-                        $PageClass = new $Class();
+            if (class_exists($_HookClass, false)) {
+                $HookClass = new $_HookClass();
+            }
+    
+            if ($HookClass !== null && !method_exists($HookClass, 'preRender')) {
+                throw new \Exception("Failed to load $_HookClass, missing preRender!");
+            }
+    
+            
 
-                        if(!method_exists($PageClass, 'execute')){
-                            throw new \Exception("Failed to load $Class, missing execute!");
-                        }
-                    }else{
-                        throw new \Exception("Failed to load $Class, missing class!");
-                    }
+            if (file_exists(Themes::getThemeDirectory() . "/includes/$CurrentPage.php")) {
+                require Themes::getThemeDirectory() . "/includes/$CurrentPage.php";
+            }
+            $PageClass = null;
 
-                    $PageClass->execute($CurrentPage);
-
-                }elseif (Helper::templateExists("/views/$CurrentPage.twig")) {
-
-                if(file_exists(Themes::getThemeDirectory() . "/includes/$CurrentPage.php")) {
-                    require Themes::getThemeDirectory() . "/includes/$CurrentPage.php";
-                }
-                $PageClass = null;
-
-                if(class_exists($CurrentPage, false)){
-                    $PageClass = new $CurrentPage();
-                }
+            if (class_exists($CurrentPage, false)) {
+                $PageClass = new $CurrentPage();
+            }
 
 
-                $_vars["template"] = $this;
+
+            if ($PageClass !== null && !method_exists($PageClass, 'preRender')) {
+                throw new \Exception("Failed to load $CurrentPage, missing preRender!");
+            }
 
 
-                if($PageClass !== null && method_exists($PageClass, 'preRender')){
-                    $PageClass->preRender();
-                }
+            $HookClass->preRender($CurrentPage, $CurrentFile);
+            $PageClass->preRender();
 
 
-                $GLOBALS["microtime"]["logic"]["end"] = microtime(true);
-                $GLOBALS["microtime"]["template"]["start"] = microtime(true);
-                $TwigTheme->addGlobal("LogicMicroTime", ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
-                header("X-CMS-LogicTime: " . ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
-                echo $TwigTheme->render("views/$CurrentPage.twig", ThemeVariables::getAll());
+            $GLOBALS["microtime"]["logic"]["end"] = microtime(true);
+            $GLOBALS["microtime"]["template"]["start"] = microtime(true);
+            $TwigTheme->addGlobal("LogicMicroTime", ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
+            header("X-CMS-LogicTime: " . ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
+            echo $TwigTheme->render("views/$CurrentPage.twig", ThemeVariables::getAll());
 
-                if($PageClass !== null && method_exists($PageClass, 'postRender')){
-                    $PageClass->postRender($CurrentPage, $CurrentFile);
-                }
-                if($HookClass !== null && method_exists($HookClass, 'postRender')){
-                    $HookClass->postRender($CurrentPage, $CurrentFile);
-                }
+            if ($PageClass !== null && !method_exists($PageClass, 'postRender')) {
+                throw new \Exception("Failed to load $CurrentPage, missing postRender!");
+            }
+            if ($HookClass !== null && !method_exists($HookClass, 'postRender')) {
+                throw new \Exception("Failed to load HookFile, missing postRender!");
+            }
+            $HookClass->postRender($CurrentPage, $CurrentFile);
+            $PageClass->postRender();
         } else {
             throw new BitmaskException("Failed to load template " . $this->CurrentPage . ": Missing includes file", Bitmask::THEME_MISSING_INCLUDES);
         }
     }
-
 }

@@ -52,76 +52,55 @@ class RESTfulAPI
 
         $HookClass = null;
 
-            $_HookFile = Themes::getThemeMetadata()->hookFile;
-            $_HookClass = substr($_HookFile, 0, -4);
+        $_HookFile = Themes::getThemeMetadata()->hookFile;
+        $_HookClass = substr($_HookFile, 0, -4);
 
-            require_once __DIR__ . "/../../../../".\crisp\api\Config::get("theme_dir")."/".\crisp\api\Config::get("theme")."/$_HookFile";
+        require_once __DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/$_HookFile";
 
-            if(class_exists($_HookClass, false)){
-                $HookClass = new $_HookClass();
-            }
+        if (class_exists($_HookClass, false)) {
+            $HookClass = new $_HookClass();
+        }
 
         if (file_exists($this->ThemePath . "/includes/api/views/" . $this->Interface . ".php")) {
             require $this->ThemePath . "/includes/api/views/" . $this->Interface . ".php";
 
             $PageClass = null;
 
-            if(class_exists($this->Interface, false)){
+            if (class_exists($this->Interface, false)) {
                 $PageClass = new $this->Interface();
             }
 
+            Helper::Log(LogTypes::DEBUG, "API: " . $this->Interface . " has been called");
 
-            if($HookClass !== null && method_exists($HookClass, 'preExecute')){
-                throw new \Exception("preExecute is missing in api/$_NFFile");
+            if ($PageClass !== null && !method_exists($PageClass, 'execute')) {
+                throw new \Exception("execute is missing in api/" .  $this->Interface . ".php");
             }
 
-            if($PageClass !== null && method_exists($PageClass, 'execute')){
-                throw new \Exception("execute is missing in api/$_NFFile");
-            }
-
-            if($HookClass !== null && method_exists($HookClass, 'postExecute')){
-                throw new \Exception("postExecute is missing in api/$_NFFile");
-            }
-            
-            $HookClass->preExecute($Interface);
             $PageClass->execute($Interface);
-            $HookClass->postExecute($Interface);
-
         } else {
             $_RootFile = Themes::getThemeMetadata()->api->pages->root;
             $_RootClass = substr($_RootFile, 0, -4);
 
-            if(!$_RootFile && $Interface == ""){
+            if (!$_RootFile && $Interface == "") {
                 self::response(Bitmask::GENERIC_ERROR->value, 'API Root has not been configured. Please consult the Docs', []);
                 exit;
             }
 
 
-            if (file_exists($this->ThemePath . "/includes/api/$_RootFile") && $Interface == "" ) {
+            if (file_exists($this->ThemePath . "/includes/api/$_RootFile") && $Interface == "") {
                 require $this->ThemePath . "/includes/api/$_RootFile";
 
                 $PageClass = null;
 
-                if(class_exists($_RootClass, false)){
+                if (class_exists($_RootClass, false)) {
                     $PageClass = new $_RootClass();
                 }
 
-
-                if($HookClass !== null && method_exists($HookClass, 'preExecute')){
-                    throw new \Exception("preExecute is missing in api/$_NFFile");
+                if ($PageClass !== null && !method_exists($PageClass, 'execute')) {
+                    throw new \Exception("execute is missing in api/$_RootFile");
                 }
 
-                if($PageClass !== null && method_exists($PageClass, 'execute')){
-                    throw new \Exception("execute is missing in api/$_NFFile");
-                }
-
-                if($HookClass !== null && method_exists($HookClass, 'postExecute')){
-                    throw new \Exception("postExecute is missing in api/$_NFFile");
-                }
-
-                $HookClass->preExecute($Interface);
                 $PageClass->execute($Interface);
-                $HookClass->postExecute($Interface);
                 exit;
             }
 
@@ -130,7 +109,7 @@ class RESTfulAPI
             $_NFClass = substr($_NFFile, 0, -4);
 
 
-            if(!$_NFFile){
+            if (!$_NFFile) {
                 self::response(Bitmask::GENERIC_ERROR->value, 'API Not Found File has not been configured. Please consult the Docs', []);
                 exit;
             }
@@ -140,25 +119,15 @@ class RESTfulAPI
 
                 $PageClass = null;
 
-                if(class_exists($_NFClass, false)){
+                if (class_exists($_NFClass, false)) {
                     $PageClass = new $_NFClass();
                 }
 
-                if($HookClass !== null && method_exists($HookClass, 'preExecute')){
-                    throw new \Exception("preExecute is missing in api/$_NFFile");
-                }
-
-                if($PageClass !== null && method_exists($PageClass, 'execute')){
+                if ($PageClass !== null && !method_exists($PageClass, 'execute')) {
                     throw new \Exception("execute is missing in api/$_NFFile");
                 }
 
-                if($HookClass !== null && method_exists($HookClass, 'postExecute')){
-                    throw new \Exception("postExecute is missing in api/$_NFFile");
-                }
-
-                $HookClass->preExecute($Interface);
                 $PageClass->execute($Interface);
-                $HookClass->postExecute($Interface);
                 exit;
             }
 
@@ -226,13 +195,12 @@ class RESTfulAPI
         header("Content-Type: application/json");
         http_response_code($HTTP);
 
-        if($Errors instanceof Bitmask){
+        if ($Errors instanceof Bitmask) {
             $Error = $Errors->value;
-        }else{
+        } else {
             $Error = $Errors;
         }
 
         echo json_encode(array("error" => $Error ?? Bitmask::NONE->value, "message" => $message, "parameters" => $Parameters), JSON_THROW_ON_ERROR | $Flags);
     }
-
 }
