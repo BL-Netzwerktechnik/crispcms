@@ -53,7 +53,7 @@ class Helper
     }
 
 
-    public static function prettyFormatNumber(int $num): int {
+    public static function prettyFormatNumber(int $num): string {
 
         if($num>1000) {
 
