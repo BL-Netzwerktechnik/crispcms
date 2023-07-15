@@ -7,7 +7,6 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 services:
 - postgres:14.5
-- redis:latest
 variables:
   POSTGRES_USER: postgres
   POSTGRES_DB: crisp_dev
@@ -37,8 +36,6 @@ migrate-and-test:
     REDIS_PORT: 6379
     REDIS_INDEX: 2
     DEFAULT_LOCALE: en
-    CRISP_FLAGSMITH_APP_URL: https://flagsmith.internal.jrbit.de/api/v1/
-    CRISP_FLAGSMITH_API_KEY: mwp6tU4GGESSbTyP5qrKki
     CRISP_THEME: crisptheme
     LANG: en_US.utf8
     VERBOSITY: 3
