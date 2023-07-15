@@ -185,20 +185,23 @@ class Themes
 
 
         $baseDir = self::getThemeDirectory(true);
+        $FilePath = self::getThemeDirectory() . "/$File";
 
         if(isset($_ENV["ASSETS_S3_BUCKET"])){
             $baseDir = Helper::getS3Url($_ENV["ASSETS_S3_BUCKET"] ,$_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_URL"]);
         }elseif(file_exists(self::getThemeDirectory() . "/assets")){
             $baseDir = "/assets";
+            $FilePath = self::getThemeDirectory() . "/assets/$File";
         }
 
 
-        if (!file_exists(self::getThemeDirectory() . "/$File")) {
+
+        if (!file_exists($FilePath)) {
             return "$baseDir/$File";
         }
 
 
-        $hash = hash_file("sha256", self::getThemeDirectory() . "/$File");
+        $hash = hash_file("sha256", $FilePath);
 
         return "$baseDir/$File?$hash";
     }
