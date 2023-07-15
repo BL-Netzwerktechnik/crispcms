@@ -84,7 +84,7 @@ RUN apt-get update && \
             docker-php-ext-configure curl && \
             docker-php-ext-configure sodium && \
             docker-php-ext-install gd bcmath curl gettext sodium zip pdo pdo_pgsql intl && \
-            docker-php-ext-enable gd bcmath curl gettext sodium zip redis pdo pdo_pgsql intl && \
+            docker-php-ext-enable gd bcmath curl gettext sodium zip pdo pdo_pgsql intl && \
             curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
             wget 'https://github.com/maxmind/geoipupdate/releases/download/v5.1.1/geoipupdate_5.1.1_linux_amd64.deb' -O /tmp/geoipupdate.deb && \
             dpkg -i /tmp/geoipupdate.deb && \
