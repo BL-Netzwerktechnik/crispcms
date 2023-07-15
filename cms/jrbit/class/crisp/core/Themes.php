@@ -184,7 +184,13 @@ class Themes
         }
 
 
-        $baseDir = (isset($_ENV["ASSETS_S3_BUCKET"]) ? Helper::getS3Url($_ENV["ASSETS_S3_BUCKET"] ,$_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_URL"]) : self::getThemeDirectory(true));
+        $baseDir = self::getThemeDirectory(true);
+
+        if(isset($_ENV["ASSETS_S3_BUCKET"])){
+            $baseDir = Helper::getS3Url($_ENV["ASSETS_S3_BUCKET"] ,$_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_URL"]);
+        }elseif(file_exists(self::getThemeDirectory() . "/assets")){
+            $baseDir = "/assets";
+        }
 
 
         if (!file_exists(self::getThemeDirectory() . "/$File")) {
@@ -193,7 +199,6 @@ class Themes
 
 
         $hash = hash_file("sha256", self::getThemeDirectory() . "/$File");
-
 
         return "$baseDir/$File?$hash";
     }
