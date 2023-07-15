@@ -26,12 +26,11 @@ namespace crisp;
 use Carbon\Carbon;
 use CompileError;
 use crisp\api\{Config, GeoIP, Helper, lists\Languages, Translation};
-use crisp\core\{Bitmask, Crypto, LogTypes, Redis, RESTfulAPI, Security, Sessions, Themes, License, ThemeVariables};
+use crisp\core\{Bitmask, Crypto, LogTypes, RESTfulAPI, Security, Sessions, Themes, License, ThemeVariables};
 use Dotenv\Dotenv;
 use Error;
 use Exception;
 use ParseError;
-use RateLimit\{Rate, RedisRateLimiter};
 use Sentry\SentrySdk;
 use Sentry\State\Scope;
 use Throwable;
@@ -116,9 +115,6 @@ try {
     }
     $dotenv->required([
         'POSTGRES_URI',
-        'REDIS_HOST',
-        'REDIS_PORT',
-        'REDIS_INDEX',
         'DEFAULT_LOCALE',
         'CRISP_THEME',
         'ENVIRONMENT',
@@ -128,7 +124,6 @@ try {
         'DEFAULT_LOCALE',
         'LANG',
     ])->notEmpty();
-    $dotenv->required(['REDIS_INDEX', 'REDIS_PORT'])->isInteger();
     $dotenv->required('POSTGRES_URI')->allowedRegexValues('/^(?:([^:\/?#\s]+):\/{2})?(?:([^@\/?#\s]+)@)?([^\/?#\s]+)?(?:\/([^?#\s]*))?(?:[?]([^#\s]+))?\S*$/i');
 
     Helper::getInstanceId();
