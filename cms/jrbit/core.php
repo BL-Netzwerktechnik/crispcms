@@ -208,13 +208,6 @@ try {
     setlocale(LC_TIME, $_ENV["LANG"] ?? 'de_DE.utf8');
     if (PHP_SAPI !== 'cli') {
 
-
-        $GLOBALS['microtime'] = [];
-        $GLOBALS['microtime']['logic'] = [];
-        $GLOBALS['microtime']['template'] = [];
-
-        $GLOBALS['microtime']['logic']['start'] = microtime(true);
-
         $GLOBALS['plugins'] = [];
         $GLOBALS['hook'] = [];
         $GLOBALS['navbar'] = [];
@@ -330,6 +323,7 @@ try {
         $TwigTheme->addFunction(new TwigFunction('strtotime', 'strtotime'));
         $TwigTheme->addFunction(new TwigFunction('time', 'time'));
         $TwigTheme->addFunction(new TwigFunction('parseTime', [Carbon::class, 'parse']));
+        $TwigTheme->addFunction(new TwigFunction('render', [Themes::class, 'render']));
 
 
         $Translation = new Translation($Locale);
@@ -363,10 +357,10 @@ try {
                 exit;
             }
 
-            core\Themes::loadAPI($TwigTheme, $GLOBALS['route']->Page);
+            core\Themes::loadAPI($GLOBALS['route']->Page);
         }
 
-        Themes::load($TwigTheme, $CurrentFile, $CurrentPage);
+        Themes::load($CurrentFile, $CurrentPage);
     }
 } catch (TypeError | Exception | Error | CompileError | ParseError | Throwable $ex) {
     captureException($ex);

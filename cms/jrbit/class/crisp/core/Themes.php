@@ -66,11 +66,11 @@ class Themes
      * @param string $Interface The interface we are listening on
      * @param string $_QUERY The query
      */
-    public static function loadAPI(Environment $ThemeLoader, string $Interface): void
+    public static function loadAPI(string $Interface): void
     {
         try {
             Themes::autoload();
-            new RESTfulAPI($ThemeLoader, $Interface);
+            new RESTfulAPI($Interface);
         } catch (Exception $ex) {
             captureException($ex);
             throw new Exception($ex);
@@ -82,6 +82,15 @@ class Themes
         return $GLOBALS["Crisp_ThemeLoader"];
     }
 
+    public static function render(string $Template, array $Data = []): string
+    {
+        Logger::startTiming($TemplateRender);
+        Helper::Log(LogTypes::DEBUG, "START Rendering template $Template");
+        $content = $GLOBALS["Crisp_ThemeLoader"]->render($Template, $Data);
+        Helper::Log(LogTypes::DEBUG, sprintf("DONE Rendering template $Template - Took %s ms", Logger::endTiming($TemplateRender)));
+        return $content;
+    }
+
     public static function getThemeDirectory(bool $relative = false): string
     {
         if($relative){
@@ -90,13 +99,14 @@ class Themes
 
         return realpath(sprintf(__DIR__. "/../../../../themes/%s", core::DEFAULT_THEME));
     }
+
     /**
      * @param Environment $TwigTheme
      * @param string $CurrentFile
      * @param string $CurrentPage
      * @throws Exception
      */
-    public static function load(Environment $TwigTheme, string $CurrentFile, string $CurrentPage): void
+    public static function load(string $CurrentFile, string $CurrentPage): void
     {
 
 
@@ -122,17 +132,14 @@ class Themes
                 $SpecialPage = substr(strtoupper(substr($CurrentPage, 0, 2)) . substr($CurrentPage, 2), 1);
 
                 if(str_starts_with($CurrentPage, "_") && file_exists(__DIR__ . "/../routes/$SpecialPage.php")){
-                    new Theme($TwigTheme, $CurrentFile, $SpecialPage, true);
+                    new Theme($CurrentFile, $SpecialPage, true);
                 }elseif (file_exists(Themes::getThemeDirectory() . "/includes/$CurrentPage.php") && Helper::templateExists("/views/$CurrentPage.twig")) {
-                    new Theme($TwigTheme, $CurrentFile, $CurrentPage);
+                    new Theme($CurrentFile, $CurrentPage);
                 } else {
-                    $GLOBALS["microtime"]["logic"]["end"] = microtime(true);
-                    $GLOBALS["microtime"]["template"]["start"] = microtime(true);
-                    $TwigTheme->addGlobal("LogicMicroTime", ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
                     http_response_code(404);
 
                     if (Helper::templateExists("errors/notfound.twig")) {
-                        echo $TwigTheme->render("errors/notfound.twig", []);
+                        echo Themes::render("errors/notfound.twig", []);
                     }else{
                         echo file_get_contents(__DIR__ . "/../../../../themes/basic/not_found.html");
                     }
@@ -164,7 +171,7 @@ class Themes
             }
 
             if (Helper::templateExists("errors/servererror.twig")) {
-                echo $TwigTheme->render("errors/servererror.twig", ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId()]);
+                echo Themes::render("errors/servererror.twig", ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId()]);
             }else{
                 echo strtr(file_get_contents(__DIR__ . '/../../../../themes/basic/error.html'), ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId()]);
             }

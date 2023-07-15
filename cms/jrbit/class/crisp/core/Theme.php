@@ -40,39 +40,8 @@ class Theme
 
     use Hook;
 
-    private Environment $TwigTheme;
     public string $CurrentFile;
     public string $CurrentPage;
-
-    /**
-     * Add an item to the theme's navigation bar
-     * @param string $ID Unique string to identify the item
-     * @param string $Text The HTML of the navbar item
-     * @param string $Link The Link of the navbar item
-     * @param string $Target HTML a=target
-     * @param int $Order The order to appear on the navbar
-     * @param string $Placement Placed left or right of the navbar if supported by theme
-     * @return boolean
-     * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#target Link Target
-     */
-    public static function addToNavbar(string $ID, string $Text, string $Link, string $Target = "_self", int $Order = 0, string $Placement = "left"): bool
-    {
-        if ($Placement === "right") {
-
-            $GLOBALS["navbar_right"][$ID] = array("ID" => $ID, "html" => $Text, "href" => $Link, "target" => $Target, "order" => $Order);
-
-            usort($GLOBALS["navbar_right"], static function ($a, $b) {
-                return $a['order'] <=> $b['order'];
-            });
-            return true;
-        }
-        $GLOBALS["navbar"][$ID] = array("ID" => $ID, "html" => $Text, "href" => $Link, "target" => $Target, "order" => $Order);
-
-        usort($GLOBALS["navbar"], static function ($a, $b) {
-            return $a['order'] <=> $b['order'];
-        });
-        return true;
-    }
 
     /**
      * Load a theme page
@@ -85,9 +54,8 @@ class Theme
      * @throws SyntaxError
      * @throws \Exception
      */
-    public function __construct(Environment $TwigTheme, string $CurrentFile, string $CurrentPage, bool $Internal = false)
+    public function __construct(string $CurrentFile, string $CurrentPage, bool $Internal = false)
     {
-        $this->TwigTheme = $TwigTheme;
         $this->CurrentFile = $CurrentFile;
         $this->CurrentPage = $CurrentPage;
 
@@ -146,15 +114,19 @@ class Theme
             }
 
 
+            Helper::Log(LogTypes::DEBUG, sprintf("START executing preRender hooks for HookFile"));
+            Logger::startTiming($HookClassRenderTime);
             $HookClass->preRender($CurrentPage, $CurrentFile);
+            Helper::Log(LogTypes::DEBUG, sprintf("DONE executing preRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
+
+
+            
+
+            Helper::Log(LogTypes::DEBUG, sprintf("START executing preRender hooks for %s", $CurrentPage));
+            Logger::startTiming($PageClassRenderTime);
             $PageClass->preRender();
-
-
-            $GLOBALS["microtime"]["logic"]["end"] = microtime(true);
-            $GLOBALS["microtime"]["template"]["start"] = microtime(true);
-            $TwigTheme->addGlobal("LogicMicroTime", ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
-            header("X-CMS-LogicTime: " . ($GLOBALS["microtime"]["logic"]["end"] - $GLOBALS["microtime"]["logic"]["start"]));
-            echo $TwigTheme->render("views/$CurrentPage.twig", ThemeVariables::getAll());
+            Helper::Log(LogTypes::DEBUG, sprintf("DONE executing preRender hooks for %s - Took %s ms", $CurrentPage, Logger::endTiming($PageClassRenderTime)));
+            echo Themes::render("views/$CurrentPage.twig", ThemeVariables::getAll());
 
             if ($PageClass !== null && !method_exists($PageClass, 'postRender')) {
                 throw new \Exception("Failed to load $CurrentPage, missing postRender!");

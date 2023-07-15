@@ -35,8 +35,6 @@ class RESTfulAPI
 {
 
     public string $Interface;
-    public string $ThemePath;
-    public Environment $TwigTheme;
 
     /**
      *
@@ -44,11 +42,9 @@ class RESTfulAPI
      * @param string $Interface
      * @param string $_QUERY
      */
-    public function __construct(Environment $ThemeLoader, string $Interface)
+    public function __construct(string $Interface)
     {
         $this->Interface = Helper::filterAlphaNum($Interface);
-        $this->TwigTheme = $ThemeLoader;
-        $this->ThemePath = Themes::getThemeDirectory();
 
         $HookClass = null;
 
@@ -61,8 +57,8 @@ class RESTfulAPI
             $HookClass = new $_HookClass();
         }
 
-        if (file_exists($this->ThemePath . "/includes/api/views/" . $this->Interface . ".php")) {
-            require $this->ThemePath . "/includes/api/views/" . $this->Interface . ".php";
+        if (file_exists(Themes::getThemeDirectory() . "/includes/api/views/" . $this->Interface . ".php")) {
+            require Themes::getThemeDirectory() . "/includes/api/views/" . $this->Interface . ".php";
 
             $PageClass = null;
 
@@ -87,8 +83,8 @@ class RESTfulAPI
             }
 
 
-            if (file_exists($this->ThemePath . "/includes/api/$_RootFile") && $Interface == "") {
-                require $this->ThemePath . "/includes/api/$_RootFile";
+            if (file_exists(Themes::getThemeDirectory() . "/includes/api/$_RootFile") && $Interface == "") {
+                require Themes::getThemeDirectory() . "/includes/api/$_RootFile";
 
                 $PageClass = null;
 
@@ -114,8 +110,8 @@ class RESTfulAPI
                 exit;
             }
 
-            if (file_exists($this->ThemePath . "/includes/api/$_NFFile")) {
-                require $this->ThemePath . "/includes/api/$_NFFile";
+            if (file_exists(Themes::getThemeDirectory() . "/includes/api/$_NFFile")) {
+                require Themes::getThemeDirectory() . "/includes/api/$_NFFile";
 
                 $PageClass = null;
 

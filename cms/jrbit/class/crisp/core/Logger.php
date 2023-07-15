@@ -31,6 +31,16 @@ use splitbrain\phpcli\CLI;
 class Logger extends CLI
 {
 
+    public static function startTiming(float &$output = null): void {
+        $output = microtime(true);
+    }
+
+    public static function endTiming(float &$start): string {
+        $ms = (float)(microtime(true) - $start);
+        unset($start);
+        return sprintf("%.3f", $ms * 1000);
+    }
+
     protected function setup(\splitbrain\phpcli\Options $options)
     {
         // TODO: Implement setup() method.

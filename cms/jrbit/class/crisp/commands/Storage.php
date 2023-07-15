@@ -6,6 +6,7 @@ use CLI;
 use crisp\api\Config;
 use crisp\api\Helper;
 use crisp\core;
+use crisp\core\Logger;
 use crisp\core\Migrations;
 use crisp\core\Themes;
 use Minimal;
@@ -26,14 +27,14 @@ class Storage {
             }
 
 
-            $Start = microtime(true);
+            
+            Logger::startTiming($Timing);
             if (Themes::installKVStorage((bool)$options->getOpt("force"))) {
                 $minimal->success("KVStorage successfully installed!");
             } else {
                 $minimal->error("Failed to install KVStorage!");
             }
-            $End = microtime(true);
-            Helper::Log(core\LogTypes::DEBUG, sprintf("Operation took %sms to complete!", Helper::truncateText($End - $Start, 6, false)));
+            Helper::Log(core\LogTypes::DEBUG, sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
 
             return true;
         }elseif($options->getOpt("uninstall")){
@@ -48,14 +49,13 @@ class Storage {
             }
 
 
-            $Start = microtime(true);
+            Logger::startTiming($Timing);
             if (Themes::uninstallKVStorage()) {
                 $minimal->success("KVStorage successfully uninstalled!");
             } else {
                 $minimal->error("Failed to uninstall KVStorage!");
             }
-            $End = microtime(true);
-            Helper::Log(core\LogTypes::DEBUG, sprintf("Operation took %sms to complete!", Helper::truncateText($End - $Start, 6, false)));
+            Helper::Log(core\LogTypes::DEBUG, sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
 
             return true;
         }
