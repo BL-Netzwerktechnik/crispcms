@@ -5,8 +5,7 @@
 # Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
-services:
-- postgres:14.5
+
 variables:
   POSTGRES_USER: postgres
   POSTGRES_DB: crisp_dev
@@ -26,6 +25,8 @@ include:
 - template: Security/License-Scanning.gitlab-ci.yml
 
 migrate-and-test:
+  services:
+    - postgres:14.5
   stage: compile
   variables:
     COMPOSER_ALLOW_SUPERUSER: 1
