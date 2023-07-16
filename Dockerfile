@@ -98,6 +98,8 @@ RUN usermod -aG sudo www-data && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sud
 
 COPY config/php.ini /usr/local/etc/php/conf.d/php_custom.ini
 COPY config/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker /opt/entrypoint.d
+COPY config/crisp-cli.sh /usr/local/bin/crisp-cli
 RUN rm /etc/nginx/sites-enabled/default
 
 RUN ["chmod", "+x", "/opt/entrypoint.d/entrypoint.sh"]
@@ -105,8 +107,6 @@ RUN ["chmod", "+x", "/opt/entrypoint.d/bootstrap.sh"]
 RUN ["chmod", "+x", "/usr/local/bin/crisp-cli"]
 RUN ["ln", "-s", "/usr/local/bin/crisp-cli", "/usr/local/bin/crisp"]
 
-COPY docker /opt/entrypoint.d
-COPY config/crisp-cli.sh /usr/local/bin/crisp-cli
 
 USER 33
 
