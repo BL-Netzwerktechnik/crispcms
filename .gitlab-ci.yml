@@ -51,9 +51,8 @@ migrate-and-test:
   - cd /tmp/ci
   - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev
     wget git-core zip zlib1g-dev libpng-dev doxygen
-  - pecl install redis
   - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
-  - docker-php-ext-enable pdo_pgsql pdo_mysql redis intl gd gettext
+  - docker-php-ext-enable pdo_pgsql pdo_mysql intl gd gettext
   - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
   - cd ${CI_PROJECT_DIR}/cms
   - php /tmp/ci/composer install
