@@ -77,8 +77,8 @@ RUN apt-get update && \
             locales \
             nodejs \
             nginx \
-            wget && \
-            pecl install -o -f redis && \
+            wget \
+            sudo && \
             docker-php-ext-configure gd --with-freetype --with-jpeg && \
             docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
             docker-php-ext-configure curl && \
@@ -94,6 +94,8 @@ RUN apt-get update && \
             rm -rf /var/cache/apt/archives && \
             rm -rf /var/lib/apt/lists/*
 
+RUN usermod -aG sudo www-data && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
 COPY config/php.ini /usr/local/etc/php/conf.d/php_custom.ini
 COPY config/nginx.conf /etc/nginx/conf.d/default.conf
 
@@ -101,15 +103,15 @@ COPY cms "$CRISP_WORKDIR"
 COPY docker /opt/entrypoint.d
 COPY config/crisp-cli.sh /usr/local/bin/crisp-cli
 
-RUN rm /etc/nginx/sites-enabled/default
 RUN ["chmod", "+x", "/opt/entrypoint.d/entrypoint.sh"]
 RUN ["chmod", "+x", "/opt/entrypoint.d/bootstrap.sh"]
 RUN ["chmod", "+x", "/usr/local/bin/crisp-cli"]
 RUN ["ln", "-s", "/usr/local/bin/crisp-cli", "/usr/local/bin/crisp"]
 
-
 RUN ["/bin/bash", "-c", "/opt/entrypoint.d/bootstrap.sh"]
 
-RUN rm /tmp/symfony-cache/ -R -f
+RUN rm /etc/nginx/sites-enabled/default
+
+USER 33
 
 ENTRYPOINT ["/bin/bash", "-c", "/opt/entrypoint.d/entrypoint.sh"]

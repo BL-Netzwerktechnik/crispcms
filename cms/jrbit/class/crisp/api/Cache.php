@@ -113,8 +113,15 @@ class Cache
      */
     private static function createDir(string $key): bool
     {
-        Helper::Log(LogTypes::DEBUG, sprintf("Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
-        return mkdir(self::getCrispCacheDir($key), recursive: true);
+        Helper::Log(LogTypes::DEBUG, sprintf("START Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
+        $created = mkdir(self::getCrispCacheDir($key), recursive: true);
+
+        if($created){
+            Helper::Log(LogTypes::DEBUG, sprintf("DONE Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
+            return true;
+        }
+        Helper::Log(LogTypes::ERROR, sprintf("FAIL Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
+        return false;
     }
 
     /**
@@ -149,12 +156,18 @@ class Cache
      */
     public static function write(string $key, string $data, int $expires): bool
     {
+
         self::createDir($key);
 
-        Helper::Log(LogTypes::DEBUG, "Writing Cache ". self::getCrispCacheFile($key));
-        return file_put_contents(self::getCrispCacheFile($key), self::generateFile($expires, $data));
+        Helper::Log(LogTypes::DEBUG, "START Writing Cache ". self::getCrispCacheFile($key));
+        $bytes = file_put_contents(self::getCrispCacheFile($key), self::generateFile($expires, $data));
 
-
+        if($bytes !== false){
+            Helper::Log(LogTypes::DEBUG, "DONE Writing Cache ". self::getCrispCacheFile($key));
+            return true;
+        }
+        Helper::Log(LogTypes::ERROR, "FAIL Writing Cache ". self::getCrispCacheFile($key));
+        return false;
     }
 
     /**

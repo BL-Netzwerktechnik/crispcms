@@ -78,7 +78,7 @@ class core
     /**
      * Default Cache Location
      */
-    public const CACHE_DIR = '/tmp/crisp-cache/';
+    public const CACHE_DIR = '/tmp/crisp-cache';
 
     /**
      * Default Theme Root Folder
@@ -113,6 +113,7 @@ try {
     if (IS_DEV_ENV) {
         $dotenv->safeLoad();
     }
+
     $dotenv->required([
         'POSTGRES_URI',
         'DEFAULT_LOCALE',

@@ -14,13 +14,18 @@ if [ -z "$DEFAULT_LOCALE" ]; then
   exit 1
 fi
 
+sudo rm -Rf /tmp/crisp-cache
+mkdir /tmp/crisp-cache
+sudo chown www-data:www-data -R /tmp/crisp-cache
 
-sed -i -e "s/# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
-dpkg-reconfigure --frontend=noninteractive locales
-update-locale LANG="$LANG"
+sudo sed -i -e "s/# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
+sudo dpkg-reconfigure --frontend=noninteractive locales
+sudo update-locale LANG="$LANG"
 
 
 cd "$CRISP_WORKDIR" || exit 1
+touch .env
+
 
 if [[ -z "${ASSETS_S3_BUCKET}" ]]; then
   echo "Not deploying to S3"
@@ -36,26 +41,24 @@ else
   echo -e "AccountID $MAXMIND_ACCOUNT_ID\n" >> /etc/GeoIP.conf
   echo -e "LicenseKey $MAXMIND_LICENSE\n" >> /etc/GeoIP.conf
   echo -e "EditionIDs $MAXMIND_EDITION_IDS\n" >> /etc/GeoIP.conf
-  geoipupdate
+  sudo geoipupdate
 fi
 
 echo "Setting System Timezone..."
-ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+sudo ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 echo "Setting PHP Timezone..."
-printf "[Date]\ndate.timezone = \"$TZ\"\n" > /usr/local/etc/php/conf.d/timezone.ini
+sudo printf "[Date]\ndate.timezone = \"$TZ\"\n" > /usr/local/etc/php/conf.d/timezone.ini
 
-rm /tmp/* -R
-
-
-crisp-cli crisp --migrate || (echo "Failed to Migrate" && exit 1)
+crisp-cli crisp --migrate
 crisp-cli theme --uninstall
-crisp-cli theme --install || (echo "Failed to install theme" && exit 1)
-crisp-cli theme --clear-cache || (echo "Failed to clear cache" && exit 1)
-crisp-cli theme --migrate || (echo "Failed to migrate theme" && exit 1)
-crisp-cli theme --boot || (echo "Failed to execute boot files" && exit 1)
+crisp-cli theme --install
+crisp-cli theme --clear-cache
+crisp-cli theme --migrate
+crisp-cli theme --boot
 
 cd / || exit 1
 
 php-fpm -F -R -D || exit 1
 crisp-cli crisp -p
-nginx -c /etc/nginx/nginx.conf -g "daemon off;"
+
+sudo nginx -c /etc/nginx/nginx.conf -g "daemon off;"
