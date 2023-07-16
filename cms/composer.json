@@ -3,9 +3,7 @@
   "description": "Dynamic CMS",
   "autoload": {
         "psr-4": {
-            "crisp\\": "jrbit/class/crisp/",
-            "RateLimit\\": "jrbit/class/RateLimit/",
-            "Assert\\": "jrbit/class/Assert/"
+            "crisp\\": "jrbit/class/crisp/"
       }
   },
   "repositories": [
