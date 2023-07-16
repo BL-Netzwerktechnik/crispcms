@@ -52,12 +52,12 @@ class core
     /**
      * The current version of crispCMS
      */
-    public const CRISP_VERSION = '13.0.1';
+    public const CRISP_VERSION = '14.0.0';
 
     /**
      * The current version of the API
      */
-    public const API_VERSION = '3.0.0';
+    public const API_VERSION = '4.0.0';
 
     /**
      * The codename of the current release
