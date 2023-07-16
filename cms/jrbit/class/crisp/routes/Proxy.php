@@ -39,7 +39,7 @@ use Twig\Environment;
 class Proxy extends ThemeAPI  {
 
 
-    public function execute(string $Interface, Environment $TwigTheme): void
+    public function execute(string $Interface): void
     {
         $ttlIncrease = ($_GET["cache"]) ?? 300;
         $Url = urldecode($_GET["url"]);

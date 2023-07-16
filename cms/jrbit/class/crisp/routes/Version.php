@@ -39,7 +39,7 @@ use Twig\Environment;
 class Version extends ThemeAPI  {
 
 
-    public function execute(string $Interface, Environment $TwigTheme): void
+    public function execute(string $Interface): void
     {
 
         $license = null;

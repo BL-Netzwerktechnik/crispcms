@@ -27,6 +27,7 @@ namespace crisp\routes;
 use crisp\api\Cache;
 use crisp\core;
 use crisp\core\Bitmask;
+use crisp\core\Themes;
 use crisp\core\RESTfulAPI;
 use crisp\models\ThemeAPI;
 use finfo;
@@ -39,7 +40,7 @@ use Twig\Environment;
 class Debug extends ThemeAPI  {
 
 
-    public function execute(string $Interface, Environment $TwigTheme): void
+    public function execute(string $Interface): void
     {
 
         if(ENVIRONMENT !== 'development'){
@@ -97,7 +98,7 @@ class Debug extends ThemeAPI  {
             exit;
         }
 
-        echo $TwigTheme->render("views/debug.twig");
+        echo Themes::render("views/debug.twig");
         exit;
 
 

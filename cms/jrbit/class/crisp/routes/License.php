@@ -31,6 +31,7 @@ use crisp\api\Helper;
 use crisp\core;
 use crisp\core\Bitmask;
 use crisp\core\RESTfulAPI;
+use crisp\core\Themes;
 use crisp\models\ThemeAPI;
 use finfo;
 use splitbrain\phpcli\Exception;
@@ -43,7 +44,7 @@ use Twig\Environment;
 class License extends ThemeAPI  {
 
 
-    public function execute(string $Interface, Environment $TwigTheme): void
+    public function execute(string $Interface): void
     {
 
         if($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -166,7 +167,7 @@ class License extends ThemeAPI  {
 
         Cache::delete("license_key");
 
-        echo $TwigTheme->render("views/license.twig", [
+        echo Themes::render("views/license.twig", [
             "license" => \crisp\api\License::fromDB(),
             "IssuerAvailable" => \crisp\api\License::isIssuerAvailable(),
             "LicenseAvailable" => \crisp\api\License::isLicenseAvailable(),

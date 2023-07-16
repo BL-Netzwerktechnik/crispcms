@@ -42,7 +42,7 @@ use Twig\Environment;
 class Debug_ocsp extends ThemeAPI  {
 
 
-    public function execute(string $Interface, Environment $TwigTheme): void
+    public function execute(string $Interface): void
     {
 
         /**
