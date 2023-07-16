@@ -110,7 +110,7 @@ RUN ["ln", "-s", "/usr/local/bin/crisp-cli", "/usr/local/bin/crisp"]
 
 USER 33
 
-COPY cms "$CRISP_WORKDIR"
+COPY --chown=33:33 cms "$CRISP_WORKDIR"
 
 RUN ["/bin/bash", "-c", "/opt/entrypoint.d/bootstrap.sh"]
 
