@@ -125,12 +125,6 @@ stable:
     --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
     - if: $CI_COMMIT_TAG
-      changes:
-        - cms/*
-        - docker/*
-        - config/*
-        - Dockerfile
-        - .dockerignore
 
 stable-license:
   stage: publish
@@ -152,12 +146,6 @@ stable-license:
     --build-arg CI_BUILD=${CI_JOB_ID}
   rules:
     - if: $CI_COMMIT_TAG
-      changes:
-        - cms/*
-        - docker/*
-        - config/*
-        - Dockerfile
-        - .dockerignore
 
 
 
