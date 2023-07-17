@@ -44,12 +44,6 @@ else
   sudo geoipupdate
 fi
 
-echo "Setting System Timezone..."
-sudo ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
-sudo echo $TZ > /etc/timezone
-echo "Setting PHP Timezone..."
-sudo printf "[Date]\ndate.timezone = \"$TZ\"\n" > /usr/local/etc/php/conf.d/timezone.ini
-
 crisp-cli crisp --migrate
 crisp-cli theme --uninstall
 crisp-cli theme --install
