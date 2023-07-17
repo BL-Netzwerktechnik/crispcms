@@ -45,7 +45,8 @@ else
 fi
 
 echo "Setting System Timezone..."
-sudo ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+sudo ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+sudo echo $TZ > /etc/timezone
 echo "Setting PHP Timezone..."
 sudo printf "[Date]\ndate.timezone = \"$TZ\"\n" > /usr/local/etc/php/conf.d/timezone.ini
 
