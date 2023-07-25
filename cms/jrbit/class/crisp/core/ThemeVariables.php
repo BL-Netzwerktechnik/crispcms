@@ -32,7 +32,7 @@ class ThemeVariables
 
     public static function set(string $key, mixed $value): void
     {
-        $GLOBALS["Crisp_ThemeVariables"][$key] = $value;
+        $GLOBALS["Crisp_ThemeVariables"][$key] = serialize($value);
     }
 
     public static function delete(string $var): void
@@ -42,12 +42,16 @@ class ThemeVariables
 
     public static function get(string $var): mixed
     {
-        return $GLOBALS["Crisp_ThemeVariables"][$var];
+        return unserialize($GLOBALS["Crisp_ThemeVariables"][$var]);
     }
 
     public static function getAll(): array
     {
-        return $GLOBALS["Crisp_ThemeVariables"];
+        $vars = [];
+        foreach($GLOBALS["Crisp_ThemeVariables"] as $key=>$value){
+            $vars[$key] = unserialize($value);
+        }
+        return $vars;
     }
 
     public static function register(): void
