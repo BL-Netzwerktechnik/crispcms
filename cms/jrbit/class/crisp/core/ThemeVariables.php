@@ -47,11 +47,7 @@ class ThemeVariables
 
     public static function getAll(): array
     {
-        $vars = [];
-        foreach($GLOBALS["Crisp_ThemeVariables"] as $key=>$value){
-            $vars[$key] = unserialize($value);
-        }
-        return $vars;
+        return array_map('unserialize', $GLOBALS["Crisp_ThemeVariables"]);
     }
 
     public static function register(): void
