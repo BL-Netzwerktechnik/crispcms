@@ -31,9 +31,13 @@ use crisp\core\Logger;
 use crisp\core\LogTypes;
 use crisp\core\Postgres;
 use crisp\core\Themes;
+use Faker\Factory;
+use Faker\Generator as FakerGenerator;
+use Generator;
 use PDO;
 use splitbrain\phpcli\CLI;
 use stdClass;
+use Maltyxx\ImagesGenerator\ImagesGeneratorProvider;
 
 /**
  * Some useful helper functions
@@ -311,52 +315,27 @@ class Helper
      * @param string $Text The text to display
      * @param string $Size The in pixels to create the image with
      */
-    public static function PlaceHolder(string $Size = '150x150', string $Text = null)
+    public static function PlaceHolder(string $Size = '150x150', string|true $Text = true, $backgroundColor = null, $textColor = null)
     {
+        list($width, $height) = explode("x", $Size);
+        $faker = \Faker\Factory::create();
+        $faker->addProvider(new ImagesGeneratorProvider($faker));
 
-        if ($Text === null) {
-            $Text = $Size;
-        }
+        $imgPath = $faker->imageGenerator(width: $width, height: $height, text: $Text, backgroundColor: $backgroundColor, textColor: $textColor);
+        $imgData = file_get_contents($imgPath);
+        unlink($imgPath);
+        return $imgData;
+    }
 
-        $fontSize = 5;
-        $dimensions = explode('x', $Size);
-
-        $w = $dimensions[0] ?? 100;
-        $h = $dimensions[1] ?? 100;
-        $text = $Text ?? $w . 'x' . $h;
-
-        if ($w < 50) {
-            $fontSize = 1;
-        }
-
-        $im = imagecreatetruecolor($w, $h);
-        $bg = imagecolorallocate($im, 204, 204, 204);
-
-        imagefilledrectangle($im, 0, 0, $w, $h, $bg);
-
-        $fontWidth = imagefontwidth($fontSize);
-        $textWidth = $fontWidth * strlen($text);
-        $textLeft = ceil(($w - $textWidth) / 2);
-
-        $fontHeight = imagefontheight($fontSize);
-        $textHeight = $fontHeight;
-        $textTop = ceil(($h - $textHeight) / 2);
-
-        imagestring($im, $fontSize, $textLeft, $textTop, $text, 0x969696);
-
-
-        ob_start();
-
-
-        imagejpeg($im);
-
-        $img_data = ob_get_contents();
-        imagedestroy($im);
-
-        ob_end_clean();
-
-        return $img_data;
-
+    /**
+     * Generate a placeholder image
+     * @param string $Text The text to display
+     * @param string $Size The in pixels to create the image with
+     */
+    public static function Faker(): FakerGenerator
+    {
+        $faker = Factory::create();
+        return $faker;
     }
 
 

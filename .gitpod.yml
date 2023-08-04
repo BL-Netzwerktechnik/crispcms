@@ -76,6 +76,7 @@ tasks:
       -v ${GITPOD_REPO_ROOT}/cms:/var/www/crisp
       -v ${GITPOD_REPO_ROOT}/data:/data
       -v ${GITPOD_REPO_ROOT}/config/nginx.conf:/etc/nginx/conf.d/default.conf
+      -u root
       --net="host"
       --rm
       crispcms
