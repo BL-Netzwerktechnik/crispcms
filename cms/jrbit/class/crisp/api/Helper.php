@@ -57,21 +57,21 @@ class Helper
     }
 
 
-    public static function prettyFormatNumber(int $num): string {
+    public static function prettyFormatNumber(int $num): string
+    {
 
-        if($num>1000) {
+        if ($num > 1000) {
 
-                $x = round($num);
-                $x_number_format = number_format($x);
-                $x_array = explode(',', $x_number_format);
-                $x_parts = array('k', 'm', 'b', 't');
-                $x_count_parts = count($x_array) - 1;
-                $x_display = $x;
-                $x_display = $x_array[0] . ((int) $x_array[1][0] !== 0 ? '.' . $x_array[1][0] : '');
-                $x_display .= $x_parts[$x_count_parts - 1];
+            $x = round($num);
+            $x_number_format = number_format($x);
+            $x_array = explode(',', $x_number_format);
+            $x_parts = array('k', 'm', 'b', 't');
+            $x_count_parts = count($x_array) - 1;
+            $x_display = $x;
+            $x_display = $x_array[0] . ((int) $x_array[1][0] !== 0 ? '.' . $x_array[1][0] : '');
+            $x_display .= $x_parts[$x_count_parts - 1];
 
-                return $x_display;
-
+            return $x_display;
         }
         return $num;
     }
@@ -88,7 +88,7 @@ class Helper
     public static function getS3Url(string $bucket, string $region, string $template = null): string
     {
 
-        if($template === null){
+        if ($template === null) {
             $template = "https://{{bucket}}.s3.{{region}}.amazonaws.com";
         }
 
@@ -110,12 +110,12 @@ class Helper
     public static function generateUpToDateMimeArray(string $url = "https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types"): array
     {
 
-        if(!Cache::isExpired("mime_types")){
+        if (!Cache::isExpired("mime_types")) {
             return json_decode(Cache::get("mime_types"), true);
         }
 
         $mimetypes = [];
-        foreach(explode("\n", file_get_contents($url)) as $line) {
+        foreach (explode("\n", file_get_contents($url)) as $line) {
             $line = trim($line);
             if (str_starts_with($line, "#") || $line == "") continue;
             $explodedLine = preg_split('/\s+/', $line);
@@ -134,7 +134,8 @@ class Helper
      * @param string $file
      * @return string|null
      */
-    public static function detectMimetype(string $file): string|null {
+    public static function detectMimetype(string $file): string|null
+    {
 
         $mappings = self::generateUpToDateMimeArray();
 
@@ -152,7 +153,8 @@ class Helper
      * @param $results
      * @return array
      */
-    public static function getDirRecursive($dir, &$results = array()): array {
+    public static function getDirRecursive($dir, &$results = array()): array
+    {
         $files = scandir($dir);
 
         foreach ($files as $key => $value) {
@@ -161,7 +163,7 @@ class Helper
                 $results[] = $path;
             } else if ($value != "." && $value != "..") {
                 self::getDirRecursive($path, $results);
-                if(!is_dir($path)) {
+                if (!is_dir($path)) {
                     $results[] = $path;
                 }
             }
@@ -177,7 +179,8 @@ class Helper
      */
     public static function getRequestLog(): string
     {
-        return sprintf('%s - [%s] "%s %s %s" %s "%s"',
+        return sprintf(
+            '%s - [%s] "%s %s %s" %s "%s"',
             self::getRealIpAddr(),
             date("d/M/Y:H:i:s O"),
             $_SERVER["REQUEST_METHOD"],
@@ -199,33 +202,33 @@ class Helper
     {
 
         $cli = new Logger();
-        if(!isset($_ENV["NO_COLORS"])) {
+        if (!isset($_ENV["NO_COLORS"])) {
             $cli->colors->enable();
         }
-        if(is_numeric($type)){
+        if (is_numeric($type)) {
             $type = LogTypes::from($type);
         }
 
         $debugMsg = is_string($message) ? $message : var_export($message, true);
 
-            switch($type){
-                case LogTypes::DEBUG:
-                    if((int)$_ENV["VERBOSITY"] > 1){
-                        $cli->debug(sprintf("[%s] %s", date(DATE_RFC2822), $debugMsg));
-                    }
-                    break;
-                case LogTypes::ERROR:
-                    $cli->error($debugMsg);
-                    break;
-                case LogTypes::INFO:
-                    $cli->info($debugMsg);
-                    break;
-                case LogTypes::SUCCESS:
-                    $cli->success($debugMsg);
-                    break;
-                case LogTypes::WARNING:
-                    $cli->warning($debugMsg);
-            }
+        switch ($type) {
+            case LogTypes::DEBUG:
+                if ((int)$_ENV["VERBOSITY"] > 1) {
+                    $cli->debug(sprintf("[%s] %s", date(DATE_RFC2822), $debugMsg));
+                }
+                break;
+            case LogTypes::ERROR:
+                $cli->error($debugMsg);
+                break;
+            case LogTypes::INFO:
+                $cli->info($debugMsg);
+                break;
+            case LogTypes::SUCCESS:
+                $cli->success($debugMsg);
+                break;
+            case LogTypes::WARNING:
+                $cli->warning($debugMsg);
+        }
     }
 
     /**
@@ -236,7 +239,7 @@ class Helper
     public static function getInstanceId(): string
     {
 
-        if(file_exists(core::PERSISTENT_DATA . "/.instance_id")){
+        if (file_exists(core::PERSISTENT_DATA . "/.instance_id")) {
             return file_get_contents(core::PERSISTENT_DATA . "/.instance_id");
         }
         $InstanceId = Crypto::UUIDv4("I");
@@ -255,7 +258,7 @@ class Helper
         $UserAgent = ($UserAgent ?? $_SERVER['HTTP_USER_AGENT']);
         return preg_match('/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i', $UserAgent);
     }
-    
+
 
 
     /**
@@ -357,9 +360,35 @@ class Helper
      * @param false $External
      * @return string
      */
-    public static function generateLink(string $Path, bool $External = false): string
+    public static function generateLink(string $Path, bool $External = false, bool $ForceLocale = false, ?string $UtmID = null, ?string $UtmSource = null, ?string $UtmMedium = null, ?string $UtmCampaign = null, ?string $UtmTerm = null, ?string $UtmContent = null): string
     {
-        return ($External ? $Path : '/' . self::getLocale() . "/$Path");
+        parse_str(parse_url($Path, PHP_URL_QUERY), $parameters);
+
+
+        $CleanedPath = strtok($Path, '?');
+
+        if(!empty($UtmID)) $parameters["utm_id"] = $UtmID;        
+        if(!empty($UtmSource)) $parameters["utm_source"] = $UtmSource;
+        if(!empty($UtmMedium)) $parameters["utm_medium"] = $UtmMedium;
+        if(!empty($UtmCampaign)) $parameters["utm_campaign"] = $UtmCampaign;
+        if(!empty($UtmTerm)) $parameters["utm_term"] = $UtmTerm;
+        if(!empty($UtmContent)) $parameters["utm_content"] = $UtmContent;
+
+        if(empty($parameters)){
+            $Destination = $Path;
+        }else{
+            $Destination = sprintf("%s?%s", $CleanedPath, http_build_query($parameters));
+        }
+
+        if ($External || (str_starts_with($Destination, "http://") || str_starts_with($Destination, "https://"))) {
+            $urlConstruct = sprintf("%s", $Destination);
+        } elseif ($ForceLocale) {
+            $urlConstruct = sprintf("/%s/%s", self::getLocale(), $Destination);
+        } else {
+            $urlConstruct = sprintf("/%s", $Destination);
+        }
+
+        return $urlConstruct;
     }
 
     /**
@@ -375,11 +404,11 @@ class Helper
         $obj = new stdClass();
 
 
-        if(strlen($_Route[0]) === 2){
+        if (strlen($_Route[0]) === 2) {
             $obj->Page = explode("?", $_Route[1])[0];
             $obj->Language = (lists\Languages::languageExists($_Route[0]) && $_Route[0] !== '' ? $_Route[0] : self::getLocale());
             $obj->LanguageParameter = true;
-        }else{
+        } else {
             $obj->Page = explode("?", $_Route[0])[0];
             $obj->Language = self::getLocale();
             $obj->LanguageParameter = false;
@@ -388,21 +417,20 @@ class Helper
 
         /** /mypage/my_parameter */
 
-        if($obj->LanguageParameter){
+        if ($obj->LanguageParameter) {
             $LookupIndex = 2;
-        }else{
+        } else {
             $LookupIndex = 1;
         }
 
 
         if ($_Route[$LookupIndex] !== '' && ((count($_Route) > 2 && !IS_API_ENDPOINT) || (IS_API_ENDPOINT))) {
             $_RouteArray = $_Route;
-            if(!IS_API_ENDPOINT){
+            if (!IS_API_ENDPOINT) {
                 for ($i = 0; $i < count($_Route) - 1; $i++) {
                     array_shift($_RouteArray);
                 }
-
-            }else{
+            } else {
                 array_shift($_RouteArray);
             }
             for ($i = 0, $iMax = count($_RouteArray); $i <= $iMax; $i += 2) {
@@ -410,10 +438,10 @@ class Helper
                 $value = $_RouteArray[$i + 1];
                 if ($key !== '') {
                     if ($value === null) {
-                            $val = explode('?', $key)[0];
-                            if(strlen($val) > 0) {
-                                $_GET['q'] = $val;
-                            }
+                        $val = explode('?', $key)[0];
+                        if (strlen($val) > 0) {
+                            $_GET['q'] = $val;
+                        }
                     } else {
                         $_GET[$key] = explode('?', $value)[0];
                     }
@@ -457,7 +485,7 @@ class Helper
      */
     public static function templateExists(string $Template): bool
     {
-        return file_exists(Themes::getThemeDirectory(). "/templates/$Template");
+        return file_exists(Themes::getThemeDirectory() . "/templates/$Template");
     }
 
     /**
@@ -605,7 +633,7 @@ class Helper
         }
         $token = $data[0];
         switch ($token) {
-            case 's' :
+            case 's':
                 if ($strict) {
                     if ('"' !== $data[strlen($data) - 2]) {
                         return false;
@@ -613,13 +641,13 @@ class Helper
                 } elseif (!str_contains($data, '"')) {
                     return false;
                 }
-            // or else fall through
-            case 'a' :
-            case 'O' :
+                // or else fall through
+            case 'a':
+            case 'O':
                 return (bool)preg_match("/^{$token}:[0-9]+:/s", $data);
-            case 'b' :
-            case 'i' :
-            case 'd' :
+            case 'b':
+            case 'i':
+            case 'd':
                 $end = $strict ? '$' : '';
                 return (bool)preg_match("/^{$token}:[0-9.E-]+;$end/", $data);
         }
@@ -639,6 +667,4 @@ class Helper
     {
         return !empty(array_intersect($needles, $haystack));
     }
-
-
 }
