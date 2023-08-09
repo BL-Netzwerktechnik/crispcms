@@ -360,7 +360,7 @@ class Helper
      * @param false $External
      * @return string
      */
-    public static function generateLink(string $Path, bool $External = false, ?string $UtmID = null, ?string $UtmSource = null, ?string $UtmMedium = null, ?string $UtmCampaign = null, ?string $UtmTerm = null, ?string $UtmContent = null): string
+    public static function generateLink(string $Path, bool $External = false, string|false|null $Locale = false, ?string $UtmID = null, ?string $UtmSource = null, ?string $UtmMedium = null, ?string $UtmCampaign = null, ?string $UtmTerm = null, ?string $UtmContent = null): string
     {
         parse_str(parse_url($Path, PHP_URL_QUERY), $parameters);
 
@@ -373,6 +373,7 @@ class Helper
         if (!empty($UtmCampaign)) $parameters["utm_campaign"] = $UtmCampaign;
         if (!empty($UtmTerm)) $parameters["utm_term"] = $UtmTerm;
         if (!empty($UtmContent)) $parameters["utm_content"] = $UtmContent;
+        if($Locale !== false) $parameters["crisp_locale"] = $Locale;
 
         if (empty($parameters)) {
             $Destination = $Path;

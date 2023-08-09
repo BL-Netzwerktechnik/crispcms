@@ -42,8 +42,7 @@ class Router
 
     public static function add(string $route, mixed $class): void
     {
-
-        $collector = self::get()->any($route, [$class, "preRender"]);
+        $collector = self::get()->any([$route, $class], [$class, "preRender"]);
         $GLOBALS["Crisp_Router"] = $collector;
     }
 
