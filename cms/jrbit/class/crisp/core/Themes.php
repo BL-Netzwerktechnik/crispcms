@@ -33,6 +33,7 @@ use Exception;
 use FilesystemIterator;
 use PDOException;
 use Phroute\Phroute\Dispatcher;
+use Phroute\Phroute\Exception\HttpRouteNotFoundException;
 use Phroute\Phroute\Route;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -71,7 +72,6 @@ class Themes
     public static function loadAPI(string $Interface): void
     {
         try {
-            Themes::autoload();
             new RESTfulAPI($Interface);
         } catch (Exception $ex) {
             captureException($ex);
@@ -138,6 +138,15 @@ class Themes
                 throw new \Exception("Failed to load HookFile, missing postRender!");
             }
             $HookClass->postRender();
+        } catch (HttpRouteNotFoundException $ex) {
+            
+
+            if (Helper::templateExists("errors/notfound.twig")) {
+                echo Themes::render("errors/notfound.twig", []);
+            } else {
+                echo strtr(file_get_contents(__DIR__ . '/../../../../themes/basic/not_found.html'), []);
+            }
+            exit;
         } catch (Exception $ex) {
             captureException($ex);
             if (PHP_SAPI === 'cli') {

@@ -281,13 +281,13 @@ class Helper
      */
     public static function getLocale(): string
     {
-        $Locale = $GLOBALS['route']->Language ?? locale_accept_from_http($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        $Locale = $_GET["crisp_locale"] ?? locale_accept_from_http($_SERVER['HTTP_ACCEPT_LANGUAGE']);
 
         if (!array_key_exists($Locale, array_column(Languages::fetchLanguages(false), null, 'code'))) {
             $Locale = $_ENV['DEFAULT_LOCALE'] ?? 'en';
         }
 
-        if (isset($_COOKIE[\crisp\core\Config::$Cookie_Prefix . 'language']) && !isset($GLOBALS['route']->Language)) {
+        if (isset($_COOKIE[\crisp\core\Config::$Cookie_Prefix . 'language']) && !isset($_GET["crisp_locale"])) {
             $Locale = $_COOKIE[\crisp\core\Config::$Cookie_Prefix . 'language'];
         }
         return $Locale;
@@ -360,30 +360,28 @@ class Helper
      * @param false $External
      * @return string
      */
-    public static function generateLink(string $Path, bool $External = false, bool $ForceLocale = false, ?string $UtmID = null, ?string $UtmSource = null, ?string $UtmMedium = null, ?string $UtmCampaign = null, ?string $UtmTerm = null, ?string $UtmContent = null): string
+    public static function generateLink(string $Path, bool $External = false, ?string $UtmID = null, ?string $UtmSource = null, ?string $UtmMedium = null, ?string $UtmCampaign = null, ?string $UtmTerm = null, ?string $UtmContent = null): string
     {
         parse_str(parse_url($Path, PHP_URL_QUERY), $parameters);
 
 
         $CleanedPath = strtok($Path, '?');
 
-        if(!empty($UtmID)) $parameters["utm_id"] = $UtmID;        
-        if(!empty($UtmSource)) $parameters["utm_source"] = $UtmSource;
-        if(!empty($UtmMedium)) $parameters["utm_medium"] = $UtmMedium;
-        if(!empty($UtmCampaign)) $parameters["utm_campaign"] = $UtmCampaign;
-        if(!empty($UtmTerm)) $parameters["utm_term"] = $UtmTerm;
-        if(!empty($UtmContent)) $parameters["utm_content"] = $UtmContent;
+        if (!empty($UtmID)) $parameters["utm_id"] = $UtmID;
+        if (!empty($UtmSource)) $parameters["utm_source"] = $UtmSource;
+        if (!empty($UtmMedium)) $parameters["utm_medium"] = $UtmMedium;
+        if (!empty($UtmCampaign)) $parameters["utm_campaign"] = $UtmCampaign;
+        if (!empty($UtmTerm)) $parameters["utm_term"] = $UtmTerm;
+        if (!empty($UtmContent)) $parameters["utm_content"] = $UtmContent;
 
-        if(empty($parameters)){
+        if (empty($parameters)) {
             $Destination = $Path;
-        }else{
+        } else {
             $Destination = sprintf("%s?%s", $CleanedPath, http_build_query($parameters));
         }
 
         if ($External || (str_starts_with($Destination, "http://") || str_starts_with($Destination, "https://"))) {
             $urlConstruct = sprintf("%s", $Destination);
-        } elseif ($ForceLocale) {
-            $urlConstruct = sprintf("/%s/%s", self::getLocale(), $Destination);
         } else {
             $urlConstruct = sprintf("/%s", $Destination);
         }

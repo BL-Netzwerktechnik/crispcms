@@ -177,7 +177,6 @@ try {
 
 
     if (PHP_SAPI !== 'cli') {
-        $GLOBALS['route'] = api\Helper::processRoute($_GET['route']);
         Helper::Log(LogTypes::INFO, Helper::getRequestLog());
     }
 
