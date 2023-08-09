@@ -25,6 +25,7 @@
 namespace crisp\core;
 
 use crisp\api\Cache;
+use crisp\api\Config;
 use crisp\api\Helper;
 use crisp\api\lists\Languages;
 use crisp\api\Translation;
@@ -43,6 +44,11 @@ use Sentry\SentrySdk;
 use Sentry\State\Scope;
 use stdClass;
 use Twig\Environment;
+use Twig\Extension\StringLoaderExtension;
+use Twig\Loader\FilesystemLoader;
+use Twig\TwigFilter;
+use Twig\TwigFunction;
+
 use function file_exists;
 use function file_get_contents;
 use function function_exists;
@@ -78,6 +84,91 @@ class Themes
             captureException($ex);
             throw new Exception($ex);
         }
+    }
+
+    public static function initRenderer(string $dir = null): void
+    {
+        if (!$dir) {
+            $dir = self::getThemeDirectory() . "/templates";
+        }
+        $ThemeLoader = new FilesystemLoader([$dir]);
+
+        if (ENVIRONMENT === 'production') {
+            $TwigTheme = new Environment($ThemeLoader, [
+                'cache' => core::CACHE_DIR
+            ]);
+        } else {
+            $TwigTheme = new Environment($ThemeLoader, []);
+        }
+
+
+        $TwigTheme->addGlobal('config', Config::list());
+        $TwigTheme->addGlobal('locale', Helper::getLocale());
+        $TwigTheme->addGlobal('languages', Translation::listLanguages(false));
+        $TwigTheme->addGlobal('GET', $_GET);
+        $TwigTheme->addGlobal('POST', $_POST);
+        $TwigTheme->addGlobal('SERVER', $_SERVER);
+        $TwigTheme->addGlobal('GLOBALS', $GLOBALS);
+        $TwigTheme->addGlobal('COOKIE', $_COOKIE);
+        $TwigTheme->addGlobal('ENV', $_ENV);
+        $TwigTheme->addGlobal('isMobile', Helper::isMobile());
+        $TwigTheme->addGlobal('URL', Helper::currentURL());
+        $TwigTheme->addGlobal('CLUSTER', gethostname());
+        $TwigTheme->addGlobal('CRISP_VERSION', core::CRISP_VERSION);
+        $TwigTheme->addGlobal('API_VERSION', core::API_VERSION);
+        $TwigTheme->addGlobal('VM_IP', VM_IP);
+        $TwigTheme->addGlobal('REQUEST_ID', REQUEST_ID);
+        $TwigTheme->addGlobal('RELEASE_NAME', core::RELEASE_NAME);
+        $TwigTheme->addGlobal('RELEASE_ICON', RELEASE_ICON);
+        $TwigTheme->addGlobal('RELEASE_ART', RELEASE_ART);
+        $TwigTheme->addGlobal('CRISP_ICON', CRISP_ICON);
+
+        $TwigTheme->addFunction(new TwigFunction('prettyDump', [new Helper(), 'prettyDump']));
+        $TwigTheme->addExtension(new StringLoaderExtension());
+
+
+
+        $TwigTheme->addGlobal('VERSION_STRING', "{{ SERVER.ENVIRONMENT |upper }} | Theme@{{ ENV.THEME_GIT_COMMIT }} | CIP: {{ VM_IP }}@{{ CLUSTER }} | CV: {{ CRISP_VERSION }}@{{ ENV.GIT_COMMIT }} | AV: {{ API_VERSION }}@{{ ENV.GIT_COMMIT }} | RID: {{ REQUEST_ID }}");
+
+        $TwigTheme->addFunction(new TwigFunction('microtime', 'microtime'));
+        $TwigTheme->addFunction(new TwigFunction('includeResource', [new Themes(), 'includeResource']));
+        $TwigTheme->addFunction(new TwigFunction('generateLink', [new Helper(), 'generateLink']));
+        $TwigTheme->addFunction(new TwigFunction('generatePlaceholder', [new Helper(), 'PlaceHolder']));
+        $TwigTheme->addFunction(new TwigFunction('generateLoremIpsum', [new Helper(), 'LoremIpsum']));
+        $TwigTheme->addFunction(new TwigFunction('date', 'date'));
+        $TwigTheme->addFunction(new TwigFunction('in_array_any', [new Helper(), 'in_array_any']));
+
+        /* CSRF Stuff */
+        $TwigTheme->addFunction(new TwigFunction('csrf', [new Security(), 'getCSRF']));
+        $TwigTheme->addFunction(new TwigFunction('refreshCSRF', [new Security(), 'regenCSRF']));
+        $TwigTheme->addFunction(new TwigFunction('validateCSRF', [new Security(), 'matchCSRF']));
+        $TwigTheme->addFunction(new TwigFunction('strftime', 'strftime'));
+        $TwigTheme->addFunction(new TwigFunction('strtotime', 'strtotime'));
+        $TwigTheme->addFunction(new TwigFunction('time', 'time'));
+        $TwigTheme->addFunction(new TwigFunction('parseTime', [Carbon::class, 'parse']));
+        $TwigTheme->addFunction(new TwigFunction('render', [Themes::class, 'render']));
+
+
+        $Translation = new Translation(Helper::getLocale());
+
+
+        $TwigTheme->addFilter(new TwigFilter('bcdiv', 'bcdiv'));
+        $TwigTheme->addFilter(new TwigFilter('integer', 'intval'));
+        $TwigTheme->addFilter(new TwigFilter('double', 'doubleval'));
+        $TwigTheme->addFilter(new TwigFilter('json', 'json_decode'));
+        $TwigTheme->addFilter(new TwigFilter('json_encode', 'json_encode'));
+        $TwigTheme->addFilter(new TwigFilter('json_decode', 'json_decode'));
+        $TwigTheme->addFilter(new TwigFilter('base64_encode', 'base64_encode'));
+        $TwigTheme->addFilter(new TwigFilter('unserialize', 'unserialize'));
+        $TwigTheme->addFilter(new TwigFilter('md5', 'md5'));
+        $TwigTheme->addFilter(new TwigFilter('translate', [$Translation, 'fetch']));
+        $TwigTheme->addFilter(new TwigFilter('getlang', [new Languages(), 'getLanguageByCode']));
+        $TwigTheme->addFilter(new TwigFilter('truncateText', [new Helper(), 'truncateText']));
+        $TwigTheme->addFilter(new TwigFilter('strtotime', 'strtotime'));
+        $TwigTheme->addFilter(new TwigFilter('time', 'time'));
+        $TwigTheme->addFilter(new TwigFilter('formattime', [new Helper(), 'FormatTime']));
+
+        $GLOBALS["Crisp_ThemeLoader"] = $TwigTheme;
     }
 
     public static function getRenderer(): Environment
