@@ -184,7 +184,7 @@ class Helper
             self::getRealIpAddr(),
             date("d/M/Y:H:i:s O"),
             $_SERVER["REQUEST_METHOD"],
-            $GLOBALS["route"]->Raw ?: "/",
+            $_SERVER["REQUEST_URI"],
             $_SERVER['SERVER_PROTOCOL'],
             http_response_code(),
             $_SERVER["HTTP_USER_AGENT"]

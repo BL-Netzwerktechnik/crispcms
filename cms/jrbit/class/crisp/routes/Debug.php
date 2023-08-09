@@ -37,10 +37,10 @@ use Twig\Environment;
  * Used internally, theme loader
  *
  */
-class Debug extends ThemeAPI  {
+class Debug  {
 
 
-    public function execute(string $Interface): void
+    public function preRender(): void
     {
 
         if(ENVIRONMENT !== 'development'){
@@ -99,8 +99,5 @@ class Debug extends ThemeAPI  {
         }
 
         echo Themes::render("views/debug.twig");
-        exit;
-
-
     }
 }

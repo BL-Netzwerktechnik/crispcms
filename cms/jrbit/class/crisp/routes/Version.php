@@ -36,10 +36,10 @@ use Twig\Environment;
  * Used internally, theme loader
  *
  */
-class Version extends ThemeAPI  {
+class Version  {
 
 
-    public function execute(string $Interface): void
+    public function preRender(): void
     {
 
         $license = null;

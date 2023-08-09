@@ -36,10 +36,10 @@ use Twig\Environment;
  * Used internally, theme loader
  *
  */
-class Proxy extends ThemeAPI  {
+class Proxy  {
 
 
-    public function execute(string $Interface): void
+    public function preRender(): void
     {
         $ttlIncrease = ($_GET["cache"]) ?? 300;
         $Url = urldecode($_GET["url"]);

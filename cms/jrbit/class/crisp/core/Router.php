@@ -24,6 +24,7 @@
 
 namespace crisp\core;
 
+use crisp\types\RouteType;
 use Phroute\Phroute\RouteCollector;
 
 /**
@@ -33,28 +34,40 @@ use Phroute\Phroute\RouteCollector;
 class Router
 {
 
-    public static function addFun(string $route, mixed $function): void
+    public static function addFun(string $route, RouteType $routeType, mixed $function): void
     {
 
-        $collector = self::get()->any($route, $function);
-        $GLOBALS["Crisp_Router"] = $collector;
+        $collector = self::get($routeType)->any($route, $function);
+        $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
     }
 
-    public static function add(string $route, mixed $class): void
+    public static function add(string $route, RouteType $routeType, mixed $class): void
     {
-        $collector = self::get()->any([$route, $class], [$class, "preRender"]);
-        $GLOBALS["Crisp_Router"] = $collector;
+        $collector = self::get($routeType)->any([$route, $class], [$class, $routeType == RouteType::PUBLIC ? "preRender" : "execute"]);
+        $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
+    }
+
+    public static function registerInteralRoutes(): void
+    {
+        self::add("_debug_oscp", RouteType::PUBLIC, \crisp\routes\DebugOCSP::class);
+        self::add("_debug", RouteType::PUBLIC, \crisp\routes\Debug::class);
+        self::add("_license", RouteType::PUBLIC, \crisp\routes\License::class);
+        self::add("_proxy", RouteType::PUBLIC, \crisp\routes\Proxy::class);
+        self::add("_version", RouteType::PUBLIC, \crisp\routes\Version::class);
     }
 
 
-    public static function get(): RouteCollector
+    public static function get(RouteType $routeType): RouteCollector
     {
-        return $GLOBALS["Crisp_Router"];
+        return $GLOBALS["Crisp_Router_" . $routeType->value];
     }
 
     public static function register(): void
     {
-        $GLOBALS["Crisp_Router"] = new RouteCollector();
-    }
+        foreach (RouteType::cases() as $RouteType) {
+            $GLOBALS["Crisp_Router_" . $RouteType->value] = new RouteCollector();
+        }
 
+        self::registerInteralRoutes();
+    }
 }

@@ -25,6 +25,9 @@
 namespace crisp\core;
 
 use crisp\api\Helper;
+use crisp\types\RouteType;
+use Phroute\Phroute\Dispatcher;
+use Phroute\Phroute\Exception\HttpRouteNotFoundException;
 use Twig\Environment;
 
 /**
@@ -34,72 +37,21 @@ use Twig\Environment;
 class RESTfulAPI
 {
 
-    public string $Interface;
-
     /**
      *
      * @param Environment $ThemeLoader
      * @param string $Interface
      * @param string $_QUERY
      */
-    public function __construct(string $Interface)
+    public function __construct()
     {
-        $this->Interface = Helper::filterAlphaNum($Interface);
+        try {
 
-        $HookClass = null;
-
-        $_HookFile = Themes::getThemeMetadata()->hookFile;
-        $_HookClass = substr($_HookFile, 0, -4);
-
-        require_once __DIR__ . "/../../../../" . \crisp\api\Config::get("theme_dir") . "/" . \crisp\api\Config::get("theme") . "/$_HookFile";
-
-        if (class_exists($_HookClass, false)) {
-            $HookClass = new $_HookClass();
-        }
-
-        if (file_exists(Themes::getThemeDirectory() . "/includes/api/views/" . $this->Interface . ".php")) {
-            require Themes::getThemeDirectory() . "/includes/api/views/" . $this->Interface . ".php";
-
-            $PageClass = null;
-
-            if (class_exists($this->Interface, false)) {
-                $PageClass = new $this->Interface();
-            }
-
-            Helper::Log(LogTypes::DEBUG, "API: " . $this->Interface . " has been called");
-
-            if ($PageClass !== null && !method_exists($PageClass, 'execute')) {
-                throw new \Exception("execute is missing in api/" .  $this->Interface . ".php");
-            }
-
-            $PageClass->execute($Interface);
-        } else {
-            $_RootFile = Themes::getThemeMetadata()->api->pages->root;
-            $_RootClass = substr($_RootFile, 0, -4);
-
-            if (!$_RootFile && $Interface == "") {
-                self::response(Bitmask::GENERIC_ERROR->value, 'API Root has not been configured. Please consult the Docs', []);
-                exit;
-            }
-
-
-            if (file_exists(Themes::getThemeDirectory() . "/includes/api/$_RootFile") && $Interface == "") {
-                require Themes::getThemeDirectory() . "/includes/api/$_RootFile";
-
-                $PageClass = null;
-
-                if (class_exists($_RootClass, false)) {
-                    $PageClass = new $_RootClass();
-                }
-
-                if ($PageClass !== null && !method_exists($PageClass, 'execute')) {
-                    throw new \Exception("execute is missing in api/$_RootFile");
-                }
-
-                $PageClass->execute($Interface);
-                exit;
-            }
-
+            HookFile::preExecute();
+            $dispatcher = new Dispatcher(Router::get(RouteType::API)->getData());
+            echo $dispatcher->dispatch($_SERVER['REQUEST_METHOD'], parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+            HookFile::postExecute();
+        } catch (HttpRouteNotFoundException $ex) {
 
             $_NFFile = Themes::getThemeMetadata()->api->pages->notFound;
             $_NFClass = substr($_NFFile, 0, -4);
@@ -142,12 +94,6 @@ class RESTfulAPI
         list($Interface, $Version) = array_filter(explode("/", $GLOBALS["route"]->Raw));
 
         return $Version;
-    }
-    public static function getInterface(): ?string
-    {
-        list($Interface, $Version) = array_filter(explode("/", $GLOBALS["route"]->Raw));
-
-        return $Interface;
     }
 
     public static function isRequestContentType(string $contenttype = "application/json"): bool

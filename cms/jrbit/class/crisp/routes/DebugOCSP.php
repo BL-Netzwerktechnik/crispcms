@@ -24,25 +24,10 @@
 
 namespace crisp\routes;
 
-use crisp\api\Cache;
-use crisp\api\Config;
-use crisp\api\Helper;
-use crisp\core;
-use crisp\core\Bitmask;
-use crisp\core\RESTfulAPI;
-use crisp\models\ThemeAPI;
-use finfo;
-use splitbrain\phpcli\Exception;
-use Twig\Environment;
-
-/**
- * Used internally, theme loader
- *
- */
-class Debug_ocsp extends ThemeAPI  {
+class DebugOCSP  {
 
 
-    public function execute(string $Interface): void
+    public function preRender(): void
     {
 
         /**

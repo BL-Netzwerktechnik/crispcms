@@ -29,6 +29,7 @@ use crisp\api\Helper;
 use crisp\api\lists\Languages;
 use crisp\api\Translation;
 use crisp\core;
+use crisp\types\RouteType;
 use Exception;
 use FilesystemIterator;
 use PDOException;
@@ -69,10 +70,10 @@ class Themes
      * @param string $Interface The interface we are listening on
      * @param string $_QUERY The query
      */
-    public static function loadAPI(string $Interface): void
+    public static function loadAPI(): void
     {
         try {
-            new RESTfulAPI($Interface);
+            new RESTfulAPI();
         } catch (Exception $ex) {
             captureException($ex);
             throw new Exception($ex);
@@ -114,32 +115,13 @@ class Themes
 
         try {
 
-            $_HookFile = self::getThemeMetadata()->hookFile;
-            $_HookClass = substr($_HookFile, 0, -4);
 
-            require_once Themes::getThemeDirectory() . "/$_HookFile";
-
-            if (class_exists($_HookClass, false)) {
-                $HookClass = new $_HookClass();
-            }
-
-            if ($HookClass !== null && !method_exists($HookClass, 'preRender')) {
-                throw new \Exception("Failed to load $_HookClass, missing preRender!");
-            }
-
-            Helper::Log(LogTypes::DEBUG, sprintf("START executing preRender hooks for HookFile"));
-            Logger::startTiming($HookClassRenderTime);
-            $HookClass->preRender($CurrentPage, $CurrentFile);
-            Helper::Log(LogTypes::DEBUG, sprintf("DONE executing preRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
-
-            $dispatcher = new Dispatcher(Router::get()->getData());
+            HookFile::preRender();
+            $dispatcher = new Dispatcher(Router::get(RouteType::PUBLIC)->getData());
             echo $dispatcher->dispatch($_SERVER['REQUEST_METHOD'], parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
-            if ($HookClass !== null && !method_exists($HookClass, 'postRender')) {
-                throw new \Exception("Failed to load HookFile, missing postRender!");
-            }
-            $HookClass->postRender();
+            HookFile::postRender();
         } catch (HttpRouteNotFoundException $ex) {
-            
+
 
             if (Helper::templateExists("errors/notfound.twig")) {
                 echo Themes::render("errors/notfound.twig", []);
@@ -165,7 +147,6 @@ class Themes
             if (IS_DEV_ENV) {
                 $refid = $ex->getMessage();
             }
-
 
             if (IS_API_ENDPOINT) {
                 RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);

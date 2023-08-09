@@ -26,7 +26,7 @@ namespace crisp;
 use Carbon\Carbon;
 use CompileError;
 use crisp\api\{Config, GeoIP, Helper, lists\Languages, Translation};
-use crisp\core\{Bitmask, Crypto, LogTypes, RESTfulAPI, Security, Sessions, Themes, License, Router, ThemeVariables};
+use crisp\core\{Bitmask, Crypto, HookFile, LogTypes, RESTfulAPI, Security, Sessions, Themes, License, Router, ThemeVariables};
 use Dotenv\Dotenv;
 use Error;
 use Exception;
@@ -218,20 +218,17 @@ try {
         session_save_path(core::PERSISTENT_DATA . "/sessions");
         ini_set('session.gc_probability', 1);
         */
+
         session_start();
 
 
         $CurrentTheme = core::DEFAULT_THEME;
-        $CurrentFile = substr(substr($_SERVER['PHP_SELF'], 1), 0, -4);
-        $CurrentPage = $GLOBALS['route']->Page;
-        $CurrentPage = ($CurrentPage === '' ? 'start' : $CurrentPage);
-        $CurrentPage = explode('.', $CurrentPage)[0];
+        Themes::autoload();
 
 
         api\Helper::setLocale();
         $Locale = Helper::getLocale();
 
-        header("X-CMS-CurrentPage: $CurrentPage");
         header("X-CMS-Locale: $Locale");
         header('X-CMS-Version: ' . core::CRISP_VERSION);
 
@@ -242,9 +239,7 @@ try {
             $GLOBALS['guid'] = $_COOKIE['guid'];
         }
 
-
-
-        if (str_starts_with($CurrentPage, "_")) {
+        if (str_starts_with($_SERVER['REQUEST_URI'], "/_")) {
             define("IS_SPECIAL_PAGE", true);
             $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/basic/templates/"]);
         } else {
@@ -263,6 +258,8 @@ try {
 
         $GLOBALS["Crisp_ThemeLoader"] = $TwigTheme;
         ThemeVariables::register($TwigTheme);
+        Router::register();
+        HookFile::setup();
 
         $_ENV['REQUIRE_LICENSE'] = $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
 
@@ -357,12 +354,11 @@ try {
                 exit;
             }
 
-            core\Themes::loadAPI($GLOBALS['route']->Page);
+            new RESTfulAPI();
+            exit;
         }
 
-        Themes::autoload();
-        Router::register();
-        Themes::load($CurrentFile, $CurrentPage);
+        Themes::load();
     }
 } catch (TypeError | Exception | Error | CompileError | ParseError | Throwable $ex) {
     captureException($ex);
@@ -384,7 +380,7 @@ try {
     }
 
 
-    if (defined("IS_API_ENDPOINT")) {
+    if (IS_API_ENDPOINT) {
         RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
         exit;
     }

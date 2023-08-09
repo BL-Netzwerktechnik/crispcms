@@ -23,6 +23,7 @@
 
 
 namespace crisp\core;
+
 /**
  * Used internally, theme loader
  *
@@ -30,6 +31,12 @@ namespace crisp\core;
 class ThemeVariables
 {
 
+    public static function setMultiple(array $array): void
+    {
+        foreach ($array as $key => $value) {
+            self::set($key, $value);
+        }
+    }
     public static function set(string $key, mixed $value): void
     {
         $GLOBALS["Crisp_ThemeVariables"][$key] = serialize($value);
@@ -54,5 +61,4 @@ class ThemeVariables
     {
         $GLOBALS["Crisp_ThemeVariables"] = [];
     }
-
 }
