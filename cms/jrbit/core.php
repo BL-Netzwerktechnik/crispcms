@@ -242,12 +242,14 @@ try {
         if (str_starts_with($_SERVER['REQUEST_URI'], "/_")) {
             define("IS_SPECIAL_PAGE", true);
             $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/basic/templates/"]);
+            Themes::initRenderer(__DIR__ . "/../themes/basic/templates/");
         } else {
             define("IS_SPECIAL_PAGE", false);
             $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/$CurrentTheme/templates/"]);
+            Themes::initRenderer();
         }
 
-        Themes::initRenderer();
+        
         ThemeVariables::register($TwigTheme);
         Router::register();
         HookFile::setup();
