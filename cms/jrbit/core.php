@@ -26,7 +26,7 @@ namespace crisp;
 use Carbon\Carbon;
 use CompileError;
 use crisp\api\{Config, GeoIP, Helper, lists\Languages, Translation};
-use crisp\core\{Bitmask, Crypto, LogTypes, RESTfulAPI, Security, Sessions, Themes, License, ThemeVariables};
+use crisp\core\{Bitmask, Crypto, LogTypes, RESTfulAPI, Security, Sessions, Themes, License, Router, ThemeVariables};
 use Dotenv\Dotenv;
 use Error;
 use Exception;
@@ -84,15 +84,14 @@ class core
      * Default Theme Root Folder
      */
     public const THEME_BASE_DIR = __DIR__ . '/../themes';
-
 }
 require_once __DIR__ . '/../vendor/autoload.php';
 
 
 try {
-    if(!defined('STDIN'))  define('STDIN',  fopen('php://stdin',  'rb'));
-    if(!defined('STDOUT')) define('STDOUT', fopen('php://stdout', 'wb'));
-    if(!defined('STDERR')) define('STDERR', fopen('php://stderr', 'wb'));
+    if (!defined('STDIN'))  define('STDIN',  fopen('php://stdin',  'rb'));
+    if (!defined('STDOUT')) define('STDOUT', fopen('php://stdout', 'wb'));
+    if (!defined('STDERR')) define('STDERR', fopen('php://stderr', 'wb'));
     define('IS_DEV_ENV', (isset($_SERVER['ENVIRONMENT']) && $_SERVER['ENVIRONMENT'] !== 'production'));
     define('ENVIRONMENT', match (strtolower($_SERVER['ENVIRONMENT'] ?? 'production')) {
         'staging' => 'staging',
@@ -100,7 +99,7 @@ try {
         default => 'production'
     });
 
-    if(!file_exists(core::PERSISTENT_DATA)){
+    if (!file_exists(core::PERSISTENT_DATA)) {
         Helper::createDir(core::PERSISTENT_DATA);
     }
 
@@ -132,35 +131,37 @@ try {
     $GLOBALS['dotenv'] = $dotenv;
 
 
-        define('CRISP_HOOKED', true);
-        /** Core headers, can be accessed anywhere */
-        /** After autoloading we include additional headers below */
+    define('CRISP_HOOKED', true);
+    /** Core headers, can be accessed anywhere */
+    /** After autoloading we include additional headers below */
 
 
 
 
-        $BuildType = $_ENV['BUILD_TYPE'] ?? 0;
+    $BuildType = $_ENV['BUILD_TYPE'] ?? 0;
 
-        if($BuildType === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "rc."))){
-            $BuildType = 2;
-        }elseif($BuildType === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "pre-release") || str_contains(strtolower($_ENV['GIT_TAG']), "prerelease"))){
-            $BuildType = 3;
-        }elseif($BuildType === 0 && isset($_ENV['GIT_TAG'])){
-            $BuildType = 1;
-        }
+    if ($BuildType === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "rc."))) {
+        $BuildType = 2;
+    } elseif ($BuildType === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "pre-release") || str_contains(strtolower($_ENV['GIT_TAG']), "prerelease"))) {
+        $BuildType = 3;
+    } elseif ($BuildType === 0 && isset($_ENV['GIT_TAG'])) {
+        $BuildType = 1;
+    }
 
-        $_ENV['BUILD_TYPE'] = match($BuildType){
-            1 => "Stable",
-            2 => "Release-Candidate",
-            3 => "Pre-Release",
-            default => "Nightly"
-        };
+    $_ENV['BUILD_TYPE'] = match ($BuildType) {
+        1 => "Stable",
+        2 => "Release-Candidate",
+        3 => "Pre-Release",
+        default => "Nightly"
+    };
 
-        define('BUILD_TYPE', $_ENV['BUILD_TYPE']);
+    define('BUILD_TYPE', $_ENV['BUILD_TYPE']);
 
-        define('IS_API_ENDPOINT', (PHP_SAPI !== 'cli' && isset($_SERVER['IS_API_ENDPOINT'])));
-        define('IS_NATIVE_API', isset($_SERVER['IS_API_ENDPOINT']));
-        define('RELEASE', (IS_API_ENDPOINT ? 'api' : 'crisp')
+    define('IS_API_ENDPOINT', (PHP_SAPI !== 'cli' && isset($_SERVER['IS_API_ENDPOINT'])));
+    define('IS_NATIVE_API', isset($_SERVER['IS_API_ENDPOINT']));
+    define(
+        'RELEASE',
+        (IS_API_ENDPOINT ? 'api' : 'crisp')
             . '@' .
             (IS_API_ENDPOINT ? core::API_VERSION : core::CRISP_VERSION)
             . '+' .
@@ -169,42 +170,41 @@ try {
             (BUILD_TYPE ?? 'Nightly')
             . '.' .
             ($_ENV['CI_BUILD'] ?? 0)
-        );
-        define('REQUEST_ID', Crypto::UUIDv4("R"));
+    );
+    define('REQUEST_ID', Crypto::UUIDv4("R"));
 
 
 
 
-        if (PHP_SAPI !== 'cli') {
-            $GLOBALS['route'] = api\Helper::processRoute($_GET['route']);
-            Helper::Log(LogTypes::INFO, Helper::getRequestLog());
-        }
+    if (PHP_SAPI !== 'cli') {
+        $GLOBALS['route'] = api\Helper::processRoute($_GET['route']);
+        Helper::Log(LogTypes::INFO, Helper::getRequestLog());
+    }
 
-        if(isset($_ENV['SENTRY_DSN'])) {
+    if (isset($_ENV['SENTRY_DSN'])) {
 
-            init([
-                'dsn' => $_ENV['SENTRY_DSN'],
-                'traces_sample_rate' => $_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
-                'environment' => ENVIRONMENT,
-                'release' => RELEASE,
-            ]);
+        init([
+            'dsn' => $_ENV['SENTRY_DSN'],
+            'traces_sample_rate' => $_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
+            'environment' => ENVIRONMENT,
+            'release' => RELEASE,
+        ]);
 
-            configureScope(function (Scope $scope): void {
-                $scope->setTag('request_id', REQUEST_ID);
-            });
+        configureScope(function (Scope $scope): void {
+            $scope->setTag('request_id', REQUEST_ID);
+        });
+    }
 
-        }
+    define('VM_IP', exec('hostname -I'));
+    define('RELEASE_ICON', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".svg"));
+    define('CRISP_ICON', file_get_contents(__DIR__ . '/../themes/basic/crisp.svg'));
+    define('RELEASE_ART', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".art"));
 
-        define('VM_IP', exec('hostname -I'));
-        define('RELEASE_ICON', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".svg"));
-        define('CRISP_ICON', file_get_contents(__DIR__ . '/../themes/basic/crisp.svg'));
-        define('RELEASE_ART', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".art"));
+    header('X-Request-ID: ' . REQUEST_ID);
 
-        header('X-Request-ID: ' . REQUEST_ID);
-
-        if(!$_ENV['DONT_EXPOSE_CRISP']){
-            header("x-powered-by: CrispCMS/". core::CRISP_VERSION);
-        }
+    if (!$_ENV['DONT_EXPOSE_CRISP']) {
+        header("x-powered-by: CrispCMS/" . core::CRISP_VERSION);
+    }
 
     setlocale(LC_TIME, $_ENV["LANG"] ?? 'de_DE.utf8');
     if (PHP_SAPI !== 'cli') {
@@ -245,10 +245,10 @@ try {
 
 
 
-        if(str_starts_with($CurrentPage, "_")){
+        if (str_starts_with($CurrentPage, "_")) {
             define("IS_SPECIAL_PAGE", true);
             $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/basic/templates/"]);
-        }else {
+        } else {
             define("IS_SPECIAL_PAGE", false);
             $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/$CurrentTheme/templates/"]);
         }
@@ -267,11 +267,11 @@ try {
 
         $_ENV['REQUIRE_LICENSE'] = $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
 
-        if($_ENV['REQUIRE_LICENSE'] && !IS_SPECIAL_PAGE){
+        if ($_ENV['REQUIRE_LICENSE'] && !IS_SPECIAL_PAGE) {
             $GLOBALS["license"] = api\License::fromDB();
 
 
-            if(!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()){
+            if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()) {
                 header("Location: _license#renew");
                 exit;
             }
@@ -361,6 +361,8 @@ try {
             core\Themes::loadAPI($GLOBALS['route']->Page);
         }
 
+        Themes::autoload();
+        Router::register();
         Themes::load($CurrentFile, $CurrentPage);
     }
 } catch (TypeError | Exception | Error | CompileError | ParseError | Throwable $ex) {
@@ -388,11 +390,10 @@ try {
         exit;
     }
 
-    header("X-Sentry-ID: ". SentrySdk::getCurrentHub()->getLastEventId());
+    header("X-Sentry-ID: " . SentrySdk::getCurrentHub()->getLastEventId());
 
     error_log($ex->__toString());
 
     echo strtr($errorraw, ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId(), "{{ SENTRY_JS_DSN }}" => $_ENV["SENTRY_JS_DSN"]]);
     exit;
 }
-

@@ -6,9 +6,9 @@ use Twig\Environment;
 
 abstract class HookFile
 {
-    public abstract function preRender(string $CurrentPage, string $CurrentFile): void;
-    public abstract function postRender(string $CurrentPage, string $CurrentFile): void;
+    public abstract function preRender(mixed ...$args): void;
+    public abstract function postRender(mixed ...$args): void;
 
-    public abstract function preExecute(string $Interface): void;
-    public abstract function postExecute(string $Interface): void;
+    public abstract function preExecute(mixed ...$args): void;
+    public abstract function postExecute(mixed ...$args): void;
 }

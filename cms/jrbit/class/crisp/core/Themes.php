@@ -32,6 +32,8 @@ use crisp\core;
 use Exception;
 use FilesystemIterator;
 use PDOException;
+use Phroute\Phroute\Dispatcher;
+use Phroute\Phroute\Route;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Sentry\Client;
@@ -82,22 +84,22 @@ class Themes
         return $GLOBALS["Crisp_ThemeLoader"];
     }
 
-    public static function render(string $Template, array $Data = []): string
+    public static function render(string $Template): string
     {
         Logger::startTiming($TemplateRender);
         Helper::Log(LogTypes::DEBUG, "START Rendering template $Template");
-        $content = $GLOBALS["Crisp_ThemeLoader"]->render($Template, $Data);
+        $content = $GLOBALS["Crisp_ThemeLoader"]->render($Template, ThemeVariables::getAll());
         Helper::Log(LogTypes::DEBUG, sprintf("DONE Rendering template $Template - Took %s ms", Logger::endTiming($TemplateRender)));
         return $content;
     }
 
     public static function getThemeDirectory(bool $relative = false): string
     {
-        if($relative){
+        if ($relative) {
             return sprintf("/themes/%s", core::DEFAULT_THEME);
         }
 
-        return realpath(sprintf(__DIR__. "/../../../../themes/%s", core::DEFAULT_THEME));
+        return realpath(sprintf(__DIR__ . "/../../../../themes/%s", core::DEFAULT_THEME));
     }
 
     /**
@@ -106,45 +108,36 @@ class Themes
      * @param string $CurrentPage
      * @throws Exception
      */
-    public static function load(string $CurrentFile, string $CurrentPage): void
+    public static function load(): void
     {
 
 
         try {
 
-            Themes::autoload();
-            if (count($GLOBALS["render"]) === 0) {
+            $_HookFile = self::getThemeMetadata()->hookFile;
+            $_HookClass = substr($_HookFile, 0, -4);
 
-                if($GLOBALS['route']->Raw === "favicon.ico"){
+            require_once Themes::getThemeDirectory() . "/$_HookFile";
 
-                    $faviconFile = Themes::getThemeDirectory() . "/" .ThemeMetadata->faviconFile;
-
-                    if(ThemeMetadata !== null &&
-                        ThemeMetadata->faviconFile !== null &&
-                    file_exists($faviconFile)
-                    ){
-                        header("Content-Type: ". mime_content_type($faviconFile));
-                        echo file_get_contents($faviconFile);
-                        exit;
-                    }
-
-                }
-                $SpecialPage = substr(strtoupper(substr($CurrentPage, 0, 2)) . substr($CurrentPage, 2), 1);
-
-                if(str_starts_with($CurrentPage, "_") && file_exists(__DIR__ . "/../routes/$SpecialPage.php")){
-                    new Theme($CurrentFile, $SpecialPage, true);
-                }elseif (file_exists(Themes::getThemeDirectory() . "/includes/$CurrentPage.php") && Helper::templateExists("/views/$CurrentPage.twig")) {
-                    new Theme($CurrentFile, $CurrentPage);
-                } else {
-                    http_response_code(404);
-
-                    if (Helper::templateExists("errors/notfound.twig")) {
-                        echo Themes::render("errors/notfound.twig", []);
-                    }else{
-                        echo file_get_contents(__DIR__ . "/../../../../themes/basic/not_found.html");
-                    }
-                }
+            if (class_exists($_HookClass, false)) {
+                $HookClass = new $_HookClass();
             }
+
+            if ($HookClass !== null && !method_exists($HookClass, 'preRender')) {
+                throw new \Exception("Failed to load $_HookClass, missing preRender!");
+            }
+
+            Helper::Log(LogTypes::DEBUG, sprintf("START executing preRender hooks for HookFile"));
+            Logger::startTiming($HookClassRenderTime);
+            $HookClass->preRender($CurrentPage, $CurrentFile);
+            Helper::Log(LogTypes::DEBUG, sprintf("DONE executing preRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
+
+            $dispatcher = new Dispatcher(Router::get()->getData());
+            echo $dispatcher->dispatch($_SERVER['REQUEST_METHOD'], parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+            if ($HookClass !== null && !method_exists($HookClass, 'postRender')) {
+                throw new \Exception("Failed to load HookFile, missing postRender!");
+            }
+            $HookClass->postRender();
         } catch (Exception $ex) {
             captureException($ex);
             if (PHP_SAPI === 'cli') {
@@ -172,7 +165,7 @@ class Themes
 
             if (Helper::templateExists("errors/servererror.twig")) {
                 echo Themes::render("errors/servererror.twig", ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId()]);
-            }else{
+            } else {
                 echo strtr(file_get_contents(__DIR__ . '/../../../../themes/basic/error.html'), ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId()]);
             }
 
@@ -185,7 +178,7 @@ class Themes
         if (str_starts_with($File, "//") || str_starts_with($File, "http://")  || str_starts_with($File, "https://")) {
             return sprintf("/_proxy/?url=%s", $File, $cacheTTL);
         }
-        
+
         if (str_starts_with($File, "/")) {
             $File = substr($File, 1);
         }
@@ -194,9 +187,9 @@ class Themes
         $baseDir = self::getThemeDirectory(true);
         $FilePath = self::getThemeDirectory() . "/$File";
 
-        if(isset($_ENV["ASSETS_S3_BUCKET"])){
-            $baseDir = Helper::getS3Url($_ENV["ASSETS_S3_BUCKET"] ,$_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_URL"]);
-        }elseif(file_exists(self::getThemeDirectory() . "/assets")){
+        if (isset($_ENV["ASSETS_S3_BUCKET"])) {
+            $baseDir = Helper::getS3Url($_ENV["ASSETS_S3_BUCKET"], $_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_URL"]);
+        } elseif (file_exists(self::getThemeDirectory() . "/assets")) {
             $baseDir = "/assets";
             $FilePath = self::getThemeDirectory() . "/assets/$File";
         }
@@ -219,8 +212,7 @@ class Themes
             return null;
         }
 
-        return json_decode(file_get_contents(Themes::getThemeDirectory(). "/theme.json"));
-
+        return json_decode(file_get_contents(Themes::getThemeDirectory() . "/theme.json"));
     }
 
     public static function uninstallTranslations(): bool
@@ -254,7 +246,6 @@ class Themes
                 }
             }
         } catch (PDOException) {
-
         }
         return true;
     }
@@ -278,7 +269,7 @@ class Themes
      */
     public static function isValid(): bool
     {
-        return file_exists(Themes::getThemeDirectory(). "/theme.json");
+        return file_exists(Themes::getThemeDirectory() . "/theme.json");
     }
 
     /**
@@ -397,7 +388,7 @@ class Themes
             return false;
         }
         if (isset(ThemeMetadata->onInstall->createKVStorageItems) && is_object(ThemeMetadata->onInstall->createKVStorageItems)) {
-            Helper::Log(LogTypes::INFO, "Installing KVStorage for Theme ". ThemeMetadata->name);
+            Helper::Log(LogTypes::INFO, "Installing KVStorage for Theme " . ThemeMetadata->name);
 
 
             foreach (ThemeMetadata->onInstall->createKVStorageItems as $Key => $Value) {
@@ -410,9 +401,9 @@ class Themes
                 }
                 try {
                     Helper::Log(LogTypes::INFO, "Installing KV key $Key");
-                    if(\crisp\api\Config::create($Key, $Value)){
+                    if (\crisp\api\Config::create($Key, $Value)) {
                         Helper::Log(LogTypes::SUCCESS, "Successfully Installed KV key $Key");
-                    }else{
+                    } else {
                         Helper::Log(LogTypes::ERROR, "Failed to Install  KV key $Key");
                     }
                 } catch (PDOException $ex) {
@@ -423,7 +414,7 @@ class Themes
         return true;
     }
 
-    
+
     public static function loadBootFiles(): bool
     {
 
@@ -433,22 +424,21 @@ class Themes
         if (isset(ThemeMetadata->onBoot) && is_array(ThemeMetadata->onBoot)) {
             foreach (ThemeMetadata->onBoot as $File) {
 
-                if (!file_exists(Themes::getThemeDirectory(). "/$File")) {
+                if (!file_exists(Themes::getThemeDirectory() . "/$File")) {
                     throw new Exception("$File does not exist but boot scripts are configured!");
                 }
-                
-                if (is_dir(Themes::getThemeDirectory(). "/$File")) {
+
+                if (is_dir(Themes::getThemeDirectory() . "/$File")) {
                     throw new Exception("$File boot script is a directory!");
                 }
-                
-                require_once Themes::getThemeDirectory(). "/$File";
-               
+
+                require_once Themes::getThemeDirectory() . "/$File";
             }
             return true;
         }
         return false;
     }
-    
+
     public static function autoload(): bool
     {
 
@@ -459,17 +449,17 @@ class Themes
 
             foreach (ThemeMetadata->autoload as $Directory) {
 
-                if (file_exists(Themes::getThemeDirectory(). "/$Directory/autoload.php")) {
+                if (file_exists(Themes::getThemeDirectory() . "/$Directory/autoload.php")) {
                     Helper::Log(LogTypes::DEBUG, "Autoloading Composer");
-                    require Themes::getThemeDirectory()."/$Directory/autoload.php";
+                    require Themes::getThemeDirectory() . "/$Directory/autoload.php";
                     continue;
                 }
 
-                if (!file_exists(Themes::getThemeDirectory()."/$Directory")) {
+                if (!file_exists(Themes::getThemeDirectory() . "/$Directory")) {
                     if (isset(ThemeMetadata->strict_autoloading) && !ThemeMetadata->strict_autoloading) {
                         continue;
                     }
-                    throw new Exception(Themes::getThemeDirectory()."/$Directory does not exist but autoloading is configured!");
+                    throw new Exception(Themes::getThemeDirectory() . "/$Directory does not exist but autoloading is configured!");
                 }
 
 
@@ -505,12 +495,12 @@ class Themes
         }
 
         $_processed = [];
-        Helper::Log(LogTypes::INFO, "Installing translations for Theme ". ThemeMetadata->name);
+        Helper::Log(LogTypes::INFO, "Installing translations for Theme " . ThemeMetadata->name);
 
         if (isset(ThemeMetadata->onInstall->createTranslationKeys) && is_string(ThemeMetadata->onInstall->createTranslationKeys)) {
             if (file_exists(Themes::getThemeDirectory() . "/" . ThemeMetadata->onInstall->createTranslationKeys)) {
 
-                $files = glob(Themes::getThemeDirectory(). "/" .  ThemeMetadata->onInstall->createTranslationKeys . "*.{json}", GLOB_BRACE);
+                $files = glob(Themes::getThemeDirectory() . "/" .  ThemeMetadata->onInstall->createTranslationKeys . "*.{json}", GLOB_BRACE);
                 foreach ($files as $File) {
 
                     Helper::Log(LogTypes::INFO, sprintf("Installing language %s", substr(basename($File), 0, -5)));
@@ -606,5 +596,4 @@ class Themes
 
         return \crisp\api\Config::set("theme", "crisptheme");
     }
-
 }
