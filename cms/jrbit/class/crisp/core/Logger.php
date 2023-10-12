@@ -23,31 +23,31 @@
 
 namespace crisp\core;
 
-use splitbrain\phpcli\CLI;
+use Monolog\Level;
+use Monolog\Logger as MonologLogger;
+use Monolog\Handler\StreamHandler;
+
 
 /**
  * I like the way phpcli outputs the log, so lets initiate the abstract class
  */
-class Logger extends CLI
+class Logger
 {
 
     public static function startTiming(float &$output = null): void {
         $output = microtime(true);
     }
 
+    public static function getLogger(string $name): MonologLogger
+    {
+        $logger = new MonologLogger($name);
+        $logger->pushHandler(new StreamHandler('php://stdout', Level::Debug));
+        return $logger;
+    }
+
     public static function endTiming(float &$start): string {
         $ms = (float)(microtime(true) - $start);
         unset($start);
         return sprintf("%.3f", $ms * 1000);
-    }
-
-    protected function setup(\splitbrain\phpcli\Options $options)
-    {
-        // TODO: Implement setup() method.
-    }
-
-    protected function main(\splitbrain\phpcli\Options $options)
-    {
-        // TODO: Implement main() method.
     }
 }

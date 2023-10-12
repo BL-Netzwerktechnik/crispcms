@@ -49,10 +49,10 @@ class HookFile
         if ($HookClass !== null && !method_exists($HookClass, 'preRender')) {
             throw new \Exception("Failed to load $_HookClass, missing preRender!");
         }
-        Helper::Log(LogTypes::DEBUG, sprintf("START executing preRender hooks for HookFile"));
+        Logger::getLogger(__CLASS__)->debug(sprintf("START executing preRender hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
         $HookClass->preRender();
-        Helper::Log(LogTypes::DEBUG, sprintf("DONE executing preRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
+        Logger::getLogger(__CLASS__)->debug(sprintf("DONE executing preRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
     public static function postRender(): void
     {
@@ -68,10 +68,10 @@ class HookFile
         if ($HookClass !== null && !method_exists($HookClass, 'postRender')) {
             throw new \Exception("Failed to load $_HookClass, missing postRender!");
         }
-        Helper::Log(LogTypes::DEBUG, sprintf("START executing postRender hooks for HookFile"));
+        Logger::getLogger(__CLASS__)->debug(sprintf("START executing postRender hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
         $HookClass->postRender();
-        Helper::Log(LogTypes::DEBUG, sprintf("DONE executing postRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
+        Logger::getLogger(__CLASS__)->debug(sprintf("DONE executing postRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
 
     public static function postExecute(): void
@@ -88,10 +88,10 @@ class HookFile
         if ($HookClass !== null && !method_exists($HookClass, 'postExecute')) {
             throw new \Exception("Failed to load $_HookClass, missing postExecute!");
         }
-        Helper::Log(LogTypes::DEBUG, sprintf("START executing postExecute hooks for HookFile"));
+        Logger::getLogger(__CLASS__)->debug(sprintf("START executing postExecute hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
         $HookClass->postExecute();
-        Helper::Log(LogTypes::DEBUG, sprintf("DONE executing postExecute hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
+        Logger::getLogger(__CLASS__)->debug(sprintf("DONE executing postExecute hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
 
     public static function preExecute(): void
@@ -108,10 +108,10 @@ class HookFile
         if ($HookClass !== null && !method_exists($HookClass, 'preExecute')) {
             throw new \Exception("Failed to load $_HookClass, missing preExecute!");
         }
-        Helper::Log(LogTypes::DEBUG, sprintf("START executing preExecute hooks for HookFile"));
+        Logger::getLogger(__CLASS__)->debug(sprintf("START executing preExecute hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
         $HookClass->preExecute();
-        Helper::Log(LogTypes::DEBUG, sprintf("DONE executing preExecute hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
+        Logger::getLogger(__CLASS__)->debug(sprintf("DONE executing preExecute hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
 
     public static function setup(): void
@@ -129,9 +129,9 @@ class HookFile
             throw new \Exception("Failed to load $_HookClass, missing setup!");
         }
 
-        Helper::Log(LogTypes::DEBUG, sprintf("START executing setup hooks for HookFile"));
+        Logger::getLogger(__CLASS__)->debug(sprintf("START executing setup hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
         $HookClass->setup();
-        Helper::Log(LogTypes::DEBUG, sprintf("DONE executing setup hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
+        Logger::getLogger(__CLASS__)->debug(sprintf("DONE executing setup hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
 }

@@ -30,6 +30,7 @@ use PDO;
 use function serialize;
 use function unserialize;
 use crisp\core\Bitmask;
+use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
 
 /**
@@ -73,7 +74,7 @@ class Config
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-        Helper::Log(LogTypes::DEBUG, "Config::exists: SELECT value FROM Config WHERE key = :ID");
+        Logger::getLogger(__CLASS__)->debug("Config::exists: SELECT value FROM Config WHERE key = :ID");
         $statement = self::$Database_Connection->prepare("SELECT value FROM Config WHERE key = :ID");
         $statement->execute(array(":ID" => $Key));
         return $statement->rowCount() > 0;
@@ -90,16 +91,16 @@ class Config
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-        Helper::Log(LogTypes::DEBUG, "Getting key $Key");
+        Logger::getLogger(__CLASS__)->debug("Getting key $Key");
 
         if(!Cache::isExpired("Config::get::$Key")){
-            Helper::Log(LogTypes::DEBUG, "Cache::Config::get::$Key");
+            Logger::getLogger(__CLASS__)->debug("Cache::Config::get::$Key");
             return self::evaluateRow(json_decode(Cache::get("Config::get::$Key"), true));
         }
 
 
 
-        Helper::Log(LogTypes::DEBUG, "Config::get: SELECT value, type FROM Config WHERE key = $Key");
+        Logger::getLogger(__CLASS__)->debug("Config::get: SELECT value, type FROM Config WHERE key = $Key");
 
         $statement = self::$Database_Connection->prepare("SELECT value, type FROM Config WHERE key = :ID");
         $statement->execute(array(":ID" => $Key));
@@ -134,7 +135,7 @@ class Config
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-        Helper::Log(LogTypes::DEBUG, "Config::getTimestamp: SELECT last_changed, created_at FROM Config WHERE key = $Key");
+        Logger::getLogger(__CLASS__)->debug("Config::getTimestamp: SELECT last_changed, created_at FROM Config WHERE key = $Key");
         $statement = self::$Database_Connection->prepare("SELECT last_changed, created_at FROM Config WHERE key = :ID");
         $statement->execute(array(":ID" => $Key));
         if ($statement->rowCount() > 0) {
@@ -158,7 +159,7 @@ class Config
         if (self::exists($Key)) {
             return self::set($Key, $Value);
         }
-        Helper::Log(LogTypes::DEBUG, "Config::create: INSERT INTO Config (key) VALUES ($Key)");
+        Logger::getLogger(__CLASS__)->debug("Config::create: INSERT INTO Config (key) VALUES ($Key)");
 
         $statement = self::$Database_Connection->prepare("INSERT INTO Config (key) VALUES (:Key)");
         $statement->execute(array(":Key" => $Key));
@@ -176,7 +177,7 @@ class Config
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-        Helper::Log(LogTypes::DEBUG, "Config::delete: DELETE FROM Config WHERE key = $Key");
+        Logger::getLogger(__CLASS__)->debug("Config::delete: DELETE FROM Config WHERE key = $Key");
         $statement = self::$Database_Connection->prepare("DELETE FROM Config WHERE key = :Key");
         self::deleteCache("Config::get::$Key");
         return $statement->execute(array(":Key" => $Key));
@@ -213,7 +214,7 @@ class Config
         }
 
         self::deleteCache("Config::get::$Key");
-        Helper::Log(LogTypes::DEBUG, "Config::set: UPDATE Config SET value = $Value, type = $Type WHERE key = $Key");
+        Logger::getLogger(__CLASS__)->debug("Config::set: UPDATE Config SET value = $Value, type = $Type WHERE key = $Key");
         $statement = self::$Database_Connection->prepare("UPDATE Config SET value = :val, type = :type WHERE key = :key");
         $statement->execute(array(":val" => $Value, ":key" => $Key, ":type" => $Type));
 
@@ -231,7 +232,7 @@ class Config
             self::initDB();
         }
 
-        Helper::Log(LogTypes::DEBUG, "Config::list: SELECT key, value FROM Config");
+        Logger::getLogger(__CLASS__)->debug("Config::list: SELECT key, value FROM Config");
         $statement = self::$Database_Connection->prepare("SELECT key, value FROM Config");
         $statement->execute();
 

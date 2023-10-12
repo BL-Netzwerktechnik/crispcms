@@ -28,7 +28,6 @@ use crisp\api\lists\Languages;
 use crisp\core;
 use crisp\core\Crypto;
 use crisp\core\Logger;
-use crisp\core\LogTypes;
 use crisp\core\Postgres;
 use crisp\core\Themes;
 use GeoIp2\Database\Reader;

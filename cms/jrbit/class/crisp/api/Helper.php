@@ -27,9 +27,6 @@ use Carbon\Carbon;
 use crisp\api\lists\Languages;
 use crisp\core;
 use crisp\core\Crypto;
-use crisp\core\Logger;
-use crisp\core\LogTypes;
-use crisp\core\Postgres;
 use crisp\core\Themes;
 use Faker\Factory;
 use Faker\Generator as FakerGenerator;
@@ -192,46 +189,6 @@ class Helper
     }
 
     /**
-     * Logger component
-     *
-     * @param LogTypes|integer $type
-     * @param [type] $message
-     * @return void
-     */
-    public static function Log(LogTypes|int $type, $message): void
-    {
-
-        $cli = new Logger();
-        if (!isset($_ENV["NO_COLORS"])) {
-            $cli->colors->enable();
-        }
-        if (is_numeric($type)) {
-            $type = LogTypes::from($type);
-        }
-
-        $debugMsg = is_string($message) ? $message : var_export($message, true);
-
-        switch ($type) {
-            case LogTypes::DEBUG:
-                if ((int)$_ENV["VERBOSITY"] > 1) {
-                    $cli->debug(sprintf("[%s] %s", date(DATE_RFC2822), $debugMsg));
-                }
-                break;
-            case LogTypes::ERROR:
-                $cli->error($debugMsg);
-                break;
-            case LogTypes::INFO:
-                $cli->info($debugMsg);
-                break;
-            case LogTypes::SUCCESS:
-                $cli->success($debugMsg);
-                break;
-            case LogTypes::WARNING:
-                $cli->warning($debugMsg);
-        }
-    }
-
-    /**
      * Get the Crisp Instance ID
      *
      * @return string
@@ -388,83 +345,6 @@ class Helper
         }
 
         return $urlConstruct;
-    }
-
-    /**
-     * @param $Route
-     * @return stdClass
-     */
-    public static function processRoute($Route): stdClass
-    {
-        $_Route = explode('/', $Route);
-        array_shift($_Route);
-        self::Log(LogTypes::DEBUG, "Route Obj: " . var_export($_Route, true));
-
-        $obj = new stdClass();
-
-
-        if (strlen($_Route[0]) === 2) {
-            $obj->Page = explode("?", $_Route[1])[0];
-            $obj->Language = (lists\Languages::languageExists($_Route[0]) && $_Route[0] !== '' ? $_Route[0] : self::getLocale());
-            $obj->LanguageParameter = true;
-        } else {
-            $obj->Page = explode("?", $_Route[0])[0];
-            $obj->Language = self::getLocale();
-            $obj->LanguageParameter = false;
-        }
-
-
-        /** /mypage/my_parameter */
-
-        if ($obj->LanguageParameter) {
-            $LookupIndex = 2;
-        } else {
-            $LookupIndex = 1;
-        }
-
-
-        if ($_Route[$LookupIndex] !== '' && ((count($_Route) > 2 && !IS_API_ENDPOINT) || (IS_API_ENDPOINT))) {
-            $_RouteArray = $_Route;
-            if (!IS_API_ENDPOINT) {
-                for ($i = 0; $i < count($_Route) - 1; $i++) {
-                    array_shift($_RouteArray);
-                }
-            } else {
-                array_shift($_RouteArray);
-            }
-            for ($i = 0, $iMax = count($_RouteArray); $i <= $iMax; $i += 2) {
-                $key = $_RouteArray[$i];
-                $value = $_RouteArray[$i + 1];
-                if ($key !== '') {
-                    if ($value === null) {
-                        $val = explode('?', $key)[0];
-                        if (strlen($val) > 0) {
-                            $_GET['q'] = $val;
-                        }
-                    } else {
-                        $_GET[$key] = explode('?', $value)[0];
-                    }
-                }
-            }
-        }
-
-
-        $obj->Raw = implode("/", $_Route);
-        if (str_contains($Route, '?')) {
-            $qexplode = explode('?', $Route);
-            array_shift($qexplode);
-            foreach ($qexplode as $key) {
-                $key = explode('=', $key);
-                $_GET[$key[0]] = $key[1] ?? "";
-            }
-        }
-
-        unset($_GET["route"]);
-
-        self::Log(LogTypes::DEBUG, "Processed ROUTE: " . var_export($obj, true));
-        self::Log(LogTypes::DEBUG, "Processed GET: " . var_export($_GET, true));
-
-        return $obj;
     }
 
     /**

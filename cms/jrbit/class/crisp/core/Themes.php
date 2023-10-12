@@ -179,9 +179,9 @@ class Themes
     public static function render(string $Template): string
     {
         Logger::startTiming($TemplateRender);
-        Helper::Log(LogTypes::DEBUG, "START Rendering template $Template");
+        Logger::getLogger(__CLASS__)->debug("START Rendering template $Template");
         $content = $GLOBALS["Crisp_ThemeLoader"]->render($Template, ThemeVariables::getAll());
-        Helper::Log(LogTypes::DEBUG, sprintf("DONE Rendering template $Template - Took %s ms", Logger::endTiming($TemplateRender)));
+        Logger::getLogger(__CLASS__)->debug(sprintf("DONE Rendering template $Template - Took %s ms", Logger::endTiming($TemplateRender)));
         return $content;
     }
 
@@ -469,23 +469,22 @@ class Themes
             return false;
         }
         if (isset(ThemeMetadata->onInstall->createKVStorageItems) && is_object(ThemeMetadata->onInstall->createKVStorageItems)) {
-            Helper::Log(LogTypes::INFO, "Installing KVStorage for Theme " . ThemeMetadata->name);
-
+            Logger::getLogger(__CLASS__)->info("Installing KVStorage for Theme " . ThemeMetadata->name);
 
             foreach (ThemeMetadata->onInstall->createKVStorageItems as $Key => $Value) {
                 if (is_array($Value) || is_object($Value)) {
                     $Value = serialize($Value);
                 }
                 if (!$Overwrite && \crisp\api\Config::exists($Key)) {
-                    Helper::Log(LogTypes::WARNING, "Skipping KV key $Key as it already exists and overwrite is false");
+                    Logger::getLogger(__CLASS__)->warning("Skipping KV key $Key as it already exists and overwrite is false");
                     continue;
                 }
                 try {
-                    Helper::Log(LogTypes::INFO, "Installing KV key $Key");
+                    Logger::getLogger(__CLASS__)->info("Installing KV key $Key");
                     if (\crisp\api\Config::create($Key, $Value)) {
-                        Helper::Log(LogTypes::SUCCESS, "Successfully Installed KV key $Key");
+                        Logger::getLogger(__CLASS__)->notice("Successfully Installed KV key $Key");
                     } else {
-                        Helper::Log(LogTypes::ERROR, "Failed to Install  KV key $Key");
+                        Logger::getLogger(__CLASS__)->error("Failed to Install  KV key $Key");
                     }
                 } catch (PDOException $ex) {
                     continue;
@@ -531,7 +530,7 @@ class Themes
             foreach (ThemeMetadata->autoload as $Directory) {
 
                 if (file_exists(Themes::getThemeDirectory() . "/$Directory/autoload.php")) {
-                    Helper::Log(LogTypes::DEBUG, "Autoloading Composer");
+                    Logger::getLogger(__CLASS__)->debug("Autoloading Composer");
                     require Themes::getThemeDirectory() . "/$Directory/autoload.php";
                     continue;
                 }
@@ -576,7 +575,7 @@ class Themes
         }
 
         $_processed = [];
-        Helper::Log(LogTypes::INFO, "Installing translations for Theme " . ThemeMetadata->name);
+        Logger::getLogger(__CLASS__)->info("Installing translations for Theme " . ThemeMetadata->name);
 
         if (isset(ThemeMetadata->onInstall->createTranslationKeys) && is_string(ThemeMetadata->onInstall->createTranslationKeys)) {
             if (file_exists(Themes::getThemeDirectory() . "/" . ThemeMetadata->onInstall->createTranslationKeys)) {
@@ -584,15 +583,15 @@ class Themes
                 $files = glob(Themes::getThemeDirectory() . "/" .  ThemeMetadata->onInstall->createTranslationKeys . "*.{json}", GLOB_BRACE);
                 foreach ($files as $File) {
 
-                    Helper::Log(LogTypes::INFO, sprintf("Installing language %s", substr(basename($File), 0, -5)));
+                    Logger::getLogger(__CLASS__)->info(sprintf("Installing language %s", substr(basename($File), 0, -5)));
                     if (!file_exists($File)) {
-                        Helper::Log(LogTypes::ERROR, sprintf("%s not found!", $File));
+                        Logger::getLogger(__CLASS__)->error(sprintf("%s not found!", $File));
                         continue;
                     }
                     $Language = Languages::getLanguageByCode(substr(basename($File), 0, -5));
 
                     if (!$Language) {
-                        Helper::Log(LogTypes::ERROR, sprintf("%s not found!", substr(basename($File), 0, -5)));
+                        Logger::getLogger(__CLASS__)->error(sprintf("%s not found!", substr(basename($File), 0, -5)));
                         continue;
                     }
                     foreach (json_decode(file_get_contents($File), true, 512, JSON_THROW_ON_ERROR) as $Key => $Value) {
@@ -600,19 +599,19 @@ class Themes
 
                             if ($Language->newTranslation($Key, $Value, substr(basename($File), 0, -5))) {
                                 $_processed[] = $Key;
-                                Helper::Log(LogTypes::INFO, sprintf("Installed translation key %s", $Key));
+                                Logger::getLogger(__CLASS__)->info(sprintf("Installed translation key %s", $Key));
                             } else if (defined("CRISP_CLI")) {
-                                Helper::Log(LogTypes::WARNING, sprintf("Did not Install translation key %s", $Key));
+                                Logger::getLogger(__CLASS__)->warning(sprintf("Did not Install translation key %s", $Key));
                             }
                         } catch (PDOException $ex) {
                             if (defined("CRISP_CLI")) {
-                                Helper::Log(LogTypes::ERROR, $ex);
+                                Logger::getLogger(__CLASS__)->error($ex);
                             }
                             continue 2;
                         }
                     }
 
-                    Helper::Log(LogTypes::SUCCESS, sprintf("Successfully Updated %s  translation keys", count($_processed)));
+                    Logger::getLogger(__CLASS__)->notice(sprintf("Successfully Updated %s  translation keys", count($_processed)));
                     $_processed = [];
                 }
             }
@@ -660,7 +659,7 @@ class Themes
         }
 
         if (!self::isValid()) {
-            Helper::Log(LogTypes::ERROR, "No theme.json found!");
+            Logger::getLogger(__CLASS__)->error("No theme.json found!");
             return false;
         }
 
@@ -668,7 +667,7 @@ class Themes
         self::performOnInstall();
 
         if (!is_object(ThemeMetadata) && !isset(ThemeMetadata->hookFile)) {
-            Helper::Log(LogTypes::ERROR, "No hookFile Property in theme.json found!");
+            Logger::getLogger(__CLASS__)->error("No hookFile Property in theme.json found!");
             return false;
         }
 
