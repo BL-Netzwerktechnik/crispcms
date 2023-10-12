@@ -30,6 +30,7 @@ use crisp\api\Config;
 use crisp\api\Helper;
 use crisp\core;
 use crisp\core\Bitmask;
+use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
 use crisp\core\Themes;
 use crisp\core\ThemeVariables;
@@ -69,7 +70,8 @@ class License  {
                         exit;
                     }
 
-                    Helper::Log(core\LogTypes::INFO, "Installing new License Key...");
+
+                    Logger::getLogger(__CLASS__)->info("Installing new License Key...");
                     if (!Config::set("license_key", file_get_contents($_FILES["license"]["tmp_name"]))) {
                         throw new Exception("Failed to save License Key");
                     }
@@ -83,7 +85,7 @@ class License  {
                         exit;
                     }
 
-                    Helper::Log(core\LogTypes::INFO, "Installing new Issuer Key...");
+                    Logger::getLogger(__CLASS__)->info("Installing new Issuer Key...");
                     if (!Config::set("license_issuer_public_key", file_get_contents($_FILES["issuer"]["tmp_name"]))) {
                         throw new Exception("Failed to save issuer key");
                     }

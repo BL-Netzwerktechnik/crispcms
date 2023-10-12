@@ -26,7 +26,7 @@ namespace crisp;
 use Carbon\Carbon;
 use CompileError;
 use crisp\api\{Config, GeoIP, Helper, lists\Languages, Translation};
-use crisp\core\{Bitmask, Crypto, HookFile, LogTypes, RESTfulAPI, Security, Sessions, Themes, License, Router, ThemeVariables};
+use crisp\core\{Bitmask, Crypto, HookFile, RESTfulAPI, Security, Sessions, Themes, License, Logger, Router, ThemeVariables};
 use Dotenv\Dotenv;
 use Error;
 use Exception;
@@ -177,7 +177,7 @@ try {
 
 
     if (PHP_SAPI !== 'cli') {
-        Helper::Log(LogTypes::INFO, Helper::getRequestLog());
+        Logger::getLogger(__CLASS__)->info( Helper::getRequestLog());
     }
 
     if (isset($_ENV['SENTRY_DSN'])) {
@@ -218,7 +218,6 @@ try {
         session_save_path(core::PERSISTENT_DATA . "/sessions");
         ini_set('session.gc_probability', 1);
         */
-
         session_start();
 
 
@@ -248,6 +247,7 @@ try {
             $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/$CurrentTheme/templates/"]);
             Themes::initRenderer();
         }
+
 
         
         ThemeVariables::register($TwigTheme);

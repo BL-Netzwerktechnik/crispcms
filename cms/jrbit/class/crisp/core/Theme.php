@@ -114,18 +114,18 @@ class Theme
             }
 
 
-            Helper::Log(LogTypes::DEBUG, sprintf("START executing preRender hooks for HookFile"));
+            Logger::getLogger(__CLASS__)->debug(sprintf("START executing preRender hooks for HookFile"));
             Logger::startTiming($HookClassRenderTime);
             $HookClass->preRender($CurrentPage, $CurrentFile);
-            Helper::Log(LogTypes::DEBUG, sprintf("DONE executing preRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
+            Logger::getLogger(__CLASS__)->debug(sprintf("DONE executing preRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
 
 
             
 
-            Helper::Log(LogTypes::DEBUG, sprintf("START executing preRender hooks for %s", $CurrentPage));
+            Logger::getLogger(__CLASS__)->debug(sprintf("START executing preRender hooks for %s", $CurrentPage));
             Logger::startTiming($PageClassRenderTime);
             $PageClass->preRender();
-            Helper::Log(LogTypes::DEBUG, sprintf("DONE executing preRender hooks for %s - Took %s ms", $CurrentPage, Logger::endTiming($PageClassRenderTime)));
+            Logger::getLogger(__CLASS__)->debug(sprintf("DONE executing preRender hooks for %s - Took %s ms", $CurrentPage, Logger::endTiming($PageClassRenderTime)));
             echo Themes::render("views/$CurrentPage.twig", ThemeVariables::getAll());
 
             if ($PageClass !== null && !method_exists($PageClass, 'postRender')) {

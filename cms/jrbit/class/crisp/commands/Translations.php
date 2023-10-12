@@ -6,6 +6,7 @@ use CLI;
 use crisp\api\Config;
 use crisp\api\Helper;
 use crisp\core;
+use crisp\core\Logger;
 use crisp\core\Migrations;
 use crisp\core\Themes;
 use Minimal;
@@ -33,7 +34,7 @@ class Translations {
                 $minimal->error("Failed to install Translations!");
             }
             $End = microtime(true);
-            Helper::Log(core\LogTypes::DEBUG, sprintf("Operation took %sms to complete!", Helper::truncateText($End - $Start, 6, false)));
+            Logger::getLogger(__CLASS__)->debug(sprintf("Operation took %sms to complete!", Helper::truncateText($End - $Start, 6, false)));
 
             return true;
         }elseif($options->getOpt("uninstall")){
@@ -55,7 +56,7 @@ class Translations {
                 $minimal->error("Failed to uninstall Translations!");
             }
             $End = microtime(true);
-            Helper::Log(core\LogTypes::DEBUG, sprintf("Operation took %sms to complete!", Helper::truncateText($End - $Start, 6, false)));
+            Logger::getLogger(__CLASS__)->debug(sprintf("Operation took %sms to complete!", Helper::truncateText($End - $Start, 6, false)));
 
             return true;
         }
