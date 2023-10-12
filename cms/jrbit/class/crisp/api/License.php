@@ -31,7 +31,6 @@ use PDO;
 use function serialize;
 use function unserialize;
 use crisp\core\Bitmask;
-use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
 
 /**
@@ -131,7 +130,8 @@ class License
     }
 
     public static function generateIssuer(): bool {
-        Logger::getLogger(__CLASS__)->info( "Generating Isser Keys...");
+
+        Helper::Log(core\LogTypes::INFO, "Generating Isser Keys...");
         $private_key = openssl_pkey_new(array('private_key_bits' => 2048));
         if(Config::set("license_issuer_public_key", openssl_pkey_get_details($private_key)['key']) && openssl_pkey_export($private_key, $pkey) && Config::set("license_issuer_private_key", $pkey)){
             return true;

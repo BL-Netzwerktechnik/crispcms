@@ -62,7 +62,7 @@ class Postgres {
                                 $db["pass"],
                                 ltrim($db["path"], "/")
                 ));
-                Logger::getLogger(__CLASS__)->debug("Created new PDO Session");
+                Helper::Log(LogTypes::DEBUG, "Created new PDO Session");
                 $this->Database_Connection = $pdo;
                 $GLOBALS["DBConn_$EnvKey"] = $pdo;
             } catch (Exception $ex) {

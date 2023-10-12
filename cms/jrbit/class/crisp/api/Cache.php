@@ -34,7 +34,6 @@ use RecursiveIteratorIterator;
 use function serialize;
 use function unserialize;
 use crisp\core\Bitmask;
-use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
 
 /**
@@ -102,7 +101,7 @@ class Cache
      */
     private static function isCached(string $key): bool
     {
-        Logger::getLogger(__CLASS__)->debug(sprintf("Checking cache %s (%s)", self::getCrispCacheFile($key), $key));
+        Helper::Log(LogTypes::DEBUG, sprintf("Checking cache %s (%s)", self::getCrispCacheFile($key), $key));
         return file_exists(self::getCrispCacheFile($key));
     }
 
@@ -114,14 +113,14 @@ class Cache
      */
     private static function createDir(string $key): bool
     {
-        Logger::getLogger(__CLASS__)->debug(sprintf("START Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
+        Helper::Log(LogTypes::DEBUG, sprintf("START Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
         $created = mkdir(self::getCrispCacheDir($key), recursive: true);
 
         if($created){
-            Logger::getLogger(__CLASS__)->debug(sprintf("DONE Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
+            Helper::Log(LogTypes::DEBUG, sprintf("DONE Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
             return true;
         }
-        Logger::getLogger(__CLASS__)->error(sprintf("FAIL Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
+        Helper::Log(LogTypes::ERROR, sprintf("FAIL Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
         return false;
     }
 
@@ -160,14 +159,14 @@ class Cache
 
         self::createDir($key);
 
-        Logger::getLogger(__CLASS__)->debug("START Writing Cache ". self::getCrispCacheFile($key));
+        Helper::Log(LogTypes::DEBUG, "START Writing Cache ". self::getCrispCacheFile($key));
         $bytes = file_put_contents(self::getCrispCacheFile($key), self::generateFile($expires, $data));
 
         if($bytes !== false){
-            Logger::getLogger(__CLASS__)->debug("DONE Writing Cache ". self::getCrispCacheFile($key));
+            Helper::Log(LogTypes::DEBUG, "DONE Writing Cache ". self::getCrispCacheFile($key));
             return true;
         }
-        Logger::getLogger(__CLASS__)->error("FAIL Writing Cache ", ["cacheFile" =>self::getCrispCacheFile($key) ]);
+        Helper::Log(LogTypes::ERROR, "FAIL Writing Cache ". self::getCrispCacheFile($key));
         return false;
     }
 
@@ -182,17 +181,17 @@ class Cache
 
         $CacheFile = self::getCrispCacheFile($key);
         if(!self::isCached($key)) {
-            Logger::getLogger(__CLASS__)->debug("Cache $CacheFile does not exist");
+            Helper::Log(LogTypes::DEBUG, "Cache $CacheFile does not exist");
             return true;
         }
         $timestamp = json_decode(file_get_contents($CacheFile))->expires;
 
         if(time() > $timestamp){
-            Logger::getLogger(__CLASS__)->debug("Cache $CacheFile has expired");
+            Helper::Log(LogTypes::DEBUG, "Cache $CacheFile has expired");
             return true;
         }
 
-        Logger::getLogger(__CLASS__)->debug("Cache $CacheFile did not expire");
+        Helper::Log(LogTypes::DEBUG, "Cache $CacheFile did not expire");
         return false;
     }
 

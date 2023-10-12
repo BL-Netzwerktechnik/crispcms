@@ -68,12 +68,12 @@ class Migrations
      */
     protected function begin(): bool
     {
-        Logger::getLogger(__CLASS__)->debug("Initiating Transaction...");
+        Helper::Log(LogTypes::DEBUG, "Initiating Transaction...");
         if ($this->Database->beginTransaction()) {
-            Logger::getLogger(__CLASS__)->debug("Transaction initiated!");
+            Helper::Log(LogTypes::DEBUG, "Transaction initiated!");
             return true;
         }
-        Logger::getLogger(__CLASS__)->error("Failed to initiate transaction!");
+        Helper::Log(LogTypes::ERROR, "Failed to initiate transaction!");
         return false;
     }
 
@@ -84,12 +84,12 @@ class Migrations
      */
     protected function rollback(): bool
     {
-        Logger::getLogger(__CLASS__)->debug("Rolling back transaction...");
+        Helper::Log(LogTypes::DEBUG, "Rolling back transaction...");
         if ($this->Database->rollBack()) {
-            Logger::getLogger(__CLASS__)->debug("Rolled back transaction!");
+            Helper::Log(LogTypes::DEBUG, "Rolled back transaction!");
             return true;
         }
-        Logger::getLogger(__CLASS__)->error("Failed to rollback transaction!");
+        Helper::Log(LogTypes::ERROR, "Failed to rollback transaction!");
         return false;
     }
 
@@ -100,12 +100,12 @@ class Migrations
      */
     protected function end(): bool
     {
-        Logger::getLogger(__CLASS__)->debug("Committing Transaction...");
+        Helper::Log(LogTypes::DEBUG, "Committing Transaction...");
         if ($this->Database->commit()) {
-            Logger::getLogger(__CLASS__)->debug("Transaction committed!");
+            Helper::Log(LogTypes::DEBUG, "Transaction committed!");
             return true;
         }
-        Logger::getLogger(__CLASS__)->error("Failed to commit Transaction!");
+        Helper::Log(LogTypes::ERROR, "Failed to commit Transaction!");
         return false;
     }
 
@@ -123,7 +123,7 @@ class Migrations
         }
 
         try {
-            Logger::getLogger(__CLASS__)->debug("SELECT * FROM schema_migration WHERE file = $file");
+            Helper::Log(LogTypes::DEBUG, "SELECT * FROM schema_migration WHERE file = $file");
             $statement = $this->Database->prepare("SELECT * FROM schema_migration WHERE file =:file");
 
             $statement->execute(array(":file" => $file));
@@ -155,13 +155,13 @@ class Migrations
      */
     public function migrate(string $Dir = __DIR__ . "/../", ?string $Plugin = null): void
     {
-        Logger::getLogger(__CLASS__)->info("Starting Database Migration");
+        Helper::Log(LogTypes::INFO, "Starting Database Migration");
         if(!file_exists($Dir)){
-            Logger::getLogger(__CLASS__)->error(sprintf( 'Directory "%s" does not exist! Cannot perform migrations!', $Dir));
+            Helper::Log(LogTypes::ERROR, sprintf( 'Directory "%s" does not exist! Cannot perform migrations!', $Dir));
             return;
         }
         if (!file_exists("$Dir/migrations/")) {
-            Logger::getLogger(__CLASS__)->warning(sprintf('No "migrations" directory existed within "%s", cannot perform migrations!', realpath($Dir)));
+            Helper::Log(LogTypes::WARNING, sprintf('No "migrations" directory existed within "%s", cannot perform migrations!', realpath($Dir)));
             return;
         }
         $files = glob("$Dir/migrations/*.{php}", GLOB_BRACE);
@@ -176,12 +176,12 @@ class Migrations
             $MigrationName = substr(basename($file), 0, -4);
 
             if ($this->isMigrated($MigrationName)) {
-                Logger::getLogger(__CLASS__)->warning("$MigrationName is already migrated, skipping.");
+                Helper::Log(LogTypes::WARNING, "$MigrationName is already migrated, skipping.");
                 continue;
             }
 
             $Class = "\crisp\migrations\\" . explode("_", $MigrationName)[1];
-            Logger::getLogger(__CLASS__)->info("Starting to migrate $MigrationName.");
+            Helper::Log(LogTypes::INFO, "Starting to migrate $MigrationName.");
 
             include $file;
 
@@ -194,13 +194,13 @@ class Migrations
 
                     $statement->execute(array(":file" => $MigrationName, ":plugin" => $Plugin));
 
-                    Logger::getLogger(__CLASS__)->notice("Successfully Migrated $MigrationName");
+                    Helper::Log(LogTypes::SUCCESS, "Successfully Migrated $MigrationName");
                 } else {
 
-                    Logger::getLogger(__CLASS__)->error("Failed to migrate $MigrationName");
+                    Helper::Log(LogTypes::ERROR, "Failed to migrate $MigrationName");
                 }
             } catch (\Exception $ex) {
-                Logger::getLogger(__CLASS__)->error($ex);
+                Helper::Log(LogTypes::ERROR, $ex);
             }
         }
     }
@@ -231,9 +231,9 @@ class Migrations
         $written = file_put_contents("$Dir/migrations/" . time() . "_$MigrationNameFiltered.php", $Skeleton);
 
         if (!$written) {
-            Logger::getLogger(__CLASS__)->error("Failed to write migration file, check permissions");
+            Helper::Log(LogTypes::ERROR, "Failed to write migration file, check permissions");
         } else {
-            Logger::getLogger(__CLASS__)->notice("Migration File created!");
+            Helper::Log(LogTypes::SUCCESS, "Migration File created!");
         }
     }
 
@@ -249,22 +249,22 @@ class Migrations
      */
     protected function addIndex(string $Table, string $Column, string $Type = self::DB_PRIMARYKEY, string $IndexName = null): bool
     {
-        Logger::getLogger(__CLASS__)->debug("Adding index to table $Table...");
+        Helper::Log(LogTypes::DEBUG, "Adding index to table $Table...");
         if ($Type == self::DB_PRIMARYKEY) {
             $SQL = "ALTER TABLE $Table ADD $Type KEY ($Column);";
         } else {
             $SQL = "CREATE $Type INDEX $IndexName ON $Table ($Column);";
         }
 
-        Logger::getLogger(__CLASS__)->debug($SQL);
+        Helper::Log(LogTypes::DEBUG, $SQL);
         $statement = $this->Database->prepare($SQL);
 
         if ($statement->execute()) {
-            Logger::getLogger(__CLASS__)->debug("Added index to table $Table...");
+            Helper::Log(LogTypes::DEBUG, "Added index to table $Table...");
             return true;
         }
-        Logger::getLogger(__CLASS__)->error("Failed to add index to table $Table...");
-        Logger::getLogger(__CLASS__)->error("SQL ERROR", $statement->errorInfo());
+        Helper::Log(LogTypes::ERROR, "Failed to add index to table $Table...");
+        Helper::Log(LogTypes::ERROR, $statement->errorInfo());
         return false;
     }
 
@@ -279,18 +279,18 @@ class Migrations
      */
     protected function dropColumn(string $Table, string $Column): bool
     {
-        Logger::getLogger(__CLASS__)->debug("Removing column from Table $Table...");
+        Helper::Log(LogTypes::DEBUG, "Removing column from Table $Table...");
         $SQL = "ALTER TABLE $Table DROP COLUMN $Column";
 
-        Logger::getLogger(__CLASS__)->debug($SQL);
+        Helper::Log(LogTypes::DEBUG, $SQL);
         $statement = $this->Database->prepare($SQL);
 
         if ($statement->execute()) {
-            Logger::getLogger(__CLASS__)->debug("Removed column from Table $Table...");
+            Helper::Log(LogTypes::DEBUG, "Removed column from Table $Table...");
             return true;
         }
-        Logger::getLogger(__CLASS__)->error("Failed to remove Column from table $Table...");
-        Logger::getLogger(__CLASS__)->error("SQL ERROR", $statement->errorInfo());
+        Helper::Log(LogTypes::ERROR, "Failed to remove Column from table $Table...");
+        Helper::Log(LogTypes::ERROR, $statement->errorInfo());
     }
     
 
@@ -307,18 +307,18 @@ class Migrations
      */
     protected function addForeignKey(string $SourceTable, string $ReferenceTable, string $SourceColumn,  string $ReferenceColumn, string $ConstraintName): bool
     {
-        Logger::getLogger(__CLASS__)->debug("Adding foreign key to Table $SourceTable...");
+        Helper::Log(LogTypes::DEBUG, "Adding foreign key to Table $SourceTable...");
         $SQL = "ALTER TABLE $SourceTable ADD CONSTRAINT fk_$ConstraintName FOREIGN KEY ($SourceColumn) REFERENCES $ReferenceTable ($ReferenceColumn);";
 
-        Logger::getLogger(__CLASS__)->debug($SQL);
+        Helper::Log(LogTypes::DEBUG, $SQL);
         $statement = $this->Database->prepare($SQL);
 
         if ($statement->execute()) {
-            Logger::getLogger(__CLASS__)->debug("Added foreign key to Table $SourceTable!");
+            Helper::Log(LogTypes::DEBUG, "Added foreign key to Table $SourceTable!");
             return true;
         }
-        Logger::getLogger(__CLASS__)->error("Failed to add Foreign Key to table $SourceTable");
-        Logger::getLogger(__CLASS__)->error("SQL ERROR", $statement->errorInfo());
+        Helper::Log(LogTypes::ERROR, "Failed to add Foreign Key to table $SourceTable");
+        Helper::Log(LogTypes::ERROR, $statement->errorInfo());
     }
 
     /**
@@ -331,18 +331,18 @@ class Migrations
      */
     protected function addColumn(string $Table, array $Column): bool
     {
-        Logger::getLogger(__CLASS__)->debug("Adding column to Table $Table...");
+        Helper::Log(LogTypes::DEBUG, "Adding column to Table $Table...");
         $SQL = "ALTER TABLE $Table ADD COLUMN $Column[0] $Column[1] $Column[2];";
 
-        Logger::getLogger(__CLASS__)->debug($SQL);
+        Helper::Log(LogTypes::DEBUG, $SQL);
         $statement = $this->Database->prepare($SQL);
 
         if ($statement->execute()) {
-            Logger::getLogger(__CLASS__)->debug("Added column to Table $Table!");
+            Helper::Log(LogTypes::DEBUG, "Added column to Table $Table!");
             return true;
         }
-        Logger::getLogger(__CLASS__)->error("Failed to add Column to table $Table");
-        Logger::getLogger(__CLASS__)->error("SQL ERROR", $statement->errorInfo());
+        Helper::Log(LogTypes::ERROR, "Failed to add Column to table $Table");
+        Helper::Log(LogTypes::ERROR, $statement->errorInfo());
     }
 
     /**
@@ -355,7 +355,7 @@ class Migrations
      */
     protected function createTable(string $Table, ...$Columns): bool
     {
-        Logger::getLogger(__CLASS__)->debug("Creating Table $Table...");
+        Helper::Log(LogTypes::DEBUG, "Creating Table $Table...");
         $SQL = "CREATE TABLE IF NOT EXISTS $Table (";
         foreach ($Columns as $Key => $Column) {
             $Name = $Column[0];
@@ -373,15 +373,15 @@ class Migrations
         $SQL .= ");";
 
 
-        Logger::getLogger(__CLASS__)->debug($SQL);
+        Helper::Log(LogTypes::DEBUG, $SQL);
         $statement = $this->Database->prepare($SQL);
 
         if ($statement->execute()) {
-            Logger::getLogger(__CLASS__)->debug("Created Table $Table!");
+            Helper::Log(LogTypes::DEBUG, "Created Table $Table!");
             return true;
         }
-        Logger::getLogger(__CLASS__)->error("Failed to create table $Table");
-        Logger::getLogger(__CLASS__)->error("SQL ERROR", $statement->errorInfo());
+        Helper::Log(LogTypes::ERROR, "Failed to create table $Table");
+        Helper::Log(LogTypes::ERROR, $statement->errorInfo());
     }
 
 }

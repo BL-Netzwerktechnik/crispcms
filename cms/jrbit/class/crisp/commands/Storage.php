@@ -10,11 +10,9 @@ use crisp\core\Logger;
 use crisp\core\Migrations;
 use crisp\core\Themes;
 use Minimal;
-use Monolog\Logger as MonologLogger;
 use splitbrain\phpcli\Options;
 
 class Storage {
-
     public static function run(CLI $minimal, Options $options): bool
     {
         if($options->getOpt("install")){
@@ -36,7 +34,7 @@ class Storage {
             } else {
                 $minimal->error("Failed to install KVStorage!");
             }
-            Logger::getLogger(__CLASS__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+            Helper::Log(core\LogTypes::DEBUG, sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
 
             return true;
         }elseif($options->getOpt("uninstall")){
@@ -57,7 +55,7 @@ class Storage {
             } else {
                 $minimal->error("Failed to uninstall KVStorage!");
             }
-            Logger::getLogger(__CLASS__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+            Helper::Log(core\LogTypes::DEBUG, sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
 
             return true;
         }
