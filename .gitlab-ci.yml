@@ -126,6 +126,20 @@ stable:
   rules:
     - if: $CI_COMMIT_TAG
 
+release:
+  stage: publish
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - 'echo "Releasing version ${CI_COMMIT_TAG}"'
+  release:
+    name: '${CI_PROJECT_TITLE} ${CI_COMMIT_TAG}'
+    description: '${CI_PROJECT_DESCRIPTION}'
+    tag_name: '${CI_COMMIT_TAG}'
+    ref: '${CI_COMMIT_SHA}'
+  rules:
+    - if: $CI_COMMIT_TAG
+
+
 stable-license:
   stage: publish
   image:
