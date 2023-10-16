@@ -36,7 +36,7 @@ class Storage {
             } else {
                 $minimal->error("Failed to install KVStorage!");
             }
-            Logger::getLogger(__CLASS__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+            Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
 
             return true;
         }elseif($options->getOpt("uninstall")){
@@ -57,7 +57,7 @@ class Storage {
             } else {
                 $minimal->error("Failed to uninstall KVStorage!");
             }
-            Logger::getLogger(__CLASS__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+            Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
 
             return true;
         }

@@ -177,7 +177,7 @@ try {
 
 
     if (PHP_SAPI !== 'cli') {
-        Logger::getLogger(__CLASS__)->info( Helper::getRequestLog());
+        Logger::getLogger(__METHOD__)->info( Helper::getRequestLog());
     }
 
     if (isset($_ENV['SENTRY_DSN'])) {

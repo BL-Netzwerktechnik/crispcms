@@ -71,7 +71,7 @@ class License  {
                     }
 
 
-                    Logger::getLogger(__CLASS__)->info("Installing new License Key...");
+                    Logger::getLogger(__METHOD__)->info("Installing new License Key...");
                     if (!Config::set("license_key", file_get_contents($_FILES["license"]["tmp_name"]))) {
                         throw new Exception("Failed to save License Key");
                     }
@@ -85,7 +85,7 @@ class License  {
                         exit;
                     }
 
-                    Logger::getLogger(__CLASS__)->info("Installing new Issuer Key...");
+                    Logger::getLogger(__METHOD__)->info("Installing new Issuer Key...");
                     if (!Config::set("license_issuer_public_key", file_get_contents($_FILES["issuer"]["tmp_name"]))) {
                         throw new Exception("Failed to save issuer key");
                     }

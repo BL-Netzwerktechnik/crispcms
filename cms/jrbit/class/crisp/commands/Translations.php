@@ -34,7 +34,7 @@ class Translations {
                 $minimal->error("Failed to install Translations!");
             }
             $End = microtime(true);
-            Logger::getLogger(__CLASS__)->debug(sprintf("Operation took %sms to complete!", Helper::truncateText($End - $Start, 6, false)));
+            Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Helper::truncateText($End - $Start, 6, false)));
 
             return true;
         }elseif($options->getOpt("uninstall")){
@@ -56,7 +56,7 @@ class Translations {
                 $minimal->error("Failed to uninstall Translations!");
             }
             $End = microtime(true);
-            Logger::getLogger(__CLASS__)->debug(sprintf("Operation took %sms to complete!", Helper::truncateText($End - $Start, 6, false)));
+            Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Helper::truncateText($End - $Start, 6, false)));
 
             return true;
         }
