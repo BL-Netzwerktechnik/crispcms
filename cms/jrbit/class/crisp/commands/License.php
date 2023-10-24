@@ -17,23 +17,29 @@ use PHPUnit\TextUI\Help;
 use splitbrain\phpcli\Options;
 
 class License {
+
+
+    private static function generateIssuer(CLI $minimal, Options $options): bool
+    {
+
+        if((bool)$_ENV["REQUIRE_LICENSE"]){
+            $minimal->fatal("Issuers cannot be generated on this instance!");
+            return false;
+        }
+
+        if(\crisp\api\License::generateIssuer()){
+            $minimal->success("Public Key has been saved");
+            $minimal->info("You must ship this public key to your customer");
+            $minimal->success("Private Key has been saved");
+            $minimal->warning("Keep this key private at all costs!");
+            return true;
+        }
+    }
+
     public static function run(CLI $minimal, Options $options): bool
     {
         if($options->getOpt("generate-private-key")){
-
-            if($_ENV["REQUIRE_LICENSE"]){
-                $minimal->fatal("Issuers cannot be generated on this instance!");
-                return false;
-            }
-
-            if(\crisp\api\License::generateIssuer()){
-                $minimal->success("Public Key has been saved");
-                $minimal->info("You must ship this public key to your customer");
-                $minimal->success("Private Key has been saved");
-                $minimal->warning("Keep this key private at all costs!");
-                return true;
-            }
-            return false;
+            return self::generateIssuer($minimal, $options);
         }elseif($options->getOpt("info")){
             $license = \crisp\api\License::fromDB();
 
@@ -95,7 +101,7 @@ class License {
             return true;
         }elseif($options->getOpt("generate-test")){
 
-            if($_ENV["REQUIRE_LICENSE"]){
+            if((bool)$_ENV["REQUIRE_LICENSE"]){
                 $minimal->fatal("Licenses cannot be generated on this instance!");
                 return false;
             }
@@ -134,8 +140,14 @@ class License {
                 ocsp: sprintf("%s://%s/_debug_ocsp",$_ENV["PROTO"], $_ENV["HOST"])
             );
 
+
+            if(!Config::exists("license_issuer_private_key")){
+                $minimal->warning("Issuer Private Key does not exist! Generating one...");
+                self::generateIssuer($minimal, $options);
+            }
+
             if(!$license->sign()){
-                $minimal->fatal("Could not sign license!");
+                $minimal->fatal("Could not sign license! Maybe an issuer key is missing!");
                 return false;
             }
 
@@ -177,6 +189,32 @@ class License {
             }
 
             $minimal->success("Issuer has been deleted!");
+            return true;
+        }elseif($options->getOpt("get-issuer-private")){
+
+            if(!Config::exists("license_issuer_private_key")){
+                $minimal->fatal("Issuer Private Key does not exist!");
+                return false;
+            }
+
+            if($options->getOpt("no-formatting")){
+                echo Config::get("license_issuer_private_key");
+            }else{
+                $minimal->success(sprintf("Issuer Private Key: %s%s", PHP_EOL, Config::get("license_issuer_private_key")));
+            }
+            return true;
+        }elseif($options->getOpt("get-issuer")){
+
+            if(!Config::exists("license_issuer_public_key")){
+                $minimal->fatal("Issuer Public Key does not exist!");
+                return false;
+            }
+
+            if($options->getOpt("no-formatting")){
+                echo Config::get("license_issuer_public_key");
+            }else{
+                $minimal->success(sprintf("Issuer Public Key: %s%s", PHP_EOL, Config::get("license_issuer_public_key")));
+            }
             return true;
         }
         $minimal->error("No action");

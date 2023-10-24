@@ -33,12 +33,13 @@ use crisp\commands\Theme;
 use crisp\commands\Translations;
 use crisp\commands\Version;
 use crisp\core;
+use crisp\core\Logger;
 use splitbrain\phpcli\CLI as SplitbrainCLI;
 use splitbrain\phpcli\Options;
 
 
 if (PHP_SAPI !== 'cli') {
-    Helper::Log(1, "Not from CLI");
+    Logger::getLogger(__METHOD__)->critical("Not from CLI!");
     exit;
 }
 
@@ -50,9 +51,13 @@ class CLI extends SplitbrainCLI
     // register options and arguments
     protected function setup(Options $options)
     {
+        $_ENV['REQUIRE_LICENSE'] = $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
+
         $options->setHelp('Interact with CrispCMS');
         /** Global Options */
         $options->registerOption('version', 'print version', 'v');
+        $options->registerOption('instance-id', 'print instance id', 'i');
+        $options->registerOption('no-formatting', 'Remove formatting of getter methods', 'n');
         /** Global Options */
 
         /** Maintenance Command */
@@ -71,14 +76,15 @@ class CLI extends SplitbrainCLI
         $options->registerOption('invalid-instance', 'Generate an invalid instance license', null, false, 'license');
         $options->registerOption('delete', 'Delete the License Key', "d", false, 'license');
         $options->registerOption('delete-issuer', 'Delete the License Key', null, false, 'license');
-        $options->registerOption('delete-issuer-private', 'Delete the License Key', null, false, 'license');
+        $options->registerOption('get-issuer', 'Get the Issuer Public Key', null, false, 'license');
+        $options->registerOption('delete-issuer-private', 'Delete the Issuer Private Key', null, false, 'license');
+        $options->registerOption('get-issuer-private', 'Get the Issuer Private Key', null, false, 'license');
         /** Maintenance Command */
 
         /** Crisp Command */
         $options->registerCommand('crisp', 'Perform various tasks in the core of crisp');
         $options->registerOption('migrate', 'Run the Database Migrations', "m", false, 'crisp');
         $options->registerOption('post-install', 'Run the Post Install Actions', "p", false, 'crisp');
-        $options->registerOption('instance', 'Get your instance ID', "i", false, 'crisp');
         /** Crisp Command */
 
         /** Crisp Command */
@@ -124,6 +130,15 @@ class CLI extends SplitbrainCLI
     {
         if($options->getOpt("version")){
             Version::run($this);
+            exit;
+        }
+
+        if($options->getOpt("instance-id")){
+            if(!$options->getOpt("no-formatting")){
+                $this->success(sprintf("Your instance id is: %s", Helper::getInstanceId()));
+                exit;
+            }
+            echo Helper::getInstanceId();
             exit;
         }
 

@@ -39,9 +39,6 @@ class Crisp {
                 $minimal->warning("Your Distributor Requires a valid License but none is installed - You will be prompted to install a License Key");
             }
             return true;
-        }elseif($options->getOpt("instance")){
-                $minimal->success(sprintf("Your instance id is: %s", Helper::getInstanceId()));
-            return true;
         }
         $minimal->error("No action");
 
