@@ -88,11 +88,6 @@ RUN apt-get update && \
             curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
             wget 'https://github.com/maxmind/geoipupdate/releases/download/v5.1.1/geoipupdate_5.1.1_linux_amd64.deb' -O /tmp/geoipupdate.deb && \
             dpkg -i /tmp/geoipupdate.deb && \
-            apt-get autoremove -y && \
-            apt-get clean && \
-            rm -rf /tmp/pear && \
-            rm -rf /var/cache/apt/archives && \
-            rm -rf /var/lib/apt/lists/* && \
             apt-purge -y libpq-dev \
             libcurl4-openssl-dev \
             libsodium-dev \
@@ -102,7 +97,12 @@ RUN apt-get update && \
             libfreetype6-dev \
             libjpeg62-turbo-dev \
             libpng-dev \
-            nodejs
+            nodejs && \
+            apt-get autoremove -y && \
+            apt-get clean && \
+            rm -rf /tmp/pear && \
+            rm -rf /var/cache/apt/archives && \
+            rm -rf /var/lib/apt/lists/*
 
 RUN usermod -aG sudo www-data && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
