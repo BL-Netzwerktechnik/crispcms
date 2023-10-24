@@ -61,7 +61,7 @@ tasks:
     init: docker build -t crispcms . && git clone https://gitlab.jrbit.de/crispcms/theme-template theme && mv theme/theme cms/themes/crisptheme && rm -rf theme
     command: gp ports await 5432 && gp ports await 6379 && docker run --name crispcms
       -e CRISP_THEME=crisptheme
-      -e VERBOSITY=3
+      -e LOG_LEVEL=DEBUG
       -e POSTGRES_URI=postgres://postgres:postgres@localhost:5432/postgres
       -e REDIS_HOST=localhost
       -e TZ=Europe/Berlin

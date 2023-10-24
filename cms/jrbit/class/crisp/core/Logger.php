@@ -41,7 +41,7 @@ class Logger
     public static function getLogger(string $name): MonologLogger
     {
         $logger = new MonologLogger($name);
-        $logger->pushHandler(new StreamHandler('php://stdout', Level::Debug));
+        $logger->pushHandler(new StreamHandler('php://stdout', Level::fromName($_ENV["LOGLEVEL"] ?? "INFO")));
         return $logger;
     }
 

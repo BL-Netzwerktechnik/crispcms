@@ -32,7 +32,7 @@ services:
       - redis
     environment:
       - CRISP_THEME=crisptheme
-      - VERBOSITY=3
+      - LOG_LEVEL=INFO
       - POSTGRES_URI=postgres://postgres:postgres@postgres:5432/postgres
       - REDIS_HOST=redis
       - REDIS_INDEX=1

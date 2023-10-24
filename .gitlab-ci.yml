@@ -39,7 +39,7 @@ migrate-and-test:
     DEFAULT_LOCALE: en
     CRISP_THEME: crisptheme
     LANG: en_US.utf8
-    VERBOSITY: 3
+    LOG_LEVEL: DEBUG
     HOST: ci
     PROTO: http
     TZ: UTC
