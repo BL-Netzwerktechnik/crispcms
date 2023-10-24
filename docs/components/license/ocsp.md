@@ -16,7 +16,7 @@ graph TD
       subgraph OCSP Responder
         2xx -->|Success, license is valid| Response
         4xx -->|Failure, License is revoked| Response
-        5xx -->|Server Errors, will retry 3 times before revoking license| Response
+        5xx -->|Server Error, will retry 3 times before revoking license| Response
       end
     end
 
@@ -49,9 +49,9 @@ Crisp's OCSP System checks for the following status codes in a GET request again
 | ----------- | ------------------------------------------------------ |
 | 2xx         | Success, license is valid                              |
 | 4xx         | Failure, License is revoked                            |
-| 5xx         | Server Errors, will retry 3 times before revoking license |
+| 5xx         | Server Error, will retry 3 times before revoking license |
 
-Crisp only listens for the HTTP Code, so there is no need to send a body.
+Crisp only awaits the HTTP Code, there is no need to send a body.
 
 
 ### Cache
