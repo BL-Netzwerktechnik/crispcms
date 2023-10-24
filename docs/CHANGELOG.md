@@ -1,5 +1,9 @@
 # CrispCMS Changelog
 
+## 16.1.2
+
+- [QOL] Bump Version to 16.1.2
+
 ## 16.1.1
 
 - [DOCS] - Update Docs
