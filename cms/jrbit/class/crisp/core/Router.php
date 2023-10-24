@@ -36,6 +36,7 @@ class Router
 
     public static function addFun(string $route, RouteType $routeType, mixed $function): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
 
         $collector = self::get($routeType)->any($route, $function);
         $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
@@ -43,12 +44,14 @@ class Router
 
     public static function add(string $route, RouteType $routeType, mixed $class): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $collector = self::get($routeType)->any([$route, $class], [$class, $routeType == RouteType::PUBLIC ? "preRender" : "execute"]);
         $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
     }
 
     public static function registerInteralRoutes(): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         self::add("_debug_oscp", RouteType::PUBLIC, \crisp\routes\DebugOCSP::class);
         self::add("_debug", RouteType::PUBLIC, \crisp\routes\Debug::class);
         self::add("_license", RouteType::PUBLIC, \crisp\routes\License::class);
@@ -59,11 +62,13 @@ class Router
 
     public static function get(RouteType $routeType): RouteCollector
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         return $GLOBALS["Crisp_Router_" . $routeType->value];
     }
 
     public static function register(): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         foreach (RouteType::cases() as $RouteType) {
             $GLOBALS["Crisp_Router_" . $RouteType->value] = new RouteCollector();
         }

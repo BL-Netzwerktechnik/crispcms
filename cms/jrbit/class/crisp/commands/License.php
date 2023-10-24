@@ -9,6 +9,7 @@ use crisp\api\Config;
 use crisp\api\Helper;
 use crisp\core;
 use crisp\core\Bitmask;
+use crisp\core\Logger;
 use crisp\core\Migrations;
 use crisp\core\RESTfulAPI;
 use crisp\core\Themes;
@@ -21,6 +22,8 @@ class License {
 
     private static function generateIssuer(CLI $minimal, Options $options): bool
     {
+        
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
 
         if((bool)$_ENV["REQUIRE_LICENSE"]){
             $minimal->fatal("Issuers cannot be generated on this instance!");

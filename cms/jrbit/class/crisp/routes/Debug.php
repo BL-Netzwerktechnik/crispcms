@@ -27,6 +27,7 @@ namespace crisp\routes;
 use crisp\api\Cache;
 use crisp\core;
 use crisp\core\Bitmask;
+use crisp\core\Logger;
 use crisp\core\Themes;
 use crisp\core\RESTfulAPI;
 use crisp\models\ThemeAPI;
@@ -42,6 +43,7 @@ class Debug  {
 
     public function preRender(): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
 
         if(ENVIRONMENT !== 'development'){
             echo file_get_contents(core::THEME_BASE_DIR . "/basic/not_found.html");

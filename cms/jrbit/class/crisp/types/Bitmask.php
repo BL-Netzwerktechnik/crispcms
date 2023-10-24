@@ -23,11 +23,13 @@
 
 namespace crisp\types;
 
+use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
 
 abstract class Bitmask extends Enum {
 
     public static function hasBitmask(int $BitwisePermissions, int $PermissionFlag = 0x00000000) {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (!is_numeric($BitwisePermissions)) {
             throw new \TypeError("Parameter BitwisePermissions is not a hexadecimal or number.");
         }
@@ -42,11 +44,13 @@ abstract class Bitmask extends Enum {
     }
 
     public static function getConstants() {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $oClass = new \ReflectionClass(static::class);
         return $oClass->getConstants();
     }
 
     public static function getBitmask(int $BitwisePermissions, bool $IndexArray = false) {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (!is_numeric($BitwisePermissions)) {
             throw new \TypeError("Parameter BitwisePermissions is not a hexadecimal or number.");
         }

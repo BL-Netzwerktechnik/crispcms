@@ -60,6 +60,7 @@ class Config
      */
     private static function initDB(): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $DB = new Postgres();
         self::$Database_Connection = $DB->getDBConnector();
     }
@@ -71,6 +72,7 @@ class Config
      */
     public static function exists(string|int $Key): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -88,6 +90,7 @@ class Config
      */
     public static function get(string $Key): mixed
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -116,6 +119,7 @@ class Config
     }
 
     private static function evaluateRow($Result){
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         return match ($Result["type"]) {
             'serialized' => unserialize($Result["value"]),
             'boolean' => (bool)$Result["value"],
@@ -132,6 +136,7 @@ class Config
      */
     public static function getTimestamp(string $Key): bool|array
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -153,6 +158,7 @@ class Config
      */
     public static function create(string $Key, mixed $Value): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -174,6 +180,7 @@ class Config
      */
     public static function delete(string $Key): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -195,6 +202,7 @@ class Config
      */
     public static function set(string $Key, mixed $Value): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -228,6 +236,7 @@ class Config
      */
     public static function list(bool $KV = false): array
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }

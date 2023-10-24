@@ -38,16 +38,31 @@ use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
 
 /**
- * Interact with the key/value storage of the server
+ * Interact with the cache
  */
 class Cache
 {
 
 
+    /**
+     * Get the cache directory for a given key
+     * 
+     * @param string $Key The key to get the cache directory for
+     * @return string The cache directory
+     */
     public static function getCrispCacheDir(string $Key): string {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         return sprintf("%s/crisp/%s", core::CACHE_DIR, self::calculateCacheDir(self::getHash($Key)));
     }
+
+    /**
+     * Get the cache file for a given key
+     *
+     * @param string $Key The key to get the cache file for
+     * @return string The cache file
+     */
     public static function getCrispCacheFile(string $Key): string {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         return sprintf("%s/%s.cache", self::getCrispCacheDir($Key), self::getHash($Key));
     }
 
@@ -55,21 +70,23 @@ class Cache
      * Calculate the cache directory for a given level
      * @param string $name
      * @param integer $level
-     * @return string
+     * @return string The cache directory first letter
      */
     private static function calculateSingleLevel(string $name, int $level): string
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         return $name[$level - 1];
     }
 
     /**
      * Calculate the cache directory for a given key
      *
-     * @param string $name
-     * @return string
+     * @param string $name The key to calculate the cache directory for
+     * @return string The cache directory
      */
     private static function calculateCacheDir(string $name): string
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         return sprintf("%s/%s/%s/%s",
             self::calculateSingleLevel($name, 1),
             self::calculateSingleLevel($name, 2),
@@ -81,11 +98,12 @@ class Cache
     /**
      * Get the expiry date of a given cache key
      *
-     * @param string $key
-     * @return integer|false
+     * @param string $key The key to get the expiry date for
+     * @return integer|false The expiry date of the cache
      */
     public static function getExpiryDate(string $key): int|false {
 
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if(!self::isCached($key)){
             return false;
         }
@@ -97,11 +115,12 @@ class Cache
     /**
      * Check if a given key is cached
      *
-     * @param string $key
-     * @return boolean
+     * @param string $key The key to check
+     * @return boolean True if the key is cached
      */
     private static function isCached(string $key): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         Logger::getLogger(__METHOD__)->debug(sprintf("Checking cache %s (%s)", self::getCrispCacheFile($key), $key));
         return file_exists(self::getCrispCacheFile($key));
     }
@@ -109,11 +128,12 @@ class Cache
     /**
      * Create a directory for a given key
      *
-     * @param string $name
-     * @return boolean
+     * @param string $name The key to create the directory for
+     * @return boolean True if the directory was created successfully
      */
     private static function createDir(string $key): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         Logger::getLogger(__METHOD__)->debug(sprintf("START Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
         $created = mkdir(self::getCrispCacheDir($key), recursive: true);
 
@@ -128,22 +148,24 @@ class Cache
     /**
      * Get the hash of given data
      *
-     * @param string $data
-     * @return string
+     * @param string $data The data to hash
+     * @return string The hash of the data
      */
     public static function getHash(string $data): string
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         return hash("sha512", $data);
     }
 
     /**
      * Generate a cache file
      *
-     * @param integer $expires
-     * @param string $data
-     * @return void
+     * @param integer $expires The expiry date of the cache
+     * @param string $data The data to write to the cache
+     * @return void The cache file contents
      */
     private static function generateFile(int $expires, string $data){
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         return json_encode(["expires" => $expires, "data" => base64_encode($data)]);
     }
 
@@ -157,6 +179,7 @@ class Cache
      */
     public static function write(string $key, string $data, int $expires): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
 
         self::createDir($key);
 
@@ -179,6 +202,7 @@ class Cache
      */
     public static function isExpired(string $key): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
 
         $CacheFile = self::getCrispCacheFile($key);
         if(!self::isCached($key)) {
@@ -199,10 +223,11 @@ class Cache
     /**
      * Clear the cache
      *
-     * @param [type] $dir
-     * @return boolean
+     * @param [type] $dir The directory to clear
+     * @return boolean True if the cache was cleared successfully
      */
     public static function clear(string $dir = core::CACHE_DIR): bool {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
 
         if(!file_exists($dir)){
             mkdir($dir);
@@ -229,12 +254,13 @@ class Cache
     }
 
     /**
-     * Delete a given cache
+     * Delete a given key from the cache
      *
-     * @param string $key
-     * @return boolean
+     * @param string $key The key to delete
+     * @return boolean True if the key was deleted successfully
      */
     public static function delete(string $key): bool {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if(!Cache::isCached($key)){
             return false;
         }
@@ -243,20 +269,19 @@ class Cache
     }
 
     /**
-     * Get the data of a given cache
+     * Get the data of a given key
      *
-     * @param string $key
-     * @return string|false
+     * @param string $key The key to get the data for
+     * @return string|false The data of the key
      */
     public static function get(string $key): string|false
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if(!Cache::isCached($key)){
             return false;
         }
 
         return base64_decode(json_decode(file_get_contents(self::getCrispCacheFile($key)))->data);
-
-
     }
 
 }

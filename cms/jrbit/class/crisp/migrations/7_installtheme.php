@@ -24,8 +24,7 @@
 
 namespace crisp\migrations;
 
-use crisp\core\Bitmask;
-use crisp\core\RESTfulAPI;
+use crisp\core\Logger;
 
 if(!defined('CRISP_HOOKED')){
     echo 'Illegal File access';
@@ -35,6 +34,7 @@ if(!defined('CRISP_HOOKED')){
 class installtheme extends \crisp\core\Migrations {
 
   public function run() {
+    Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
     try {
       $this->begin();
       $this->Database->exec("INSERT INTO Config (key, value) VALUES ('theme_dir', 'themes')");

@@ -5,6 +5,7 @@
 - [DEPRECATION] - Deprecate `csrf` Twig Filter
 - [DEPRECATION] - Deprecate `render` Twig Filter
 - [DEPRECATION] - Deprecate `json` Twig Filter
+- [DEPRECATION] - Deprecate `APIKey` Class
 - [SECURITY] - Fix Exposed Instance ID in Version endpoint
 - [DOCS] - Update Docs
 - [FEAT] - Add more License Options to CLI

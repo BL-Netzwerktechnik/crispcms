@@ -23,6 +23,8 @@
 
 namespace crisp\core;
 
+use crisp\core;
+use Monolog\Handler\RotatingFileHandler;
 use Monolog\Level;
 use Monolog\Logger as MonologLogger;
 use Monolog\Handler\StreamHandler;
@@ -34,18 +36,27 @@ use Monolog\Handler\StreamHandler;
 class Logger
 {
 
+    public static function getLogLevel(): string {
+        return $_ENV["LOG_LEVEL"] ?? "INFO";
+    }
+
     public static function startTiming(float &$output = null): void {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $output = microtime(true);
     }
 
     public static function getLogger(string $name): MonologLogger
     {
         $logger = new MonologLogger($name);
-        $logger->pushHandler(new StreamHandler('php://stdout', Level::fromName($_ENV["LOGLEVEL"] ?? "INFO")));
+        $logger->pushHandler(new StreamHandler('php://stdout', Level::fromName(self::getLogLevel())));
+        if(Level::fromName(self::getLogLevel()) > Level::Debug){
+            $logger->pushHandler(new RotatingFileHandler(core::LOG_DIR . sprintf("/%s.log", self::getLogLevel()), 7, Level::fromName(self::getLogLevel())));
+        }
         return $logger;
     }
 
     public static function endTiming(float &$start): string {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $ms = (float)(microtime(true) - $start);
         unset($start);
         return sprintf("%.3f", $ms * 1000);

@@ -56,6 +56,7 @@ class Theme
      */
     public function __construct(string $CurrentFile, string $CurrentPage, bool $Internal = false)
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $this->CurrentFile = $CurrentFile;
         $this->CurrentPage = $CurrentPage;
 

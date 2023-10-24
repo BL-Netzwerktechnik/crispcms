@@ -27,10 +27,12 @@ namespace crisp\api;
 use crisp\core\Postgres;
 use PDO;
 use crisp\core\Bitmask;
+use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
 
 /**
  * Interact with an api key
+ * @deprecated 17.0.0 API Keys is no longer a feature of CrispCMS
  */
 class APIKey
 {
@@ -38,19 +40,30 @@ class APIKey
     public string $APIKey;
     private ?PDO $Database_Connection;
 
+    /**
+     * @deprecated 17.0.0 API Keys is no longer a feature of CrispCMS
+     *
+     * @param [type] $APIKey
+     */
     public function __construct($APIKey)
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->warning("[DEPRECATED] API Keys is no longer a feature of CrispCMS and will be removed in 17.0.0");
         $DB = new Postgres();
         $this->Database_Connection = $DB->getDBConnector();
         $this->APIKey = $APIKey;
+        
     }
 
     /**
      * Fetches a Keys details
+     * @deprecated 17.0.0 API Keys is no longer a feature of CrispCMS
      * @return array|null
      */
     public function fetch(): ?array
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->warning("[DEPRECATED] API Keys is no longer a feature of CrispCMS and will be removed in 17.0.0");
         if ($this->APIKey === null) {
             return null;
         }
@@ -64,10 +77,13 @@ class APIKey
     /**
      * Enables an api key
      * @return bool|null
+     * @deprecated 17.0.0 API Keys is no longer a feature of CrispCMS
      * @see disable
      */
     public function enable(): ?bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->warning("[DEPRECATED] API Keys is no longer a feature of CrispCMS and will be removed in 17.0.0");
         if ($this->APIKey === null) {
             return null;
         }
@@ -79,10 +95,13 @@ class APIKey
     /**
      * Disables an api key
      * @return bool|null
+     * @deprecated 17.0.0 API Keys is no longer a feature of CrispCMS
      * @see enable
      */
     public function disable(): ?bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->warning("[DEPRECATED] API Keys is no longer a feature of CrispCMS and will be removed in 17.0.0");
         if ($this->APIKey === null) {
             return null;
         }
@@ -93,10 +112,13 @@ class APIKey
 
     /**
      * Checks whether a language is enabled or not
+     * @deprecated 17.0.0 API Keys is no longer a feature of CrispCMS
      * @return bool|null
      */
     public function isEnabled(): ?bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->warning("[DEPRECATED] API Keys is no longer a feature of CrispCMS and will be removed in 17.0.0");
         if ($this->APIKey === null) {
             return null;
         }
@@ -109,10 +131,13 @@ class APIKey
 
     /**
      * Check if the language exists in the database
+     * @deprecated 17.0.0 API Keys is no longer a feature of CrispCMS
      * @return bool|null
      */
     public function exists(): ?bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->warning("[DEPRECATED] API Keys is no longer a feature of CrispCMS and will be removed in 17.0.0");
         if ($this->APIKey === null) {
             return null;
         }

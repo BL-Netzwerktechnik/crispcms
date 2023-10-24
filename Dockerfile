@@ -87,7 +87,7 @@ RUN ["chmod", "+x", "/opt/entrypoint.d/bootstrap.sh"]
 RUN ["chmod", "+x", "/usr/local/bin/crisp-cli"]
 RUN ["ln", "-s", "/usr/local/bin/crisp-cli", "/usr/local/bin/crisp"]
 
-RUN chown -R 33:33 "/var/www" && mkdir -p /data && chown -R 33:33 "/data" 
+RUN chown -R 33:33 "/var/www" && mkdir -p /data && chown -R 33:33 "/data"  && mkdir -p /var/log/crisp && chown -R 33:33 /var/log/crisp
 
 USER 33
 

@@ -7,6 +7,7 @@ use CLI;
 use crisp\api\Config;
 use crisp\api\Helper;
 use crisp\core;
+use crisp\core\Logger;
 use crisp\core\Migrations;
 use crisp\core\Themes;
 use Minimal;
@@ -15,6 +16,7 @@ use splitbrain\phpcli\Options;
 class Assets {
     public static function run(CLI $minimal, Options $options): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if($options->getOpt("deploy-to-s3")){
             
             if(!isset($_ENV["ASSETS_S3_BUCKET"], $_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_BUCKET"], $_ENV["ASSETS_S3_ACCESS_KEY"], $_ENV["ASSETS_S3_SECRET_KEY"])){

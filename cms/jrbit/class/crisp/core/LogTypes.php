@@ -23,6 +23,9 @@
 
 namespace crisp\core;
 
+/**
+ * @deprecated 17.0.0 LogTypes has been replaced with Monolog
+ */
 enum LogTypes: int {
     case ERROR = 1;
     case INFO = 2;

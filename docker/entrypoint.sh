@@ -52,4 +52,6 @@ cd / || exit 1
 php-fpm -F -R -D || exit 1
 crisp crisp -p
 
+sudo rm /tmp/crisp-cache -rf
+
 sudo nginx -c /etc/nginx/nginx.conf -g "daemon off;"

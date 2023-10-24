@@ -84,6 +84,9 @@ class core
      * Default Theme Root Folder
      */
     public const THEME_BASE_DIR = __DIR__ . '/../themes';
+
+    public const LOG_DIR = '/var/log/crisp';
+
 }
 require_once __DIR__ . '/../vendor/autoload.php';
 

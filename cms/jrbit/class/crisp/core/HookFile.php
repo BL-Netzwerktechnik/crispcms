@@ -37,6 +37,7 @@ class HookFile
 
     public static function preRender(): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $_HookFile = Themes::getThemeMetadata()->hookFile;
         $_HookClass = substr($_HookFile, 0, -4);
 
@@ -56,6 +57,7 @@ class HookFile
     }
     public static function postRender(): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $_HookFile = Themes::getThemeMetadata()->hookFile;
         $_HookClass = substr($_HookFile, 0, -4);
 
@@ -76,6 +78,7 @@ class HookFile
 
     public static function postExecute(): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $_HookFile = Themes::getThemeMetadata()->hookFile;
         $_HookClass = substr($_HookFile, 0, -4);
 
@@ -96,6 +99,7 @@ class HookFile
 
     public static function preExecute(): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $_HookFile = Themes::getThemeMetadata()->hookFile;
         $_HookClass = substr($_HookFile, 0, -4);
 
@@ -116,6 +120,7 @@ class HookFile
 
     public static function setup(): void
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $_HookFile = Themes::getThemeMetadata()->hookFile;
         $_HookClass = substr($_HookFile, 0, -4);
 

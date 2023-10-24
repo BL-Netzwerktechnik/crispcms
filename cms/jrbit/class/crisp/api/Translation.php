@@ -26,6 +26,7 @@ namespace crisp\api;
 
 use crisp\api\lists\Languages;
 use crisp\core\Bitmask;
+use crisp\core\Logger;
 use crisp\core\Postgres;
 use crisp\core\RESTfulAPI;
 use PDO;
@@ -49,6 +50,7 @@ class Translation
      */
     public function __construct(?string $Language)
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         self::$Language = $Language;
     }
 
@@ -60,6 +62,7 @@ class Translation
      */
     public static function listLanguages(bool $FetchIntoClass = true): array|Language
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $Languages = new Languages();
         return $Languages::fetchLanguages($FetchIntoClass);
     }
@@ -70,6 +73,7 @@ class Translation
      */
     public static function listTranslations(): array
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -85,6 +89,7 @@ class Translation
      */
     private static function initDB()
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $DB = new Postgres();
         self::$Database_Connection = $DB->getDBConnector();
     }
@@ -96,6 +101,7 @@ class Translation
      */
     public static function fetchAll(): array
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -125,6 +131,7 @@ class Translation
      */
     public static function fetchAllByKey(string $Key): array
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -156,6 +163,7 @@ class Translation
      */
     public static function exists(string $Key): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -173,6 +181,7 @@ class Translation
      */
     public static function fetch(string $Key, int $Count = 1, array $UserOptions = array()): string
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
 
         if (!isset(self::$Language)) {
             self::$Language = Helper::getLocale();
@@ -198,6 +207,7 @@ class Translation
      */
     public static function get(string $Key, array $UserOptions = array()): string
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
 
         if (self::$Database_Connection === null) {
             self::initDB();
@@ -236,6 +246,7 @@ class Translation
     public static function getPlural(string $Key, array $UserOptions = array()): string
     {
 
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }

@@ -28,6 +28,7 @@ use crisp\api\Language;
 use crisp\core\Postgres;
 use PDO;
 use crisp\core\Bitmask;
+use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
 
 /**
@@ -43,8 +44,14 @@ class Languages
         self::initDB();
     }
 
+    /**
+     * Initialize the database connection
+     *
+     * @return void
+     */
     private static function initDB()
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $DB = new Postgres();
         self::$Database_Connection = $DB->getDBConnector();
     }
@@ -56,6 +63,7 @@ class Languages
      */
     public static function fetchLanguages(bool $FetchIntoClass = true): array|Language
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -79,6 +87,7 @@ class Languages
      */
     public static function languageExists(string|int|null $Code): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
 
         if($Code === null){
             return false;
@@ -100,6 +109,7 @@ class Languages
      */
     public static function getLanguageByCode(string $Code, bool $FetchIntoClass = true): bool|array|Language
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -137,6 +147,7 @@ class Languages
      */
     public static function createLanguage(string $Name, string $Code, string $NativeName, string $Flag, bool $Enabled = true): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -176,6 +187,7 @@ class Languages
      */
     public static function getLanguageByID(int|string $ID, bool $FetchIntoClass = true): bool|array|Language
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         if (self::$Database_Connection === null) {
             self::initDB();
         }

@@ -45,6 +45,7 @@ class RESTfulAPI
      */
     public function __construct()
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         try {
 
             HookFile::preExecute();
@@ -86,11 +87,13 @@ class RESTfulAPI
 
     public static function getRequestMethod(): string
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         return $_SERVER["REQUEST_METHOD"];
     }
 
     public static function getVersion(): ?string
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         list($Interface, $Version) = array_filter(explode("/", $GLOBALS["route"]->Raw));
 
         return $Version;
@@ -98,11 +101,13 @@ class RESTfulAPI
 
     public static function isRequestContentType(string $contenttype = "application/json"): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         return getallheaders()["Content-Type"] == $contenttype;
     }
 
     public static function BodyParameterExists(string $key): bool
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $data = json_decode(file_get_contents('php://input'), true);
 
         return array_key_exists($key, $data);
@@ -111,6 +116,7 @@ class RESTfulAPI
 
     public static function getBodyParameter(string $key): mixed
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $data = json_decode(file_get_contents('php://input'), true);
 
         return $data[$key] ?? null;
@@ -118,6 +124,7 @@ class RESTfulAPI
 
     public static function getBody(): mixed
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         $data = json_decode(file_get_contents('php://input'), true);
 
         return $data ?? null;
@@ -134,6 +141,7 @@ class RESTfulAPI
      */
     public static function response(Bitmask|int $Errors = null, string $message, array $Parameters = [], mixed $Flags = null, int $HTTP = 200)
     {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
         header("Content-Type: application/json");
         http_response_code($HTTP);
 
