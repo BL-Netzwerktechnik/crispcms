@@ -20,15 +20,15 @@ Example:
 <!-- tabs:start -->
 
 #### **Bash**
-```bash
-foo@bar:~$ crisp -i
-✓ Your instance id is: I0f243614-50f2-0f41-5daa-20fab68d960c
+```terminal
+$|crisp -i
+>|success|✓ Your instance id is: I0f243614-50f2-0f41-5daa-20fab68d960c
 
-foo@bar:~$ crisp --instance-id
-✓ Your instance id is: I0f243614-50f2-0f41-5daa-20fab68d960c
+$|crisp --instance-id
+>|success|✓ Your instance id is: I0f243614-50f2-0f41-5daa-20fab68d960c
 
-foo@bar:~$ crisp --instance-id --no-formatting # Print only the Instance ID
-I0f243614-50f2-0f41-5daa-20fab68d960c
+$|crisp --instance-id --no-formatting # Print only the Instance ID
+>|I0f243614-50f2-0f41-5daa-20fab68d960c
 ```
 <!-- tabs:end -->
 

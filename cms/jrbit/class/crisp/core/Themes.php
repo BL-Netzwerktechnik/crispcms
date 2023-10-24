@@ -135,12 +135,12 @@ class Themes
         $TwigTheme->addFunction(new TwigFunction('includeResource', [new Themes(), 'includeResource']));
         $TwigTheme->addFunction(new TwigFunction('generateLink', [new Helper(), 'generateLink']));
         $TwigTheme->addFunction(new TwigFunction('generatePlaceholder', [new Helper(), 'PlaceHolder']));
-        $TwigTheme->addFunction(new TwigFunction('generateLoremIpsum', [new Helper(), 'LoremIpsum']));
         $TwigTheme->addFunction(new TwigFunction('date', 'date'));
         $TwigTheme->addFunction(new TwigFunction('in_array_any', [new Helper(), 'in_array_any']));
 
         /* CSRF Stuff */
         $TwigTheme->addFunction(new TwigFunction('csrf', [new Security(), 'getCSRF']));
+        $TwigTheme->addFunction(new TwigFunction('getCSRF', [new Security(), 'getCSRF']));
         $TwigTheme->addFunction(new TwigFunction('refreshCSRF', [new Security(), 'regenCSRF']));
         $TwigTheme->addFunction(new TwigFunction('validateCSRF', [new Security(), 'matchCSRF']));
         $TwigTheme->addFunction(new TwigFunction('strftime', 'strftime'));
@@ -167,7 +167,6 @@ class Themes
         $TwigTheme->addFilter(new TwigFilter('truncateText', [new Helper(), 'truncateText']));
         $TwigTheme->addFilter(new TwigFilter('strtotime', 'strtotime'));
         $TwigTheme->addFilter(new TwigFilter('time', 'time'));
-        $TwigTheme->addFilter(new TwigFilter('formattime', [new Helper(), 'FormatTime']));
 
         $GLOBALS["Crisp_ThemeLoader"] = $TwigTheme;
     }

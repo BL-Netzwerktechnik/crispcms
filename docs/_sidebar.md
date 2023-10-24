@@ -9,6 +9,7 @@
 - **Components**
   - [Storage](/components/storage)
   - [CLI](/components/cli)
+  - [Twig](/components/twig/introduction)
   - [License System](/components/license/introduction)
     - [Generate](/components/license/generate)
     - [Renew](/components/license/renew)

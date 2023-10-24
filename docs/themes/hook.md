@@ -29,6 +29,6 @@ HookFile -->|Router Logic| setup
 
 ## Getting Started
 
-The File name of the HookFile is not hardcoded, it simply must be a readable PHP file as defined in the [theme.json](/themes/json) section `hookFile`
+The File name of the HookFile is not hardcoded, it simply must be a readable PHP file as defined in the [[/themes/json|theme.json]] section `hookFile`
 
 !> The filename `hook.php` is reserved and may cause conflicts!

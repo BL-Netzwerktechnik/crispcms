@@ -91,7 +91,7 @@ $isDeleted = Config::delete("my_awesome_variable");
 
 ## Pre-Defined KV
 
-The [theme.json](/themes/json) file empowers you to pre-define Key-Value (KV) pairs in the `onInstall.createKVStorageItems` section. You have the flexibility to pass arrays or objects into the JSON to configure KV Storage during container boot-up.
+The [[/themes/json|theme.json]] file empowers you to pre-define Key-Value (KV) pairs in the `onInstall.createKVStorageItems` section. You have the flexibility to pass arrays or objects into the JSON to configure KV Storage during container boot-up.
 
 ```json5
 {
