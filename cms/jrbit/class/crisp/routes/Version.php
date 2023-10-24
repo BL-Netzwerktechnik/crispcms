@@ -49,6 +49,7 @@ class Version  {
             $license = json_decode($licobj->encode(), true);
 
             $license["valid"] = $licobj->isValid();
+            unset($license["instance"]);
         }
 
         RESTfulAPI::response(Bitmask::REQUEST_SUCCESS->value, "This site is running CrispCMS!", [
