@@ -92,7 +92,17 @@ RUN apt-get update && \
             apt-get clean && \
             rm -rf /tmp/pear && \
             rm -rf /var/cache/apt/archives && \
-            rm -rf /var/lib/apt/lists/*
+            rm -rf /var/lib/apt/lists/* && \
+            apt-purge -y libpq-dev \
+            libcurl4-openssl-dev \
+            libsodium-dev \
+            libzip-dev \
+            libicu-dev \
+            libssl-dev \
+            libfreetype6-dev \
+            libjpeg62-turbo-dev \
+            libpng-dev \
+            nodejs
 
 RUN usermod -aG sudo www-data && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
