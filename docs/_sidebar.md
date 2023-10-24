@@ -7,6 +7,7 @@
   - [Introduction](/themes/introduction)
     - [theme.json](/themes/json)
     - [HookFile](/themes/hook)
+    - [Links](/themes/links)
 - **Components**
   - [Storage](/components/storage)
   - [CLI](/components/cli)
