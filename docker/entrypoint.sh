@@ -14,10 +14,6 @@ if [ -z "$DEFAULT_LOCALE" ]; then
   exit 1
 fi
 
-sudo rm -Rf /tmp/crisp-cache
-mkdir /tmp/crisp-cache
-sudo chown www-data:www-data -R /tmp/crisp-cache
-
 sudo sed -i -e "s/# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
 sudo dpkg-reconfigure --frontend=noninteractive locales
 sudo update-locale LANG="$LANG"
@@ -30,7 +26,7 @@ touch .env
 if [[ -z "${ASSETS_S3_BUCKET}" ]]; then
   echo "Not deploying to S3"
 else
-  crisp-cli assets --deploy-to-s3
+  crisp assets --deploy-to-s3
 fi
 
 if [[ -z "${MAXMIND_LICENSE}" || -z "${MAXMIND_ACCOUNT_ID}" || -z "${MAXMIND_EDITION_IDS}" ]]; then
@@ -44,16 +40,16 @@ else
   sudo geoipupdate
 fi
 
-crisp-cli crisp --migrate
-crisp-cli theme --uninstall
-crisp-cli theme --install
-crisp-cli theme --clear-cache
-crisp-cli theme --migrate
-crisp-cli theme --boot
+crisp crisp --migrate
+crisp theme --uninstall
+crisp theme --install
+crisp theme --clear-cache
+crisp theme --migrate
+crisp theme --boot
 
 cd / || exit 1
 
 php-fpm -F -R -D || exit 1
-crisp-cli crisp -p
+crisp crisp -p
 
 sudo nginx -c /etc/nginx/nginx.conf -g "daemon off;"
