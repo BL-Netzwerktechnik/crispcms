@@ -2,6 +2,24 @@
 
 Crisp utilizes the Twig template engine to render its content with custom filters and functions.
 
+The relationship between twig and crisp is best explained in the following graph
+
+```mermaid
+graph LR
+
+subgraph Web Request
+  A[HTTP Request] -->|Received by| B[Nginx]
+end
+
+subgraph Server Logic
+  B -->|Processes Request and| C[Interacts with CrispCMS]
+end
+
+subgraph Twig
+  C -->|Generates Response using| D[Templates]
+end
+
+```
 
 ### Globals
 

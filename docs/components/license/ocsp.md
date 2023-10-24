@@ -2,6 +2,34 @@
 
 With OCSP you can validate a license against a Responder
 
+```mermaid
+graph TD
+    subgraph OCSP System
+      subgraph OCSP Checks
+        2xx[2xx]
+        4xx[4xx]
+        5xx[5xx]
+      end
+
+      GET(Crisp GET Request)
+
+      subgraph OCSP Responder
+        2xx -->|Success, license is valid| Response
+        4xx -->|Failure, License is revoked| Response
+        5xx -->|Server Errors, will retry 3 times before revoking license| Response
+      end
+    end
+
+    GET -->|Contacts OCSP Server and receives| Response
+
+
+  style GET fill:#7D85B1,stroke:#333,stroke-width:2px
+  style 2xx fill:#86B342,stroke:#333,stroke-width:2px
+  style 4xx fill:#FF5E5E,stroke:#333,stroke-width:2px
+  style 5xx fill:#FFA500,stroke:#333,stroke-width:2px
+  style Response fill:#7D85B1,stroke:#333,stroke-width:2px
+```
+
 
 The OCSP property exposes two variables
 
