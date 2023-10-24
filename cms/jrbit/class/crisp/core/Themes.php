@@ -139,7 +139,10 @@ class Themes
         $TwigTheme->addFunction(new TwigFunction('in_array_any', [new Helper(), 'in_array_any']));
 
         /* CSRF Stuff */
-        $TwigTheme->addFunction(new TwigFunction('csrf', [new Security(), 'getCSRF']));
+        $TwigTheme->addFunction(new TwigFunction('csrf', function(){
+            Logger::getLogger(__METHOD__)->warning("TwigFilter csrf is deprecated and will be removed in Crisp 17. Use getCSRF instead");
+            return Security::getCSRF();
+        })); # Deprecated
         $TwigTheme->addFunction(new TwigFunction('getCSRF', [new Security(), 'getCSRF']));
         $TwigTheme->addFunction(new TwigFunction('refreshCSRF', [new Security(), 'regenCSRF']));
         $TwigTheme->addFunction(new TwigFunction('validateCSRF', [new Security(), 'matchCSRF']));
@@ -147,7 +150,10 @@ class Themes
         $TwigTheme->addFunction(new TwigFunction('strtotime', 'strtotime'));
         $TwigTheme->addFunction(new TwigFunction('time', 'time'));
         $TwigTheme->addFunction(new TwigFunction('parseTime', [Carbon::class, 'parse']));
-        $TwigTheme->addFunction(new TwigFunction('render', [Themes::class, 'render']));
+        $TwigTheme->addFunction(new TwigFunction('render', function($template){
+            Logger::getLogger(__METHOD__)->warning("TwigFilter render is deprecated and will be removed in Crisp 17.");
+            return Themes::render($template);
+        })); # Deprecated
 
 
         $Translation = new Translation(Helper::getLocale());
@@ -156,7 +162,10 @@ class Themes
         $TwigTheme->addFilter(new TwigFilter('bcdiv', 'bcdiv'));
         $TwigTheme->addFilter(new TwigFilter('integer', 'intval'));
         $TwigTheme->addFilter(new TwigFilter('double', 'doubleval'));
-        $TwigTheme->addFilter(new TwigFilter('json', 'json_decode'));
+        $TwigTheme->addFilter(new TwigFilter('json', function(...$args){
+            Logger::getLogger(__METHOD__)->warning("TwigFilter json is deprecated and will be removed in Crisp 17. Use json_decode instead");
+            return json_decode(...$args);
+        })); # Deprecated
         $TwigTheme->addFilter(new TwigFilter('json_encode', 'json_encode'));
         $TwigTheme->addFilter(new TwigFilter('json_decode', 'json_decode'));
         $TwigTheme->addFilter(new TwigFilter('base64_encode', 'base64_encode'));
