@@ -58,48 +58,22 @@ RUN echo 'pm.max_children = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
 
 # Install Dependencies
 RUN apt-get update && \
-    apt-get install -y \
-            git \
-            libfreetype6-dev \
-            libjpeg62-turbo-dev \
-            libpng-dev \
-            curl \
-            zip \
-            openssl \
-            libpq-dev \
-            libcurl4-openssl-dev \
-            libsodium-dev \
-            libzip-dev \
-            libicu-dev \
-            libssl-dev \
-            locales \
-            nginx \
-            wget \
-            sudo && \
-            docker-php-ext-configure gd --with-freetype --with-jpeg && \
-            docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
-            docker-php-ext-configure curl && \
-            docker-php-ext-configure sodium && \
-            docker-php-ext-install gd bcmath curl gettext sodium zip pdo pdo_pgsql intl && \
-            docker-php-ext-enable gd bcmath curl gettext sodium zip pdo pdo_pgsql intl && \
-            curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
-            wget 'https://github.com/maxmind/geoipupdate/releases/download/v5.1.1/geoipupdate_5.1.1_linux_amd64.deb' -O /tmp/geoipupdate.deb && \
-            dpkg -i /tmp/geoipupdate.deb && \
-            apt-purge -y libpq-dev \
-            libcurl4-openssl-dev \
-            libsodium-dev \
-            libzip-dev \
-            libicu-dev \
-            libssl-dev \
-            libfreetype6-dev \
-            libjpeg62-turbo-dev \
-            libpng-dev \
-            nodejs && \
-            apt-get autoremove -y && \
-            apt-get clean && \
-            rm -rf /tmp/pear && \
-            rm -rf /var/cache/apt/archives && \
-            rm -rf /var/lib/apt/lists/*
+    apt-get install -y git libfreetype6-dev libjpeg62-turbo-dev libpng-dev curl zip openssl libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev locales nginx wget sudo && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
+    docker-php-ext-configure curl && \
+    docker-php-ext-configure sodium && \
+    docker-php-ext-install gd bcmath curl gettext sodium zip pdo pdo_pgsql intl && \
+    docker-php-ext-enable gd bcmath curl gettext sodium zip pdo pdo_pgsql intl && \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
+    wget 'https://github.com/maxmind/geoipupdate/releases/download/v5.1.1/geoipupdate_5.1.1_linux_amd64.deb' -O /tmp/geoipupdate.deb && \
+    dpkg -i /tmp/geoipupdate.deb && \
+    apt-get purge -y libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /tmp/pear && \
+    rm -rf /var/cache/apt/archives && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN usermod -aG sudo www-data && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
