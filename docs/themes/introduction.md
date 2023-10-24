@@ -4,7 +4,44 @@ Themes are crucial to run CrispCMS
 
 The Structure of a Theme is as follows:
 
-![Structure](_media/ThemeStructure.drawio.svg)
+
+```mermaid
+graph LR
+  BaseFolder(crisptheme/) --> BackendCode("`Backend Code
+  **includes/**`")
+
+  BackendCode --> MyPageController("pages/MyPageController.php")
+  BackendCode --> MyApiEndpointController("api/MyApiEndpointController.php")
+
+  BaseFolder --> ThemeTemplating("`Theme Templating
+  **templates/**`")
+
+  ThemeTemplating --> FrontendCode("`Frontend Code
+  **views/**`")
+
+  FrontendCode --> start.twig
+
+  ThemeTemplating --> BaseTwig("`Example Base File
+  **base.twig**`")
+
+  BaseFolder --> theme.json
+  BaseFolder --> HookFile("ThemeHook.php")
+
+
+  BaseFolder --> Translations("`Theme Translations
+  **translations/**`")
+
+
+  HookFile -->|Defined In| theme.json
+  Translations -->|Defined In| theme.json
+
+  Translations --> en.json
+  Translations --> de.json
+  Translations --> fr.json
+  
+  MyPageController -->|Renders| start.twig
+```
+
 
 | Path                | Description                                         |
 | ------------------- | --------------------------------------------------- |

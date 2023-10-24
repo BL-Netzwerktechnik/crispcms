@@ -2,7 +2,12 @@
 
 CrispCMS supports a license system so you can safely distribute your themes and only let authorized license holders host it.
 
-![Structure](_media/LicenseSystem.drawio.svg)
+```mermaid
+graph LR
+  A((Issuer Private Key)) --> |Derives| C((Issuer Public Key)) 
+  A -->|Signs| B((License Key))
+  C -->|Validates| B
+```
 
 With Crisps License System you have built in checks against:
 

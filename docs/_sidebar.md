@@ -5,6 +5,7 @@
 - **Themes**
   - [Introduction](/themes/introduction)
     - [theme.json](/themes/json)
+    - [HookFile](/themes/hook)
 - **Components**
   - [Storage](/components/storage)
   - [License System](/components/license/introduction)

@@ -6,7 +6,12 @@ Crisps License System is based on the asymmetric cryptography system and consist
 2. The Issuer Public Key (Shipped to your Customer)
 3. The License Key (Shipped to your Customer, signed with your private key)
 
-![Structure](_media/LicenseSystem.drawio.svg)
+```mermaid
+graph LR
+  A((Issuer Private Key)) --> |Derives| C((Issuer Public Key)) 
+  A -->|Signs| B((License Key))
+  C -->|Validates| B
+```
 
 To generate a license you can either:
 
