@@ -5,9 +5,10 @@
 - **Themes**
   - [Introduction](/themes/introduction)
     - [theme.json](/themes/json)
-- **License System**
-  - [Introduction](/license/introduction)
-  - [Generate](/license/generate)
-  - [Renew](/license/renew)
-  - [OCSP](/license/ocsp)
-  - [Ship](/license/ship)
+- **Components**
+  - [Storage](/components/storage)
+  - [License System](/components/license/introduction)
+    - [Generate](/components/license/generate)
+    - [Renew](/components/license/renew)
+    - [OCSP](/components/license/ocsp)
+    - [Ship](/components/license/ship)
