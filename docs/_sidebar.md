@@ -2,6 +2,7 @@
 
 - **Get Started**
   - [Install](/#crispcms-dockerized)
+  - [Changelog](/CHANGELOG)
 - **Themes**
   - [Introduction](/themes/introduction)
     - [theme.json](/themes/json)
