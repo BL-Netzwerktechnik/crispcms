@@ -8,6 +8,7 @@
     - [HookFile](/themes/hook)
 - **Components**
   - [Storage](/components/storage)
+  - [CLI](/components/cli)
   - [License System](/components/license/introduction)
     - [Generate](/components/license/generate)
     - [Renew](/components/license/renew)
