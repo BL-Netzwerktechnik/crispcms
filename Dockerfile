@@ -68,7 +68,6 @@ RUN apt-get update && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
     wget 'https://github.com/maxmind/geoipupdate/releases/download/v5.1.1/geoipupdate_5.1.1_linux_amd64.deb' -O /tmp/geoipupdate.deb && \
     dpkg -i /tmp/geoipupdate.deb && \
-    apt-get purge -y libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /tmp/pear && \
