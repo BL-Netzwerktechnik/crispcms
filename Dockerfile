@@ -51,8 +51,6 @@ WORKDIR "${CRISP_WORKDIR}"
 
 VOLUME /data
 
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
-
 RUN echo 'pm.max_children = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     echo 'pm.start_servers = 50' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     echo 'pm.min_spare_servers = 50' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
@@ -75,7 +73,6 @@ RUN apt-get update && \
             libicu-dev \
             libssl-dev \
             locales \
-            nodejs \
             nginx \
             wget \
             sudo && \
