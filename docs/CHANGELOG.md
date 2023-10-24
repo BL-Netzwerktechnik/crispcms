@@ -11,6 +11,8 @@
 - [FEAT] - Add more License Options to CLI
 - [FEAT] - Add `--no-formatting option` to CLI
 - [FEAT] - Removed `VERBOSITY` env and added `LOG_LEVEL`
+- [QOL] - Trace all functions in Crisp now
+- [QOL] - Add FileLogger
 
 ## 16.0.3
 
