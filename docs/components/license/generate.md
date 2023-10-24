@@ -1,10 +1,10 @@
 ## Generate a License
 
-Crisps License System is based on the asymmetric cryptography system and consists of:
+Crisp's License System relies on an asymmetric cryptography system and comprises the following components:
 
-1. The Issuer Private Key (Used on your CrispCMS Instance to generate a License)
-2. The Issuer Public Key (Shipped to your Customer)
-3. The License Key (Shipped to your Customer, signed with your private key)
+- The Issuer Private Key (A) (employed on your CrispCMS Instance to generate a License).
+- The Issuer Public Key (C) (delivered to your customers).
+- The License Key (B) (distributed to your customers, signed with your private key (C)).
 
 ```mermaid
 graph LR
@@ -13,19 +13,20 @@ graph LR
   C -->|Validates| B
 ```
 
-To generate a license you can either:
+To generate a license, you have two options:
 
-1. Use CrispCMS built in License Generator
-2. Built your own License Generator using a theme
+1. Utilize CrispCMS's built-in License Generator.
+2. Create your own License Generator using a theme.
 
 
 ## Built in License Generator
 
 ![Generate License](_media/lic2.png)
 
-The built in license generator can be accessed using the magic url `_license` e.g. `https://example.com/_license`
+The built-in license generator can be accessed via the magic URL `_license`, for example, `https://example.com/_license`
 
-The following properties are available in a license:
+The generated license includes the following properties:
+
 
 | Field Name              | Description                                                      |
 | ----------------------- | ---------------------------------------------------------------- |
@@ -44,7 +45,7 @@ After hitting `Generate` Crisp downloads an `issuer.pub` and `license.key`, ship
 
 ## Programmatically
 
-You can generate a license in your own theme as well just make sure crisp knows of the issuer key
+Upon clicking Generate, Crisp generates and downloads two files, `issuer.pub` and `license.key`, both of which should be shipped to your customer."
 
 ```php
 $license = new \crisp\api\License(

@@ -1,6 +1,6 @@
 # License System
 
-CrispCMS supports a license system so you can safely distribute your themes and only let authorized license holders host it.
+CrispCMS offers a robust license system, allowing you to securely distribute your themes and restrict hosting access to authorized license holders.
 
 ```mermaid
 graph LR
@@ -9,11 +9,11 @@ graph LR
   C -->|Validates| B
 ```
 
-With Crisps License System you have built in checks against:
+With Crisp's License System, you benefit from built-in safeguards against the following:
 
-1. Domains - Only allow specific domains to host your Theme in
-2. Expiry - Expire the license after a specific date
-3. OCSP - Crisp incorporates its own Online Certificate Status Protocol so you can remotely block licenses
-4. Instance ID - Lock your theme to a specific Crisp Instance.
+- Domains: Restrict theme hosting to specific domains.
+- Expiry: Automatically expire licenses on a specified date.
+- OCSP: Utilize Crisp's integrated Online Certificate Status Protocol to remotely block licenses.
+- Instance ID: Securely bind your theme to a specific Crisp Instance.
 
 ![Generate License](_media/lic2.png)
