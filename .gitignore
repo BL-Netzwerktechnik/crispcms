@@ -14,3 +14,4 @@ docker/docker-compose.override.yml
 docker/docker-compose.yml
 theme
 data
+.php-cs-fixer.cache
