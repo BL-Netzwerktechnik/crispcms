@@ -37,11 +37,17 @@ class Build
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
         return sprintf(
-            "crisp@%s-%s.%s",
+            "%s-%s.%s",
             $_ENV["GIT_TAG"],
             Build::getBuildType(),
             $_ENV['CI_BUILD'] ?? 0
         );
+    }
+
+    public static function getVersion(): string
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        return $_ENV["GIT_TAG"] ?? "0.0.0";
     }
 
     /**
@@ -53,9 +59,9 @@ class Build
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
-        if (str_contains(strtolower($_ENV['GIT_TAG']), "rc.")) {
+        if (str_contains(strtolower(self::getVersion()), "rc.")) {
             $BuildType = 2;
-        } elseif (isset($_ENV['GIT_TAG']) && preg_match('/^\d+\.\d+\.\d+$/', $_ENV['GIT_TAG'])) {
+        } elseif (self::getVersion() !== "0.0.0" && preg_match('/^\d+\.\d+\.\d+$/', self::getVersion())) {
             $BuildType = 1;
         }else{
             $BuildType = 0;

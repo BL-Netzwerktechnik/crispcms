@@ -117,21 +117,15 @@ class Themes
         $TwigTheme->addGlobal('isMobile', Helper::isMobile());
         $TwigTheme->addGlobal('URL', Helper::currentURL());
         $TwigTheme->addGlobal('CLUSTER', gethostname());
-        $TwigTheme->addGlobal('CRISP_VERSION', core::CRISP_VERSION);
-        $TwigTheme->addGlobal('API_VERSION', core::API_VERSION);
         $TwigTheme->addGlobal('VM_IP', VM_IP);
         $TwigTheme->addGlobal('REQUEST_ID', REQUEST_ID);
-        $TwigTheme->addGlobal('RELEASE_NAME', core::RELEASE_NAME);
-        $TwigTheme->addGlobal('RELEASE_ICON', RELEASE_ICON);
-        $TwigTheme->addGlobal('RELEASE_ART', RELEASE_ART);
-        $TwigTheme->addGlobal('CRISP_ICON', CRISP_ICON);
 
         $TwigTheme->addFunction(new TwigFunction('prettyDump', [new Helper(), 'prettyDump']));
         $TwigTheme->addExtension(new StringLoaderExtension());
 
 
 
-        $TwigTheme->addGlobal('VERSION_STRING', "{{ SERVER.ENVIRONMENT |upper }} | Theme@{{ ENV.THEME_GIT_COMMIT }} | CIP: {{ VM_IP }}@{{ CLUSTER }} | CV: {{ CRISP_VERSION }}@{{ ENV.GIT_COMMIT }} | AV: {{ API_VERSION }}@{{ ENV.GIT_COMMIT }} | RID: {{ REQUEST_ID }}");
+        $TwigTheme->addGlobal('VERSION_STRING', "{{ SERVER.ENVIRONMENT |upper }} | Theme@{{ ENV.THEME_GIT_COMMIT }} | CIP: {{ VM_IP }}@{{ CLUSTER }} | CV: {{ ENV.GIT_TAG }} | RID: {{ REQUEST_ID }}");
 
         $TwigTheme->addFunction(new TwigFunction('microtime', 'microtime'));
         $TwigTheme->addFunction(new TwigFunction('includeResource', [new Themes(), 'includeResource']));

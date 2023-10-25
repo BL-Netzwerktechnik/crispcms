@@ -50,21 +50,6 @@ class core
     /* Some important constants */
 
     /**
-     * The current version of crispCMS
-     */
-    public const CRISP_VERSION = '16.1.2';
-
-    /**
-     * The current version of the API
-     */
-    public const API_VERSION = '5.0.0';
-
-    /**
-     * The codename of the current release
-     */
-    public const RELEASE_NAME = "Bitterlemon";
-
-    /**
      * Location of the Persistent Storage
      */
     public const PERSISTENT_DATA = "/data";
@@ -165,17 +150,10 @@ try {
     }
 
     define('VM_IP', exec('hostname -I'));
-    define('RELEASE_ICON', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".svg"));
-    define('CRISP_ICON', file_get_contents(__DIR__ . '/../themes/basic/crisp.svg'));
-    define('RELEASE_ART', file_get_contents(__DIR__ . '/../themes/basic/releases/' . strtolower(core::RELEASE_NAME) . ".art"));
 
     header('X-Request-ID: ' . REQUEST_ID);
 
-    if (!$_ENV['DONT_EXPOSE_CRISP']) {
-        header("x-powered-by: CrispCMS/" . core::CRISP_VERSION);
-    }
-
-    setlocale(LC_TIME, $_ENV["LANG"] ?? 'de_DE.utf8');
+    setlocale(LC_TIME, $_ENV["LANG"] ?? 'en_US.utf8');
     if (PHP_SAPI !== 'cli') {
 
         $GLOBALS['plugins'] = [];
@@ -194,12 +172,8 @@ try {
         $CurrentTheme = core::DEFAULT_THEME;
         Themes::autoload();
 
-
         api\Helper::setLocale();
         $Locale = Helper::getLocale();
-
-        header("X-CMS-Locale: $Locale");
-        header('X-CMS-Version: ' . core::CRISP_VERSION);
 
         if (!isset($_COOKIE['guid'])) {
             $GLOBALS['guid'] = Crypto::UUIDv4();
@@ -287,7 +261,7 @@ try {
 
     header("X-Sentry-ID: " . SentrySdk::getCurrentHub()->getLastEventId());
 
-    error_log($ex->__toString());
+    Logger::getLogger(__METHOD__)->critical($ex->__toString(), (array) $ex);
 
     echo strtr($errorraw, ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId(), "{{ SENTRY_JS_DSN }}" => $_ENV["SENTRY_JS_DSN"]]);
     exit;

@@ -37,14 +37,8 @@ end
 | isMobile       | If the useragent of the current user is a mobile device |
 | URL            | Current Url                                             |
 | CLUSTER        | Current Hostname(s)                                     |
-| CRISP_VERSION  | Version constant of Crisp                               |
-| API_VERSION    | API Version constant                                    |
 | VM_IP          | IP Adress(es) of container                              |
 | REQUEST_ID     | UUID of current request                                 |
-| RELEASE_NAME   | Crisp Version Release Name                              |
-| RELEASE_ICON   | Deprecated                                              |
-| RELEASE_ART    | Deprecated                                              |
-| CRISP_ICON     | Deprecated                                              |
 | VERSION_STRING | Pretty Debug Version String                             |
 
 

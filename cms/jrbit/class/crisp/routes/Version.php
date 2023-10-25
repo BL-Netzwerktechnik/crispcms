@@ -56,12 +56,6 @@ class Version  {
         }
 
         RESTfulAPI::response(Bitmask::REQUEST_SUCCESS->value, "This site is running CrispCMS!", [
-            "version" => [
-                "crisp" => core::CRISP_VERSION,
-                "api" => core::API_VERSION,
-                "release" => core::RELEASE_NAME,
-                "theme" => $_ENV["GIT_TAG"] ?? $_ENV["GIT_COMMIT"]
-            ],
             "release" => Build::getReleaseString(),
             "environment" => ENVIRONMENT,
             "build" => Build::getBuildType(),
