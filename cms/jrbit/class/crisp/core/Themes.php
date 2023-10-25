@@ -135,11 +135,6 @@ class Themes
         $TwigTheme->addFunction(new TwigFunction('in_array_any', [new Helper(), 'in_array_any']));
 
         /* CSRF Stuff */
-        /** @deprecated 17.0.0 */
-        $TwigTheme->addFunction(new TwigFunction('csrf', function(){
-            Logger::getLogger(__METHOD__)->warning("[DEPRECATED] TwigFilter csrf is deprecated and will be removed in Crisp 17. Use getCSRF instead");
-            return Security::getCSRF();
-        })); # Deprecated
         $TwigTheme->addFunction(new TwigFunction('getCSRF', [new Security(), 'getCSRF']));
         $TwigTheme->addFunction(new TwigFunction('refreshCSRF', [new Security(), 'regenCSRF']));
         $TwigTheme->addFunction(new TwigFunction('validateCSRF', [new Security(), 'matchCSRF']));
@@ -148,11 +143,6 @@ class Themes
         $TwigTheme->addFunction(new TwigFunction('time', 'time'));
         $TwigTheme->addFunction(new TwigFunction('parseTime', [Carbon::class, 'parse']));
 
-        /** @deprecated 17.0.0 */
-        $TwigTheme->addFunction(new TwigFunction('render', function($template){
-            Logger::getLogger(__METHOD__)->warning("[DEPRECATED] TwigFilter render is deprecated and will be removed in Crisp 17.");
-            return Themes::render($template);
-        })); # Deprecated
 
 
         $Translation = new Translation(Helper::getLocale());
@@ -162,11 +152,6 @@ class Themes
         $TwigTheme->addFilter(new TwigFilter('integer', 'intval'));
         $TwigTheme->addFilter(new TwigFilter('double', 'doubleval'));
 
-        /** @deprecated 17.0.0 */
-        $TwigTheme->addFilter(new TwigFilter('json', function(...$args){
-            Logger::getLogger(__METHOD__)->warning("[DEPRECATED] TwigFilter json is deprecated and will be removed in Crisp 17. Use json_decode instead");
-            return json_decode(...$args);
-        })); # Deprecated
         
         $TwigTheme->addFilter(new TwigFilter('json_encode', 'json_encode'));
         $TwigTheme->addFilter(new TwigFilter('json_decode', 'json_decode'));

@@ -1,5 +1,15 @@
 # CrispCMS Changelog
 
+## 17.0.0
+
+- [BREAKING] - Remove `CRISP_VERSION`, `API_VERSION`, `RELEASE_NAME`, `RELEASE_ICON`, `RELEASE_ART`
+- [FEAT] - Add `Build` Class for Version related Functions
+- [BREAKING] - Delete `csrf` Twig Filter
+- [BREAKING] - Delete `render` Twig Filter
+- [BREAKING] - Delete `json` Twig Filter
+- [BREAKING] - Delete `APIKey` Class
+- [BREAKING] - Delete `LogTypes` Class
+
 ## 16.1.2
 
 - [QOL] Bump Version to 16.1.2
