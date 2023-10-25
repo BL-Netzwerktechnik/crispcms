@@ -62,12 +62,15 @@ migrate-and-test:
   - mv themes/basic themes/crisptheme
   - php bin/cli.php theme -i
   - rm /tmp/ci/composer
+  - git describe --tags --always > /tmp/git_tag || true
   - php vendor/bin/php-cs-fixer fix --config=../.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > ../php-cs-fixer.json || true
   rules:
     - if: $CI_COMMIT_BRANCH
   artifacts:
       reports:
         codequality: php-cs-fixer.json
+      paths:
+        - /tmp/git_tag
 
 
 nightly:
@@ -76,6 +79,8 @@ nightly:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  dependencies:
+    - migrate-and-test
   script:
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}:nightly" 
@@ -92,6 +97,8 @@ nightly:license:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  dependencies:
+    - migrate-and-test
   script:
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:nightly" 
@@ -108,11 +115,13 @@ stable:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  dependencies:
+    - migrate-and-test
   script:
   - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
   - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
   - export TAG_PATCH=$(echo $CI_COMMIT_TAG | cut -d. -f3)
-  - export GENERATED_TAG=$(git describe --tags --always)
+  - export GENERATED_TAG=$(</tmp/git_tag)
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}"
     --destination "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}.${TAG_MINOR}"
@@ -131,11 +140,13 @@ stable:license:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  dependencies:
+    - migrate-and-test
   script:
   - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
   - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
   - export TAG_PATCH=$(echo $CI_COMMIT_TAG | cut -d. -f3)
-  - export GENERATED_TAG=$(git describe --tags --always)
+  - export GENERATED_TAG=$(</tmp/git_tag)
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${TAG_MAJOR}"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${TAG_MAJOR}.${TAG_MINOR}"
@@ -154,8 +165,10 @@ release-candidate:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  dependencies:
+    - migrate-and-test
   script:
-  - export GENERATED_TAG=$(git describe --tags --always)
+  - export GENERATED_TAG=$(</tmp/git_tag)
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}:${GENERATED_TAG}"
     --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
@@ -171,8 +184,10 @@ release-candidate:license:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  dependencies:
+    - migrate-and-test
   script:
-  - export GENERATED_TAG=$(git describe --tags --always)
+  - export GENERATED_TAG=$(</tmp/git_tag)
 
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${GENERATED_TAG}"
