@@ -1,0 +1,6 @@
+{
+    "php-cs-fixer.configFile": "/workspace/core/.php-cs-fixer.dist.php",
+    "php-cs-fixer.executable": "/workspace/core/cms/vendor/bin/php-cs-fixer",
+    "php-cs-fixer.executablePath": "/workspace/core/cms/vendor/bin/php-cs-fixer",
+    "php-cs-fixer.lastDownload": 0
+}

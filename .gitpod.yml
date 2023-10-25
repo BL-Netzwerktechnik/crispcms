@@ -32,6 +32,7 @@ ports:
     description: Database Manager
     port: 8080
     onOpen: notify
+    
 tasks:
 
   - command: gp preview $(gp url 80)/_debug
@@ -59,3 +60,4 @@ vscode:
     - caponetto.vscode-diff-viewer
     - 42Crunch.vscode-openapi
     - mjmlio.vscode-mjml
+    - higoka.php-cs-fixer
