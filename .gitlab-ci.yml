@@ -64,8 +64,6 @@ migrate-and-test:
   - rm /tmp/ci/composer
   rules:
     - if: $CI_COMMIT_BRANCH
-      changes:
-        - cms/*
 
 nightly:
   stage: publish
