@@ -79,9 +79,13 @@ nightly:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  needs:
+    - migrate-and-test
   dependencies:
     - migrate-and-test
   script:
+  - export GENERATED_TAG=$(<GIT_TAG)
+  - echo Building Image for Tag $GENERATED_TAG
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}:nightly" 
     --destination "${CI_REGISTRY_IMAGE}:latest"
@@ -97,9 +101,13 @@ nightly:license:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  needs:
+    - migrate-and-test
   dependencies:
     - migrate-and-test
   script:
+  - export GENERATED_TAG=$(<GIT_TAG)
+  - echo Building Image for Tag $GENERATED_TAG
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:nightly" 
     --destination "${CI_REGISTRY_IMAGE}/licensed:latest"
@@ -115,6 +123,8 @@ stable:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  needs:
+    - migrate-and-test
   dependencies:
     - migrate-and-test
   script:
@@ -140,6 +150,8 @@ stable:license:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  needs:
+    - migrate-and-test
   dependencies:
     - migrate-and-test
   script:
@@ -165,6 +177,8 @@ release-candidate:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  needs:
+    - migrate-and-test
   dependencies:
     - migrate-and-test
   script:
@@ -184,6 +198,8 @@ release-candidate:license:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
+  needs:
+    - migrate-and-test
   dependencies:
     - migrate-and-test
   script:
@@ -204,6 +220,7 @@ release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
+    - migrate-and-test
     - stable
     - stable:license
   script:
