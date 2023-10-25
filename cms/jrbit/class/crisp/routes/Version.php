@@ -21,33 +21,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\routes;
 
-use crisp\api\Cache;
-use crisp\core;
 use crisp\core\Bitmask;
 use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
 use crisp\api\Build;
-use crisp\models\ThemeAPI;
-use finfo;
-use Twig\Environment;
 
 /**
- * Used internally, theme loader
- *
+ * Used internally, theme loader.
  */
-class Version  {
-
-
+class Version
+{
     public function preRender(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
         $license = null;
 
-        if(\crisp\api\License::isLicenseAvailable()){
+        if (\crisp\api\License::isLicenseAvailable()) {
             $licobj = \crisp\api\License::fromDB();
             $license = json_decode($licobj->encode(), true);
 
@@ -59,10 +51,9 @@ class Version  {
             "release" => Build::getReleaseString(),
             "environment" => ENVIRONMENT,
             "build" => Build::getBuildType(),
-            "installed_license" => $license
+            "installed_license" => $license,
         ]);
         exit;
-
 
     }
 }

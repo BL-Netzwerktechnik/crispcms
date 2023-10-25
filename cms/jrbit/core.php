@@ -23,25 +23,27 @@
 
 namespace crisp;
 
-use Carbon\Carbon;
-use CompileError;
-use crisp\api\{Build, Config, GeoIP, Helper, lists\Languages, Translation};
-use crisp\core\{Bitmask, Crypto, HookFile, RESTfulAPI, Security, Sessions, Themes, License, Logger, Router, ThemeVariables};
+use crisp\api\Build;
+use crisp\api\Helper;
+use crisp\core\Bitmask;
+use crisp\core\Crypto;
+use crisp\core\HookFile;
+use crisp\core\RESTfulAPI;
+use crisp\core\Sessions;
+use crisp\core\Themes;
+use crisp\core\Logger;
+use crisp\core\Router;
+use crisp\core\ThemeVariables;
 use Dotenv\Dotenv;
-use Error;
-use Exception;
-use ParseError;
 use Sentry\SentrySdk;
 use Sentry\State\Scope;
-use Throwable;
-use Twig\{Environment, Extension\StringLoaderExtension, Loader\FilesystemLoader, TwigFilter, TwigFunction};
-use TypeError;
+use Twig\Loader\FilesystemLoader;
 use function Sentry\captureException;
 use function Sentry\configureScope;
 use function Sentry\init;
 
 /**
- * Core class, nothing else
+ * Core class, nothing else.
  *
  * @author Justin Back <j.back@jrbit.de>
  */
@@ -50,23 +52,22 @@ class core
     /* Some important constants */
 
     /**
-     * Location of the Persistent Storage
+     * Location of the Persistent Storage.
      */
     public const PERSISTENT_DATA = "/data";
 
-
     /**
-     * Default Theme
+     * Default Theme.
      */
     public const DEFAULT_THEME = "crisptheme";
 
     /**
-     * Default Cache Location
+     * Default Cache Location.
      */
     public const CACHE_DIR = '/tmp/crisp-cache';
 
     /**
-     * Default Theme Root Folder
+     * Default Theme Root Folder.
      */
     public const THEME_BASE_DIR = __DIR__ . '/../themes';
 
@@ -74,11 +75,16 @@ class core
 }
 require_once __DIR__ . '/../vendor/autoload.php';
 
-
 try {
-    if (!defined('STDIN'))  define('STDIN',  fopen('php://stdin',  'rb'));
-    if (!defined('STDOUT')) define('STDOUT', fopen('php://stdout', 'wb'));
-    if (!defined('STDERR')) define('STDERR', fopen('php://stderr', 'wb'));
+    if (!defined('STDIN')) {
+        define('STDIN', fopen('php://stdin', 'rb'));
+    }
+    if (!defined('STDOUT')) {
+        define('STDOUT', fopen('php://stdout', 'wb'));
+    }
+    if (!defined('STDERR')) {
+        define('STDERR', fopen('php://stderr', 'wb'));
+    }
     define('IS_DEV_ENV', (isset($_SERVER['ENVIRONMENT']) && $_SERVER['ENVIRONMENT'] !== 'production'));
     define('ENVIRONMENT', match (strtolower($_SERVER['ENVIRONMENT'] ?? 'production')) {
         'staging' => 'staging',
@@ -89,9 +95,6 @@ try {
     if (!file_exists(core::PERSISTENT_DATA)) {
         Helper::createDir(core::PERSISTENT_DATA);
     }
-
-
-
 
     define("ThemeMetadata", Themes::getThemeMetadata());
 
@@ -117,19 +120,13 @@ try {
 
     $GLOBALS['dotenv'] = $dotenv;
 
-
     define('CRISP_HOOKED', true);
-    /** Core headers, can be accessed anywhere */
-    /** After autoloading we include additional headers below */
-
-
+    /* Core headers, can be accessed anywhere */
+    /* After autoloading we include additional headers below */
 
     define('IS_API_ENDPOINT', (PHP_SAPI !== 'cli' && isset($_SERVER['IS_API_ENDPOINT'])));
     define('IS_NATIVE_API', isset($_SERVER['IS_API_ENDPOINT']));
     define('REQUEST_ID', Crypto::UUIDv4("R"));
-
-
-
 
     if (PHP_SAPI !== 'cli') {
         Logger::getLogger(__METHOD__)->info(Helper::getRequestLog());
@@ -168,7 +165,6 @@ try {
         */
         session_start();
 
-
         $CurrentTheme = core::DEFAULT_THEME;
         Themes::autoload();
 
@@ -192,8 +188,6 @@ try {
             Themes::initRenderer();
         }
 
-
-
         ThemeVariables::register($TwigTheme);
         Router::register();
         HookFile::setup();
@@ -203,19 +197,13 @@ try {
         if ($_ENV['REQUIRE_LICENSE'] && !IS_SPECIAL_PAGE) {
             $GLOBALS["license"] = api\License::fromDB();
 
-
             if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()) {
                 header("Location: _license#renew");
                 exit;
             }
         }
 
-
-
         /* Twig Globals */
-
-
-
 
         if (IS_API_ENDPOINT) {
 
@@ -234,7 +222,7 @@ try {
 
         Themes::load();
     }
-} catch (TypeError | Exception | Error | CompileError | ParseError | Throwable $ex) {
+} catch (\TypeError | \Exception | \Error | \CompileError | \ParseError | \Throwable $ex) {
     captureException($ex);
     if (PHP_SAPI === 'cli') {
         var_dump($ex);
@@ -252,7 +240,6 @@ try {
     if (IS_DEV_ENV) {
         $refid = $ex->__toString();
     }
-
 
     if (IS_API_ENDPOINT) {
         RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);

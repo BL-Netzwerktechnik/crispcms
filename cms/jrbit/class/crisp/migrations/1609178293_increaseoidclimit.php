@@ -21,25 +21,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\migrations;
 
 use crisp\core\Logger;
 
-class increaseoidclimit extends \crisp\core\Migrations {
-
-    public function run() {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+class increaseoidclimit extends \crisp\core\Migrations
+{
+    public function run()
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         try {
             $this->begin();
             $this->Database->exec('ALTER TABLE sessions
     ALTER COLUMN oidc_token TYPE character varying(5000);');
+
             return $this->end();
         } catch (\Exception $ex) {
             echo $ex->getMessage() . PHP_EOL;
             $this->rollback();
+
             return false;
         }
     }
-
 }

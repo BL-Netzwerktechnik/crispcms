@@ -26,19 +26,17 @@ namespace crisp\api;
 use crisp\core\Logger;
 
 /**
- * Build related functions
+ * Build related functions.
  */
 class Build
 {
-
-
     public static function getReleaseString(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
         return sprintf(
-            "%s-%s.%s",
-            $_ENV["GIT_TAG"],
+            '%s-%s.%s',
+            $_ENV['GIT_TAG'],
             Build::getBuildType(),
             $_ENV['CI_BUILD'] ?? 0
         );
@@ -46,31 +44,32 @@ class Build
 
     public static function getVersion(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
-        return $_ENV["GIT_TAG"] ?? "0.0.0";
+        Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
+        return $_ENV['GIT_TAG'] ?? '0.0.0';
     }
 
     /**
-     * Get current build type
+     * Get current build type.
      *
      * @return string
      */
     public static function getBuildType(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
-        if (str_contains(strtolower(self::getVersion()), "rc.")) {
+        if (str_contains(strtolower(self::getVersion()), 'rc.')) {
             $BuildType = 2;
-        } elseif (self::getVersion() !== "0.0.0" && preg_match('/^\d+\.\d+\.\d+$/', self::getVersion())) {
+        } elseif (self::getVersion() !== '0.0.0' && preg_match('/^\d+\.\d+\.\d+$/', self::getVersion())) {
             $BuildType = 1;
-        }else{
+        } else {
             $BuildType = 0;
         }
 
         return match ($BuildType) {
-            1 => "Stable",
-            2 => "Pre-Release",
-            default => "Nightly"
+            1 => 'Stable',
+            2 => 'Pre-Release',
+            default => 'Nightly'
         };
     }
 }

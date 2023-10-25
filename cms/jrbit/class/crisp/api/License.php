@@ -21,21 +21,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\api;
 
-use crisp\core;
-use crisp\core\LogTypes;
-use crisp\core\Postgres;
-use PDO;
-use function serialize;
-use function unserialize;
-use crisp\core\Bitmask;
 use crisp\core\Logger;
-use crisp\core\RESTfulAPI;
 
 /**
- * Interact with the key/value storage of the server
+ * Interact with the key/value storage of the server.
  */
 class License
 {
@@ -43,59 +34,69 @@ class License
     public const GEN_VERSION = 3;
 
     public function __construct(
-        private readonly int     $version,
+        private readonly int $version,
         private readonly ?string $uuid = null,
         private readonly ?string $whitelabel = null,
-        private readonly array   $domains = [],
+        private readonly array $domains = [],
         private readonly ?string $name = null,
         private readonly ?string $issuer = null,
-        private readonly ?int    $issued_at = null,
-        private readonly ?int    $expires_at = null,
+        private readonly ?int $issued_at = null,
+        private readonly ?int $expires_at = null,
         private readonly ?string $data = null,
         private readonly ?string $instance = null,
         private readonly ?string $ocsp = null,
-        private ?string          $signature = null,
-
-    ){
+        private ?string $signature = null,
+    ) {
 
     }
 
-    public function getTimestampNextOCSP(): int|null {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if(!$this->ocsp) return null;
+    public function getTimestampNextOCSP(): int|null
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (!$this->ocsp) {
+            return null;
+        }
+
         return Cache::getExpiryDate("license_ocsp_response");
     }
 
-    public function getHttpCodeOCSP(): int|null {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if(!$this->ocsp) return null;
-
+    public function getHttpCodeOCSP(): int|null
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (!$this->ocsp) {
+            return null;
+        }
 
         $this->validateOCSP($httpCode);
 
         return $httpCode;
 
     }
-    public function getGraceOCSP(): int|null {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if(!$this->ocsp) return null;
 
+    public function getGraceOCSP(): int|null
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (!$this->ocsp) {
+            return null;
+        }
 
         return Config::get("license_ocsp_response_grace");
 
     }
 
-    public function validateOCSP(&$httpCode = NULL): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public function validateOCSP(&$httpCode = null): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
-        if(!$this->ocsp) return true;
+        if (!$this->ocsp) {
+            return true;
+        }
 
         Config::deleteCache("license_ocsp_response_grace");
 
-
-        if(!Cache::isExpired("license_ocsp_response")){
+        if (!Cache::isExpired("license_ocsp_response")) {
             $httpCode = Cache::get("license_ocsp_response");
-        }else {
+        } else {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, strtr($this->ocsp, ["{{uuid}}" => $this->uuid, "{{instance}}" => $this->instance]));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -106,59 +107,73 @@ class License
                 return false;
             }
 
-            $httpCode = (string)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $httpCode = (string) curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-            if(str_starts_with($httpCode, "5")){
+            if (str_starts_with($httpCode, "5")) {
                 Config::deleteCache("license_ocsp_response_grace");
-                Config::set("license_ocsp_response_grace", (Config::get("license_ocsp_response_grace") ?? 1 ) + 1);
+                Config::set("license_ocsp_response_grace", (Config::get("license_ocsp_response_grace") ?? 1) + 1);
             }
 
             Cache::write("license_ocsp_response", $httpCode, time() + 1800);
             curl_close($ch);
         }
 
-        if(Config::get("license_ocsp_response_grace") >= 3 && str_starts_with($httpCode, "5")){
+        if (Config::get("license_ocsp_response_grace") >= 3 && str_starts_with($httpCode, "5")) {
             $httpCode = Cache::get("license_ocsp_response");
+
             return false;
-        }elseif(str_starts_with($httpCode, "2")) {
+        } elseif (str_starts_with($httpCode, "2")) {
             Config::delete("license_ocsp_response_grace");
+
             return true;
-        }elseif(str_starts_with($httpCode, "5")){
+        } elseif (str_starts_with($httpCode, "5")) {
             return true;
         }
+
         return false;
 
     }
 
-    public static function isLicenseAvailable(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public static function isLicenseAvailable(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return Config::exists("license_key");
     }
 
-    public static function generateIssuer(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        Logger::getLogger(__METHOD__)->info( "Generating Isser Keys...");
-        $private_key = openssl_pkey_new(array('private_key_bits' => 2048));
-        if(Config::set("license_issuer_public_key", openssl_pkey_get_details($private_key)['key']) && openssl_pkey_export($private_key, $pkey) && Config::set("license_issuer_private_key", $pkey)){
+    public static function generateIssuer(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->info("Generating Isser Keys...");
+        $private_key = openssl_pkey_new(['private_key_bits' => 2048]);
+        if (Config::set("license_issuer_public_key", openssl_pkey_get_details($private_key)['key']) && openssl_pkey_export($private_key, $pkey) && Config::set("license_issuer_private_key", $pkey)) {
             return true;
         }
 
         Config::delete("license_issuer_public_key");
         Config::delete("license_issuer_private_key");
+
         return false;
     }
 
-    public static function isIssuerAvailable(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public static function isIssuerAvailable(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return Config::exists("license_issuer_public_key");
     }
-    public static function isIssuerPrivateAvailable(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+
+    public static function isIssuerPrivateAvailable(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return Config::exists("license_issuer_private_key");
     }
 
-    public function isValid(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public function isValid(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return !$this->isExpired()
             && $this->isDomainAllowed($_SERVER["HTTP_HOST"] ?? $_ENV["HOST"])
             && $this->isInstanceAllowed()
@@ -166,59 +181,76 @@ class License
             && $this->verifySignature();
     }
 
-    public function canExpire(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if($this->expires_at === null || $this->expires_at === 0) return false;
+    public function canExpire(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if ($this->expires_at === null || $this->expires_at === 0) {
+            return false;
+        }
 
         return true;
     }
 
-    public function isInstanceAllowed(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if($this->instance === null) return true;
+    public function isInstanceAllowed(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if ($this->instance === null) {
+            return true;
+        }
 
         return Helper::getInstanceId() === $this->instance;
     }
 
-    public function isExpired(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if(!$this->canExpire()) return false;
+    public function isExpired(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (!$this->canExpire()) {
+            return false;
+        }
 
         return $this->expires_at < time();
     }
 
-    public function isDomainAllowed(string $currentDomain): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if(count($this->domains) === 0) return true;
-
-        foreach($this->domains as $allowedDomain){
-            if(fnmatch($allowedDomain, $currentDomain)) return true;
+    public function isDomainAllowed(string $currentDomain): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (count($this->domains) === 0) {
+            return true;
         }
+
+        foreach ($this->domains as $allowedDomain) {
+            if (fnmatch($allowedDomain, $currentDomain)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
-    public function sign(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public function sign(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
         $key = License::getPrivateKey();
 
-        if(!$key){
+        if (!$key) {
             return false;
         }
 
         return openssl_sign($this->encode(), $this->signature, $key);
     }
 
-    public static function fromDB(): License|false {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if(!Config::exists("license_key")){
+    public static function fromDB(): License|false
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (!Config::exists("license_key")) {
             return false;
         }
         $data = Config::get("license_key");
 
         $exploded = explode(".", $data);
 
-        if(count($exploded) !== 2){
+        if (count($exploded) !== 2) {
             return false;
         }
 
@@ -241,8 +273,9 @@ class License
         );
     }
 
-    public function encode(): string {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public function encode(): string
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
         $fields = [
             "version" => $this->version,
@@ -256,41 +289,48 @@ class License
             "data" => $this->data,
         ];
 
-        if($this->version >= 2){
+        if ($this->version >= 2) {
             $fields["instance"] = $this->instance;
         }
-        if($this->version >= 3){
+        if ($this->version >= 3) {
             $fields["ocsp"] = $this->ocsp;
         }
+
         return json_encode($fields);
     }
 
-    public function exportToString(): string {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public function exportToString(): string
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return base64_encode($this->encode()) . "." . base64_encode($this->signature);
     }
 
-    public static function getPublicKey(): \OpenSSLAsymmetricKey|false {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if(!self::isIssuerAvailable()){
+    public static function getPublicKey(): \OpenSSLAsymmetricKey|false
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (!self::isIssuerAvailable()) {
             return false;
         }
+
         return openssl_pkey_get_public(Config::get("license_issuer_public_key"));
     }
 
-
-    public static function getPrivateKey(): \OpenSSLAsymmetricKey|false {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if(!self::isIssuerPrivateAvailable()){
+    public static function getPrivateKey(): \OpenSSLAsymmetricKey|false
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (!self::isIssuerPrivateAvailable()) {
             return false;
         }
+
         return openssl_pkey_get_private(Config::get("license_issuer_private_key"));
     }
 
-    public function verifySignature(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public function verifySignature(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         $publicKey = self::getPublicKey();
-        if(!$publicKey){
+        if (!$publicKey) {
             return false;
         }
 
@@ -302,7 +342,8 @@ class License
      */
     public function getUuid(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->uuid;
     }
 
@@ -311,7 +352,8 @@ class License
      */
     public function getVersion(): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->version;
     }
 
@@ -320,7 +362,8 @@ class License
      */
     public function getWhitelabel(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->whitelabel;
     }
 
@@ -329,7 +372,8 @@ class License
      */
     public function getDomains(): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->domains;
     }
 
@@ -338,7 +382,8 @@ class License
      */
     public function getName(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->name;
     }
 
@@ -347,7 +392,8 @@ class License
      */
     public function getIssuer(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->issuer;
     }
 
@@ -356,7 +402,8 @@ class License
      */
     public function getIssuedAt(): ?int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->issued_at;
     }
 
@@ -365,7 +412,8 @@ class License
      */
     public function getExpiresAt(): ?int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->expires_at;
     }
 
@@ -374,10 +422,11 @@ class License
      */
     public function getData(): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if($this->data === null){
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if ($this->data === null) {
             return [];
         }
+
         return json_decode($this->data, true);
     }
 
@@ -386,7 +435,8 @@ class License
      */
     public function getSignature(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->signature;
     }
 
@@ -395,7 +445,8 @@ class License
      */
     public function getInstance(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->instance;
     }
 
@@ -404,8 +455,8 @@ class License
      */
     public function getOcsp(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->ocsp;
     }
-
 }

@@ -21,41 +21,39 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\migrations;
 
 use crisp\core\Logger;
 
-
-if(!defined('CRISP_HOOKED')){
+if (!defined('CRISP_HOOKED')) {
     echo 'Illegal File access';
     exit;
 }
 
-class createlanguages extends \crisp\core\Migrations {
-
-    public function run() {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+class createlanguages extends \crisp\core\Migrations
+{
+    public function run()
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         try {
             $this->begin();
 
-
-            $this->createTable("Languages",
-                    array("ID", $this::DB_INTEGER, "NOT NULL SERIAL"),
-                    array("Name", $this::DB_VARCHAR, "NOT NULL"),
-                    array("Code", $this::DB_VARCHAR, "NOT NULL"),
-                    array("NativeName", $this::DB_VARCHAR, "NOT NULL"),
-                    array("Flag", $this::DB_VARCHAR, "NOT NULL"),
-                    array("Enabled", $this::DB_BOOL, "NOT NULL DEFAULT 0"),
+            $this->createTable(
+                "Languages",
+                ["ID", $this::DB_INTEGER, "NOT NULL SERIAL"],
+                ["Name", $this::DB_VARCHAR, "NOT NULL"],
+                ["Code", $this::DB_VARCHAR, "NOT NULL"],
+                ["NativeName", $this::DB_VARCHAR, "NOT NULL"],
+                ["Flag", $this::DB_VARCHAR, "NOT NULL"],
+                ["Enabled", $this::DB_BOOL, "NOT NULL DEFAULT 0"],
             );
-
 
             return $this->end();
         } catch (\Exception $ex) {
             echo $ex->getMessage() . PHP_EOL;
             $this->rollback();
+
             return false;
         }
     }
-
 }

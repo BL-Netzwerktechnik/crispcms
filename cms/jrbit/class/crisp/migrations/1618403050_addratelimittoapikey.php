@@ -21,31 +21,34 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\migrations;
 
-use crisp\core\Logger;;
+use crisp\core\Logger;
 
-if(!defined('CRISP_HOOKED')){
+;
+
+if (!defined('CRISP_HOOKED')) {
     echo 'Illegal File access';
     exit;
 }
 
-class addratelimittoapikey extends \crisp\core\Migrations {
-
-    public function run() {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+class addratelimittoapikey extends \crisp\core\Migrations
+{
+    public function run()
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         try {
             $this->begin();
-            $this->addColumn("apikeys", array("ratelimit_second", self::DB_INTEGER, "DEFAULT NULL"));
-            $this->addColumn("apikeys", array("ratelimit_hour", self::DB_INTEGER, "DEFAULT NULL"));
-            $this->addColumn("apikeys", array("ratelimit_day", self::DB_INTEGER, "DEFAULT NULL"));
+            $this->addColumn("apikeys", ["ratelimit_second", self::DB_INTEGER, "DEFAULT NULL"]);
+            $this->addColumn("apikeys", ["ratelimit_hour", self::DB_INTEGER, "DEFAULT NULL"]);
+            $this->addColumn("apikeys", ["ratelimit_day", self::DB_INTEGER, "DEFAULT NULL"]);
+
             return $this->end();
         } catch (\Exception $ex) {
             echo $ex->getMessage() . PHP_EOL;
             $this->rollback();
+
             return false;
         }
     }
-
 }

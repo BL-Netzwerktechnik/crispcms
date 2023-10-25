@@ -23,8 +23,9 @@
 
 namespace crisp\core;
 
-enum Environment: string {
+enum Environment: string
+{
     case DEVELOPMENT = "development";
     case STAGING = "staging";
-    case PRODUCTION = "production";   
+    case PRODUCTION = "production";
 }

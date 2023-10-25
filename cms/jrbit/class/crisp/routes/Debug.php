@@ -21,40 +21,31 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\routes;
 
-use crisp\api\Cache;
 use crisp\core;
-use crisp\core\Bitmask;
 use crisp\core\Logger;
 use crisp\core\Themes;
-use crisp\core\RESTfulAPI;
-use crisp\models\ThemeAPI;
-use finfo;
-use Twig\Environment;
 
 /**
- * Used internally, theme loader
- *
+ * Used internally, theme loader.
  */
-class Debug  {
-
-
+class Debug
+{
     public function preRender(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
-        if(ENVIRONMENT !== 'development'){
+        if (ENVIRONMENT !== 'development') {
             echo file_get_contents(core::THEME_BASE_DIR . "/basic/not_found.html");
             exit;
         }
 
-        if($_SERVER["REQUEST_METHOD"] === "POST"){
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $output = [];
 
-            switch($_POST["action"]){
+            switch ($_POST["action"]) {
                 case "reload_theme":
                     $output = shell_exec("crisp-cli --no-colors theme -u 2>&1 && crisp-cli --no-colors theme -i 2>&1");
                     break;
@@ -92,7 +83,6 @@ class Debug  {
                 case "deleteissuerprivate":
                     $output = shell_exec("crisp-cli --no-colors license --delete-issuer-private 2>&1");
                     break;
-
 
             }
 

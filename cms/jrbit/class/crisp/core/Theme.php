@@ -28,12 +28,10 @@ use crisp\exceptions\BitmaskException;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
-use crisp\routes;
 use Twig\Error\SyntaxError;
 
 /**
- * Used internally, plugin loader
- *
+ * Used internally, plugin loader.
  */
 class Theme
 {
@@ -44,10 +42,11 @@ class Theme
     public string $CurrentPage;
 
     /**
-     * Load a theme page
-     * @param Environment $TwigTheme The twig theme component
-     * @param string $CurrentFile The current file, __FILE__
-     * @param string $CurrentPage The current page template to render
+     * Load a theme page.
+     *
+     * @param  Environment      $TwigTheme   The twig theme component
+     * @param  string           $CurrentFile The current file, __FILE__
+     * @param  string           $CurrentPage The current page template to render
      * @throws BitmaskException
      * @throws LoaderError
      * @throws RuntimeError
@@ -56,10 +55,9 @@ class Theme
      */
     public function __construct(string $CurrentFile, string $CurrentPage, bool $Internal = false)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         $this->CurrentFile = $CurrentFile;
         $this->CurrentPage = $CurrentPage;
-
 
         $HookClass = null;
 
@@ -69,7 +67,6 @@ class Theme
         if ($Internal) {
 
             require __DIR__ . "/../routes/$CurrentPage.php";
-
 
             $Class = "crisp\\routes\\$CurrentPage";
 
@@ -86,18 +83,15 @@ class Theme
             $PageClass->execute($CurrentPage);
         } elseif (Helper::templateExists("/views/$CurrentPage.twig")) {
 
-
             require_once Themes::getThemeDirectory() . "/$_HookFile";
 
             if (class_exists($_HookClass, false)) {
                 $HookClass = new $_HookClass();
             }
-    
+
             if ($HookClass !== null && !method_exists($HookClass, 'preRender')) {
                 throw new \Exception("Failed to load $_HookClass, missing preRender!");
             }
-    
-            
 
             if (file_exists(Themes::getThemeDirectory() . "/includes/$CurrentPage.php")) {
                 require Themes::getThemeDirectory() . "/includes/$CurrentPage.php";
@@ -108,20 +102,14 @@ class Theme
                 $PageClass = new $CurrentPage();
             }
 
-
-
             if ($PageClass !== null && !method_exists($PageClass, 'preRender')) {
                 throw new \Exception("Failed to load $CurrentPage, missing preRender!");
             }
-
 
             Logger::getLogger(__METHOD__)->debug(sprintf("START executing preRender hooks for HookFile"));
             Logger::startTiming($HookClassRenderTime);
             $HookClass->preRender($CurrentPage, $CurrentFile);
             Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing preRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
-
-
-            
 
             Logger::getLogger(__METHOD__)->debug(sprintf("START executing preRender hooks for %s", $CurrentPage));
             Logger::startTiming($PageClassRenderTime);

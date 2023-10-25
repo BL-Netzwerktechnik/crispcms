@@ -21,109 +21,124 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\core;
 
 use crisp\api\Helper;
-use Exception;
 use PDO;
 
 /**
- * Crisp DB Migration Class
+ * Crisp DB Migration Class.
+ *
  * @since 0.0.8-beta.RC1
  */
 class Migrations
 {
 
     /**
-     * The PDO Database
-     * @var PDO
+     * The PDO Database.
+     *
+     * @var \PDO
      */
-    protected PDO $Database;
+    protected \PDO $Database;
 
     /* Data types */
 
-    const DB_VARCHAR = "varchar(255)";
-    const DB_TEXT = "text";
-    const DB_INTEGER = "integer";
-    const DB_TIMESTAMP = "timestamp";
-    const DB_BOOL = "smallint";
-    const DB_LONGTEXT = "text";
-    const DB_BIGINT = "bigint";
+    public const DB_VARCHAR = "varchar(255)";
+    public const DB_TEXT = "text";
+    public const DB_INTEGER = "integer";
+    public const DB_TIMESTAMP = "timestamp";
+    public const DB_BOOL = "smallint";
+    public const DB_LONGTEXT = "text";
+    public const DB_BIGINT = "bigint";
 
     /* Keys */
-    const DB_PRIMARYKEY = "PRIMARY";
-    const DB_UNIQUEKEY = "UNIQUE";
+    public const DB_PRIMARYKEY = "PRIMARY";
+    public const DB_UNIQUEKEY = "UNIQUE";
 
     public function __construct()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         $DB = new Postgres();
         $this->Database = $DB->getDBConnector();
     }
 
     /**
-     * Begin a MySQL Transaction
-     * @return boolean
+     * Begin a MySQL Transaction.
+     *
+     * @return bool
+     *
      * @since 0.0.8-beta.RC2
      */
     protected function begin(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         Logger::getLogger(__METHOD__)->debug("Initiating Transaction...");
         if ($this->Database->beginTransaction()) {
             Logger::getLogger(__METHOD__)->debug("Transaction initiated!");
+
             return true;
         }
         Logger::getLogger(__METHOD__)->error("Failed to initiate transaction!");
+
         return false;
     }
 
     /**
-     * Rollback a MySQL Transaction
-     * @return boolean
+     * Rollback a MySQL Transaction.
+     *
+     * @return bool
+     *
      * @since 0.0.8-beta.RC2
      */
     protected function rollback(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         Logger::getLogger(__METHOD__)->debug("Rolling back transaction...");
         if ($this->Database->rollBack()) {
             Logger::getLogger(__METHOD__)->debug("Rolled back transaction!");
+
             return true;
         }
         Logger::getLogger(__METHOD__)->error("Failed to rollback transaction!");
+
         return false;
     }
 
     /**
-     * End/commit a MySQL Transaction
-     * @return boolean
+     * End/commit a MySQL Transaction.
+     *
+     * @return bool
+     *
      * @since 0.0.8-beta.RC2
      */
     protected function end(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         Logger::getLogger(__METHOD__)->debug("Committing Transaction...");
         if ($this->Database->commit()) {
             Logger::getLogger(__METHOD__)->debug("Transaction committed!");
+
             return true;
         }
         Logger::getLogger(__METHOD__)->error("Failed to commit Transaction!");
+
         return false;
     }
 
     /**
-     * Check if a migration is already installed
+     * Check if a migration is already installed.
+     *
      * @param string $file The migration filename to check. Don't use the extension in the filename.
+     *
      * @see basename
      * @since 0.0.8-beta.RC2
-     * @return boolean
+     *
+     * @return bool
      */
     public function isMigrated(string $file): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if($file === "createmigration"){
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if ($file === "createmigration") {
             return $this->tableExists("schema_migration");
         }
 
@@ -131,9 +146,10 @@ class Migrations
             Logger::getLogger(__METHOD__)->debug("SELECT * FROM schema_migration WHERE file = $file");
             $statement = $this->Database->prepare("SELECT * FROM schema_migration WHERE file =:file");
 
-            $statement->execute(array(":file" => $file));
+            $statement->execute([":file" => $file]);
+
             return $statement->rowCount() > 0;
-        } catch (Exception) {
+        } catch (\Exception) {
             return false;
         }
     }
@@ -141,34 +157,38 @@ class Migrations
     public function tableExists(string $tableName): bool
     {
 
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         try {
             $statement = $this->Database->prepare("SELECT to_regclass(:tableName);");
 
-            $statement->execute(array(":tableName" => $tableName));
+            $statement->execute([":tableName" => $tableName]);
+
             return $statement->rowCount() > 0;
-        } catch (Exception) {
+        } catch (\Exception) {
             return false;
         }
     }
 
     /**
-     * Begin the migration of the database
-     * @param string $Dir The directory base to look for migrations. e.g Setting "plugin" will look in "plugin/migrations"
+     * Begin the migration of the database.
+     *
+     * @param string      $Dir    The directory base to look for migrations. e.g Setting "plugin" will look in "plugin/migrations"
      * @param string|null $Plugin If the migration has been done for a plugin, this is the name
-     * @return void
+     *
      * @since 0.0.8-beta.RC2
      */
     public function migrate(string $Dir = __DIR__ . "/../", ?string $Plugin = null): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         Logger::getLogger(__METHOD__)->info("Starting Database Migration");
-        if(!file_exists($Dir)){
-            Logger::getLogger(__METHOD__)->error(sprintf( 'Directory "%s" does not exist! Cannot perform migrations!', $Dir));
+        if (!file_exists($Dir)) {
+            Logger::getLogger(__METHOD__)->error(sprintf('Directory "%s" does not exist! Cannot perform migrations!', $Dir));
+
             return;
         }
         if (!file_exists("$Dir/migrations/")) {
             Logger::getLogger(__METHOD__)->warning(sprintf('No "migrations" directory existed within "%s", cannot perform migrations!', realpath($Dir)));
+
             return;
         }
         $files = glob("$Dir/migrations/*.{php}", GLOB_BRACE);
@@ -199,7 +219,7 @@ class Migrations
 
                     $statement = $this->Database->prepare("INSERT INTO schema_migration (file, plugin) VALUES (:file, :plugin)");
 
-                    $statement->execute(array(":file" => $MigrationName, ":plugin" => $Plugin));
+                    $statement->execute([":file" => $MigrationName, ":plugin" => $Plugin]);
 
                     Logger::getLogger(__METHOD__)->notice("Successfully Migrated $MigrationName");
                 } else {
@@ -214,23 +234,24 @@ class Migrations
 
     /**
      * Create a new migration file.
-     * @param string $MigrationName The name of the migration, only Alpha Letters.
-     * @param string $Dir The base directory to look for migrations. e.g Setting "plugin" will create one in "plugin/migrations"
-     * @return void
+     *
+     * @param string $MigrationName the name of the migration, only Alpha Letters
+     * @param string $Dir           The base directory to look for migrations. e.g Setting "plugin" will create one in "plugin/migrations"
+     *
      * @since 0.0.8-beta.RC2
      */
     public static function create(string $MigrationName, string $Dir = __DIR__ . "/../"): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
         $MigrationNameFiltered = Helper::filterAlphaNum($MigrationName);
 
         $Template = file_get_contents(__DIR__ . "/../migrations/template.php");
 
-        $Skeleton = strtr($Template, array(
+        $Skeleton = strtr($Template, [
             "MigrationName" => $MigrationNameFiltered,
-            "RUNCODE;" => '$this->createTable("MyTable", array("col1", \crisp\core\Migrations::DB_VARCHAR));'
-        ));
+            "RUNCODE;" => '$this->createTable("MyTable", array("col1", \crisp\core\Migrations::DB_VARCHAR));',
+        ]);
 
         if (!file_exists("$Dir/migrations/")) {
             mkdir("$Dir/migrations/");
@@ -246,18 +267,20 @@ class Migrations
     }
 
     /**
-     * Create a new index for a table
-     * @param string $Table The name of the table
-     * @param string $Column The name of the column
-     * @param string $Type The type of the index
-     * @param string|null $IndexName The name of the index, Unused if PRIMARYKEY
-     * @return boolean
-     * @throws Exception on PDO Error
+     * Create a new index for a table.
+     *
+     * @param  string      $Table     The name of the table
+     * @param  string      $Column    The name of the column
+     * @param  string      $Type      The type of the index
+     * @param  string|null $IndexName The name of the index, Unused if PRIMARYKEY
+     * @return bool
+     * @throws \Exception  on PDO Error
+     *
      * @since 0.0.8-beta.RC2
      */
     protected function addIndex(string $Table, string $Column, string $Type = self::DB_PRIMARYKEY, string $IndexName = null): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         Logger::getLogger(__METHOD__)->debug("Adding index to table $Table...");
         if ($Type == self::DB_PRIMARYKEY) {
             $SQL = "ALTER TABLE $Table ADD $Type KEY ($Column);";
@@ -270,25 +293,28 @@ class Migrations
 
         if ($statement->execute()) {
             Logger::getLogger(__METHOD__)->debug("Added index to table $Table...");
+
             return true;
         }
         Logger::getLogger(__METHOD__)->error("Failed to add index to table $Table...");
         Logger::getLogger(__METHOD__)->error("SQL ERROR", $statement->errorInfo());
+
         return false;
     }
 
-
     /**
-     * Remove a column from a table
-     * @param string $Table The table name
-     * @param string $Column The name of the column
-     * @return boolean
-     * @throws Exception on PDO Error
+     * Remove a column from a table.
+     *
+     * @param  string     $Table  The table name
+     * @param  string     $Column The name of the column
+     * @return bool
+     * @throws \Exception on PDO Error
+     *
      * @since 0.0.8-beta.RC3
      */
     protected function dropColumn(string $Table, string $Column): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         Logger::getLogger(__METHOD__)->debug("Removing column from Table $Table...");
         $SQL = "ALTER TABLE $Table DROP COLUMN $Column";
 
@@ -297,27 +323,29 @@ class Migrations
 
         if ($statement->execute()) {
             Logger::getLogger(__METHOD__)->debug("Removed column from Table $Table...");
+
             return true;
         }
         Logger::getLogger(__METHOD__)->error("Failed to remove Column from table $Table...");
         Logger::getLogger(__METHOD__)->error("SQL ERROR", $statement->errorInfo());
     }
-    
 
     /**
-     * Add a foreign key to a column
-     * @param string $SourceTable The table name to add the foreign key to
-     * @param string $ReferenceTable The Table to source the data from
-     * @param string $SourceColumn The column name to add the foreign key to
-     * @param string $ReferenceColumn The column name to source the data from
-     * @param string $ConstraintName The name of the foreign_key
-     * @return boolean
-     * @throws Exception on PDO Error
+     * Add a foreign key to a column.
+     *
+     * @param  string     $SourceTable     The table name to add the foreign key to
+     * @param  string     $ReferenceTable  The Table to source the data from
+     * @param  string     $SourceColumn    The column name to add the foreign key to
+     * @param  string     $ReferenceColumn The column name to source the data from
+     * @param  string     $ConstraintName  The name of the foreign_key
+     * @return bool
+     * @throws \Exception on PDO Error
+     *
      * @since 11.2.0
      */
-    protected function addForeignKey(string $SourceTable, string $ReferenceTable, string $SourceColumn,  string $ReferenceColumn, string $ConstraintName): bool
+    protected function addForeignKey(string $SourceTable, string $ReferenceTable, string $SourceColumn, string $ReferenceColumn, string $ConstraintName): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         Logger::getLogger(__METHOD__)->debug("Adding foreign key to Table $SourceTable...");
         $SQL = "ALTER TABLE $SourceTable ADD CONSTRAINT fk_$ConstraintName FOREIGN KEY ($SourceColumn) REFERENCES $ReferenceTable ($ReferenceColumn);";
 
@@ -326,6 +354,7 @@ class Migrations
 
         if ($statement->execute()) {
             Logger::getLogger(__METHOD__)->debug("Added foreign key to Table $SourceTable!");
+
             return true;
         }
         Logger::getLogger(__METHOD__)->error("Failed to add Foreign Key to table $SourceTable");
@@ -333,16 +362,18 @@ class Migrations
     }
 
     /**
-     * Add a column to a table
-     * @param string $Table The table name
-     * @param array $Column An array consisting of the column name, column type and additional info, e.g. array("ColName, self::DB_VARCHAR, "NOT NULL")
-     * @return boolean
-     * @throws Exception on PDO Error
+     * Add a column to a table.
+     *
+     * @param  string     $Table  The table name
+     * @param  array      $Column An array consisting of the column name, column type and additional info, e.g. array("ColName, self::DB_VARCHAR, "NOT NULL")
+     * @return bool
+     * @throws \Exception on PDO Error
+     *
      * @since 0.0.8-beta.RC2
      */
     protected function addColumn(string $Table, array $Column): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         Logger::getLogger(__METHOD__)->debug("Adding column to Table $Table...");
         $SQL = "ALTER TABLE $Table ADD COLUMN $Column[0] $Column[1] $Column[2];";
 
@@ -351,6 +382,7 @@ class Migrations
 
         if ($statement->execute()) {
             Logger::getLogger(__METHOD__)->debug("Added column to Table $Table!");
+
             return true;
         }
         Logger::getLogger(__METHOD__)->error("Failed to add Column to table $Table");
@@ -358,16 +390,18 @@ class Migrations
     }
 
     /**
-     * Create a new table. This function accepts infinite parameters to add columns
-     * @param string $Table The table name
-     * @param mixed ...$Columns An array consisting of the column name, column type and additional info, e.g. array("ColName, self::DB_VARCHAR, "NOT NULL")
-     * @return boolean
-     * @throws Exception
+     * Create a new table. This function accepts infinite parameters to add columns.
+     *
+     * @param  string     $Table      The table name
+     * @param  mixed      ...$Columns An array consisting of the column name, column type and additional info, e.g. array("ColName, self::DB_VARCHAR, "NOT NULL")
+     * @return bool
+     * @throws \Exception
+     *
      * @since 0.0.8-beta.RC2
      */
     protected function createTable(string $Table, ...$Columns): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         Logger::getLogger(__METHOD__)->debug("Creating Table $Table...");
         $SQL = "CREATE TABLE IF NOT EXISTS $Table (";
         foreach ($Columns as $Key => $Column) {
@@ -385,16 +419,15 @@ class Migrations
         }
         $SQL .= ");";
 
-
         Logger::getLogger(__METHOD__)->debug($SQL);
         $statement = $this->Database->prepare($SQL);
 
         if ($statement->execute()) {
             Logger::getLogger(__METHOD__)->debug("Created Table $Table!");
+
             return true;
         }
         Logger::getLogger(__METHOD__)->error("Failed to create table $Table");
         Logger::getLogger(__METHOD__)->error("SQL ERROR", $statement->errorInfo());
     }
-
 }

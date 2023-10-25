@@ -21,30 +21,31 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\migrations;
 
 use crisp\core\Logger;
 
-if(!defined('CRISP_HOOKED')){
+if (!defined('CRISP_HOOKED')) {
     echo 'Illegal File access';
     exit;
 }
 
-class installtheme extends \crisp\core\Migrations {
+class installtheme extends \crisp\core\Migrations
+{
+    public function run()
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        try {
+            $this->begin();
+            $this->Database->exec("INSERT INTO Config (key, value) VALUES ('theme_dir', 'themes')");
+            $this->Database->exec("INSERT INTO Config (key, value) VALUES ('plugin_dir', 'plugins')");
 
-  public function run() {
-    Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-    try {
-      $this->begin();
-      $this->Database->exec("INSERT INTO Config (key, value) VALUES ('theme_dir', 'themes')");
-      $this->Database->exec("INSERT INTO Config (key, value) VALUES ('plugin_dir', 'plugins')");
-      return $this->end();
-    } catch (\Exception $ex) {
-      echo $ex->getMessage() . PHP_EOL;
-      $this->rollback();
-      return false;
+            return $this->end();
+        } catch (\Exception $ex) {
+            echo $ex->getMessage() . PHP_EOL;
+            $this->rollback();
+
+            return false;
+        }
     }
-  }
-
 }

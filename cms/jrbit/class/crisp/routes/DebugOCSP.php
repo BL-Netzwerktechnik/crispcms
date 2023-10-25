@@ -21,19 +21,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\routes;
 
 use crisp\core\Logger;
 
-class DebugOCSP  {
-
-
+class DebugOCSP
+{
     public function preRender(): void
     {
 
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        /**
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        /*
          * The OCSP Check expects a 2xx Status Code for a valid License Key
          * HTTP codes other than 2xx will revoke the certificate.
          *
@@ -41,6 +39,6 @@ class DebugOCSP  {
          * The OCSP Property exposes the following two variables to validate against your endpoint with: {{uuid}} for the license id and {{instance}} with the instance id
          */
 
-        #http_response_code(500);
+        # http_response_code(500);
     }
 }

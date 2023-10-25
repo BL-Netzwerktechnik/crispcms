@@ -23,7 +23,8 @@
 
 namespace crisp\core;
 
-enum Bitmask: int {
+enum Bitmask: int
+{
     case NONE = 0x0;
     case RESERVED = 0x1;
     case INTERFACE_NOT_FOUND = 0x2;
@@ -54,5 +55,5 @@ enum Bitmask: int {
     case TWIG_ERROR = 0x4000000;
     case RESERVED_5 = 0x8000000;
     case THEME_MISSING_INCLUDES = 0x10000000;
-    case MISSING_PERMISSIONS = 0x20000000;    
+    case MISSING_PERMISSIONS = 0x20000000;
 }

@@ -23,37 +23,39 @@
 
 namespace crisp\core;
 
-class Crypto {
-
-
-    public static function encrypt($plaintext, $pass, $encoding = null) {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+class Crypto
+{
+    public static function encrypt($plaintext, $pass, $encoding = null)
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         $iv = openssl_random_pseudo_bytes(16, $safe);
 
-        if(!$safe || !$iv){
+        if (!$safe || !$iv) {
             return false;
         }
         $ciphertext = openssl_encrypt($plaintext, 'AES-256-CBC', hash('sha256', $pass, true), OPENSSL_RAW_DATA, $iv);
         $hmac = hash_hmac('sha256', $ciphertext . $iv, hash('sha256', $pass, true), true);
+
         return $encoding === 'hex' ? bin2hex($iv . $hmac . $ciphertext) : ($encoding === 'base64' ? base64_encode($iv . $hmac . $ciphertext) : $iv . $hmac . $ciphertext);
     }
 
-    public static function decrypt($ciphertext, $pass, $encoding = null) {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public static function decrypt($ciphertext, $pass, $encoding = null)
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         $ciphertext = $encoding === 'hex' ? hex2bin($ciphertext) : ($encoding === 'base64' ? base64_decode($ciphertext) : $ciphertext);
         if (!hash_equals(hash_hmac('sha256', substr($ciphertext, 48) . substr($ciphertext, 0, 16), hash('sha256', $pass, true), true), substr($ciphertext, 16, 32))) {
             return false;
         }
+
         return openssl_decrypt(substr($ciphertext, 48), 'AES-256-CBC', hash('sha256', $pass, true), OPENSSL_RAW_DATA, substr($ciphertext, 0, 16));
     }
 
     public static function UUIDv4($Prefix = null, $Bytes = 16): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
         $data = random_bytes($Bytes);
+
         return $Prefix . vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
-
-
 }

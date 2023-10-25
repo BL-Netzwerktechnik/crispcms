@@ -21,35 +21,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
-
 namespace crisp\core;
 
 /**
- * Totally unfinished
+ * Totally unfinished.
  */
-class Security {
-
+class Security
+{
     /**
      * @return string
      */
     public static function getCSRF(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         if (!isset($_SESSION["csrf"])) {
             $_SESSION["csrf"] = bin2hex(openssl_random_pseudo_bytes(16));
         }
+
         return $_SESSION["csrf"];
     }
 
     /**
-     * @param string $Token
+     * @param  string $Token
      * @return bool
      */
     public static function matchCSRF(string $Token): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        return ($_SESSION["csrf"] && $Token);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
+        return $_SESSION["csrf"] && $Token;
     }
 
     /**
@@ -57,9 +57,9 @@ class Security {
      */
     public static function regenCSRF(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         $_SESSION["csrf"] = bin2hex(openssl_random_pseudo_bytes(16));
+
         return $_SESSION["csrf"];
     }
-
 }

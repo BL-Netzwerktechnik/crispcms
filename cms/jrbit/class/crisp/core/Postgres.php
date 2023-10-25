@@ -23,62 +23,63 @@
 
 namespace crisp\core;
 
-use crisp\api\Helper;
 use crisp\exceptions\BitmaskException;
-use Exception;
-use PDO;
 
 /**
  * Interact with the database yourself. Please use this interface only when you REALLY need it for custom tables.
- * We offer a variety of functions to interact with users or the system itself in a safe way :-)
+ * We offer a variety of functions to interact with users or the system itself in a safe way :-).
  */
-class Postgres {
+class Postgres
+{
 
-    private PDO $Database_Connection;
+    private \PDO $Database_Connection;
 
     /**
-     * Constructs the Database_Connection
+     * Constructs the Database_Connection.
+     *
      * @throws BitmaskException
+     *
      * @see getDBConnector
      */
-    public function __construct($EnvKey = 'POSTGRES_URI') {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public function __construct($EnvKey = 'POSTGRES_URI')
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
-        if($GLOBALS["DBConn_$EnvKey"] !== null){
+        if ($GLOBALS["DBConn_$EnvKey"] !== null) {
             $this->Database_Connection = $GLOBALS["DBConn_$EnvKey"];
-        }else{
-
+        } else {
 
             if (isset($_ENV[$EnvKey]) && !empty($_ENV[$EnvKey])) {
                 $db = parse_url($_ENV[$EnvKey]);
             }
 
             try {
-                $pdo = new PDO("pgsql:" . sprintf(
-                                "host=%s;port=%s;user=%s;password=%s;dbname=%s",
-                                $db["host"],
-                                $db["port"],
-                                $db["user"],
-                                $db["pass"],
-                                ltrim($db["path"], "/")
+                $pdo = new \PDO("pgsql:" . sprintf(
+                    "host=%s;port=%s;user=%s;password=%s;dbname=%s",
+                    $db["host"],
+                    $db["port"],
+                    $db["user"],
+                    $db["pass"],
+                    ltrim($db["path"], "/")
                 ));
                 Logger::getLogger(__METHOD__)->debug("Created new PDO Session");
                 $this->Database_Connection = $pdo;
                 $GLOBALS["DBConn_$EnvKey"] = $pdo;
-            } catch (Exception $ex) {
+            } catch (\Exception $ex) {
                 throw new BitmaskException($ex, Bitmask::POSTGRES_CONN_ERROR->value);
             }
         }
     }
 
     /**
-     * Get the database connector
-     * @return PDO
+     * Get the database connector.
+     *
+     * @return \PDO
      */
-    public function getDBConnector(): PDO
+    public function getDBConnector(): \PDO
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $this->Database_Connection;
     }
-
 }

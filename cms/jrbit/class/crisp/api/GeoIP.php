@@ -23,71 +23,62 @@
 
 namespace crisp\api;
 
-use Carbon\Carbon;
-use crisp\api\lists\Languages;
-use crisp\core;
-use crisp\core\Crypto;
 use crisp\core\Logger;
-use crisp\core\Postgres;
-use crisp\core\Themes;
 use GeoIp2\Database\Reader;
-use PDO;
-use splitbrain\phpcli\CLI;
-use stdClass;
-
 
 /**
- * GeoIP API
+ * GeoIP API.
  */
 class GeoIP
 {
-
     /**
-     * Check if the GeoIP database is available
+     * Check if the GeoIP database is available.
      *
-     * @return boolean
+     * @return bool
      */
-    public static function isAvailable(): bool {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public static function isAvailable(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return count(glob("/usr/share/GeoIP/*.mmdb")) > 0;
     }
 
     /**
-     * Get the GeoIP database City
+     * Get the GeoIP database City.
      *
-     * @param string $defaultDB
+     * @param  string $defaultDB
      * @return Reader
      */
     public static function City(string $defaultDB = "GeoLite2-City.mmdb"): Reader
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return new Reader("/usr/share/GeoIP/$defaultDB");
     }
 
     /**
-     * Get the GeoIP database ASN
+     * Get the GeoIP database ASN.
      *
-     * @param string $defaultDB
+     * @param  string $defaultDB
      * @return Reader
      */
     public static function ASN(string $defaultDB = "GeoLite2-ASN.mmdb"): Reader
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return new Reader("/usr/share/GeoIP/$defaultDB");
     }
 
     /**
-     * Get the GeoIP database Country
+     * Get the GeoIP database Country.
      *
-     * @param string $defaultDB
+     * @param  string $defaultDB
      * @return Reader
      */
     public static function Country(string $defaultDB = "GeoLite2-Country.mmdb"): Reader
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return new Reader("/usr/share/GeoIP/$defaultDB");
     }
-
-
-
 }

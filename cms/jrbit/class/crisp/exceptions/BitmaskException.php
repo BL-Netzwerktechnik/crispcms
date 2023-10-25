@@ -23,24 +23,23 @@
 
 namespace crisp\exceptions;
 
-use crisp\core\Bitmask;
-use crisp\core\RESTfulAPI;
-
 /**
- * Exception to throw when the setEmail method fails because of a malformed email
+ * Exception to throw when the setEmail method fails because of a malformed email.
  *
  * @author Justin René Back <j.back@jrbit.de>
  */
-class BitmaskException extends \Exception {
-
-    public function __construct($message, $code, \Exception $previous = null) {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+class BitmaskException extends \Exception
+{
+    public function __construct($message, $code, \Exception $previous = null)
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         parent::__construct($message, $code->value, $previous);
     }
 
-    public function __toString() {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public function __toString()
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
     }
-
 }

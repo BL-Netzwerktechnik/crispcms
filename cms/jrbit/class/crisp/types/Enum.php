@@ -23,20 +23,20 @@
 
 namespace crisp\types;
 
-use crisp\core\Bitmask;
 use crisp\core\Logger;
-use crisp\core\RESTfulAPI;
 
-abstract class Enum {
+abstract class Enum
+{
 
-    private static $constCacheArray = NULL;
+    private static $constCacheArray = null;
 
     /**
      * @throws \ReflectionException
      */
-    private static function getConstants() {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        if (self::$constCacheArray == NULL) {
+    private static function getConstants()
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (self::$constCacheArray == null) {
             self::$constCacheArray = [];
         }
         $calledClass = get_called_class();
@@ -44,23 +44,27 @@ abstract class Enum {
             $reflect = new \ReflectionClass($calledClass);
             self::$constCacheArray[$calledClass] = $reflect->getConstants();
         }
+
         return self::$constCacheArray[$calledClass];
     }
-    
-    public static function get($name){
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+
+    public static function get($name)
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         $constants = self::getConstants();
-        
-        if(array_key_exists($name, $constants)){
+
+        if (array_key_exists($name, $constants)) {
             return $constants[$name];
-        }else if (array_key_exists("default", $constants)){
+        } elseif (array_key_exists("default", $constants)) {
             return $constants["default"];
         }
+
         return null;
     }
 
-    public static function validName($name, $strict = false) {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public static function validName($name, $strict = false)
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         $constants = self::getConstants();
 
         if ($strict) {
@@ -68,13 +72,15 @@ abstract class Enum {
         }
 
         $keys = array_map('strtolower', array_keys($constants));
+
         return in_array(strtolower($name), $keys);
     }
 
-    public static function validValue($value, $strict = true) {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public static function validValue($value, $strict = true)
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         $values = array_values(self::getConstants());
+
         return in_array($value, $values, $strict);
     }
-
 }

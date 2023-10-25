@@ -21,36 +21,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\migrations;
 
 use crisp\core\Logger;
 
-if(!defined('CRISP_HOOKED')){
+if (!defined('CRISP_HOOKED')) {
     echo 'Illegal File access';
     exit;
 }
 
-class addapikey extends \crisp\core\Migrations {
-
-    public function run() {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+class addapikey extends \crisp\core\Migrations
+{
+    public function run()
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         try {
             $this->begin();
-            $this->createTable("APIKeys",
-                    array("key", $this::DB_VARCHAR),
-                    array("UserID", $this::DB_INTEGER),
-                    array("last_changed", $this::DB_TIMESTAMP, "DEFAULT NULL"),
-                    array("revoked", $this::DB_INTEGER, "NOT NULL DEFAULT 0"),
-                    array("created_at", $this::DB_TIMESTAMP, "NOT NULL DEFAULT CURRENT_TIMESTAMP")
+            $this->createTable(
+                "APIKeys",
+                ["key", $this::DB_VARCHAR],
+                ["UserID", $this::DB_INTEGER],
+                ["last_changed", $this::DB_TIMESTAMP, "DEFAULT NULL"],
+                ["revoked", $this::DB_INTEGER, "NOT NULL DEFAULT 0"],
+                ["created_at", $this::DB_TIMESTAMP, "NOT NULL DEFAULT CURRENT_TIMESTAMP"]
             );
             $this->addIndex("APIKeys", "key", $this::DB_UNIQUEKEY, "apikey");
+
             return $this->end();
         } catch (\Exception $ex) {
             echo $ex->getMessage() . PHP_EOL;
             $this->rollback();
+
             return false;
         }
     }
-
 }

@@ -21,33 +21,34 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\migrations;
 
 use crisp\core\Logger;
 
-if(!defined('CRISP_HOOKED')){
+if (!defined('CRISP_HOOKED')) {
     echo 'Illegal File access';
     exit;
 }
 
-class createmigration extends \crisp\core\Migrations {
+class createmigration extends \crisp\core\Migrations
+{
+    public function run()
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        try {
+            $this->begin();
+            \crisp\core\Migrations::createTable("schema_migration", ["file", \crisp\core\Migrations::DB_VARCHAR]);
 
-  public function run() {
-    Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-    try {
-      $this->begin();
-      \crisp\core\Migrations::createTable("schema_migration", array("file", \crisp\core\Migrations::DB_VARCHAR));
+            if (!$this->isMigrated("1608994339_addplugintomigration")) {
+                $this->addColumn("schema_migration", ["plugin", self::DB_VARCHAR, "DEFAULT NULL"]);
+            }
 
-      if (!$this->isMigrated("1608994339_addplugintomigration")) {
-        $this->addColumn("schema_migration", array("plugin", self::DB_VARCHAR, "DEFAULT NULL"));
-      }
-      return $this->end();
-    } catch (\Exception $ex) {
-      echo $ex->getMessage() . PHP_EOL;
-      $this->rollback();
-      return false;
+            return $this->end();
+        } catch (\Exception $ex) {
+            echo $ex->getMessage() . PHP_EOL;
+            $this->rollback();
+
+            return false;
+        }
     }
-  }
-
 }

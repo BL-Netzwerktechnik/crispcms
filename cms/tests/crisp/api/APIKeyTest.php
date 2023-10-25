@@ -2,7 +2,6 @@
 use PHPUnit\Framework\TestCase;
 use crisp\api;
 use crisp\core\Postgres;
-use PDO;
 
 final class APIKeyTest extends TestCase
 {
@@ -17,10 +16,10 @@ final class APIKeyTest extends TestCase
         $this->assertTrue($statementDelete->rowCount() > 0);
     }
 
-    /**
+    /*
      * @depends testCreateApiKey
      */
-    
+
     /*
     public function testDisableApiKey(): void
     {

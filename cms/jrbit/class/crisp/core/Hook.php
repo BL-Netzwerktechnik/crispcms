@@ -21,48 +21,49 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\core;
 
 /**
- * Hook Class
+ * Hook Class.
  *
  * @author Justin René Back <j.back@jrbit.de>
  */
-trait Hook {
-
+trait Hook
+{
     /**
-     * Listen on a specific hook and wait for it's message
+     * Listen on a specific hook and wait for it's message.
+     *
      * @param string $channel The hook to listen on
-     * @param mixed $func The function to send the response to
+     * @param mixed  $func    The function to send the response to
      */
-    public static function on(string $channel, mixed $func) {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+    public static function on(string $channel, mixed $func)
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         if (!isset($GLOBALS['hook'][$channel])) {
 
-            $GLOBALS['hook'][$channel] = array();
+            $GLOBALS['hook'][$channel] = [];
         }
 
         $GLOBALS['hook'][$channel][] = $func;
     }
 
     /**
-     *
-     * @param string $channel The channel to broadcast too
-     * @param mixed ...$parameters Parameters to attach to the broadcast
+     * @param  string $channel       The channel to broadcast too
+     * @param  mixed  ...$parameters Parameters to attach to the broadcast
      * @return int
      */
     public static function broadcastHook(string $channel, ...$parameters): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         if (isset($GLOBALS['hook'][$channel])) {
             foreach ($GLOBALS['hook'][$channel] as $func) {
                 $GLOBALS['hook'][$channel]["parameters"] = $parameters;
                 call_user_func($func, $parameters);
             }
+
             return count($GLOBALS['hook'][$channel]);
         }
+
         return 0;
     }
-
 }

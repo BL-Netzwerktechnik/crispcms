@@ -21,32 +21,34 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 namespace crisp\migrations;
 
 use crisp\core\Logger;
 
-if(!defined('CRISP_HOOKED')){
+if (!defined('CRISP_HOOKED')) {
     echo 'Illegal File access';
     exit;
 }
 
-class createtranslations extends \crisp\core\Migrations {
-
-    public function run() {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
+class createtranslations extends \crisp\core\Migrations
+{
+    public function run()
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         try {
             $this->begin();
-            $this->createTable("Translations",
-                    array("key", $this::DB_VARCHAR)
+            $this->createTable(
+                "Translations",
+                ["key", $this::DB_VARCHAR]
             );
             $this->addIndex("Translations", "key", $this::DB_PRIMARYKEY);
+
             return $this->end();
         } catch (\Exception $ex) {
             echo $ex->getMessage() . PHP_EOL;
             $this->rollback();
+
             return false;
         }
     }
-
 }
