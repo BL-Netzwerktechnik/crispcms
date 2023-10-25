@@ -62,7 +62,7 @@ migrate-and-test:
   - mv themes/basic themes/crisptheme
   - php bin/cli.php theme -i
   - rm /tmp/ci/composer
-  - git describe --tags --always > /tmp/git_tag || true
+  - git describe --tags --always > ../GIT_TAG || true
   - php vendor/bin/php-cs-fixer fix --config=../.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > ../php-cs-fixer.json || true
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -70,7 +70,7 @@ migrate-and-test:
       reports:
         codequality: php-cs-fixer.json
       paths:
-        - /tmp/git_tag
+        - ../GIT_TAG
 
 
 nightly:
@@ -121,7 +121,7 @@ stable:
   - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
   - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
   - export TAG_PATCH=$(echo $CI_COMMIT_TAG | cut -d. -f3)
-  - export GENERATED_TAG=$(</tmp/git_tag)
+  - export GENERATED_TAG=$(<../GIT_TAG)
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}"
     --destination "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}.${TAG_MINOR}"
@@ -146,7 +146,7 @@ stable:license:
   - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
   - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
   - export TAG_PATCH=$(echo $CI_COMMIT_TAG | cut -d. -f3)
-  - export GENERATED_TAG=$(</tmp/git_tag)
+  - export GENERATED_TAG=$(<../GIT_TAG)
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${TAG_MAJOR}"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${TAG_MAJOR}.${TAG_MINOR}"
@@ -168,7 +168,7 @@ release-candidate:
   dependencies:
     - migrate-and-test
   script:
-  - export GENERATED_TAG=$(</tmp/git_tag)
+  - export GENERATED_TAG=$(<../GIT_TAG)
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}:${GENERATED_TAG}"
     --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
@@ -187,7 +187,7 @@ release-candidate:license:
   dependencies:
     - migrate-and-test
   script:
-  - export GENERATED_TAG=$(</tmp/git_tag)
+  - export GENERATED_TAG=$(<../GIT_TAG)
 
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${GENERATED_TAG}"
