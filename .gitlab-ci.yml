@@ -84,7 +84,7 @@ nightly:
   dependencies:
     - migrate-and-test
   script:
-  - export GENERATED_TAG=$(<GIT_TAG)
+  - export GENERATED_TAG=$(cat GIT_TAG)
   - echo Building Image for Tag $GENERATED_TAG
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}:nightly" 
@@ -106,7 +106,7 @@ nightly:license:
   dependencies:
     - migrate-and-test
   script:
-  - export GENERATED_TAG=$(<GIT_TAG)
+  - export GENERATED_TAG=$(cat GIT_TAG)
   - echo Building Image for Tag $GENERATED_TAG
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:nightly" 
@@ -131,7 +131,7 @@ stable:
   - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
   - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
   - export TAG_PATCH=$(echo $CI_COMMIT_TAG | cut -d. -f3)
-  - export GENERATED_TAG=$(<GIT_TAG)
+  - export GENERATED_TAG=$(cat GIT_TAG)
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}"
     --destination "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}.${TAG_MINOR}"
@@ -158,7 +158,7 @@ stable:license:
   - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
   - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
   - export TAG_PATCH=$(echo $CI_COMMIT_TAG | cut -d. -f3)
-  - export GENERATED_TAG=$(<GIT_TAG)
+  - export GENERATED_TAG=$(cat GIT_TAG)
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${TAG_MAJOR}"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${TAG_MAJOR}.${TAG_MINOR}"
@@ -182,7 +182,7 @@ release-candidate:
   dependencies:
     - migrate-and-test
   script:
-  - export GENERATED_TAG=$(<GIT_TAG)
+  - export GENERATED_TAG=$(cat GIT_TAG)
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}:${GENERATED_TAG}"
     --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
@@ -203,7 +203,7 @@ release-candidate:license:
   dependencies:
     - migrate-and-test
   script:
-  - export GENERATED_TAG=$(<GIT_TAG)
+  - export GENERATED_TAG=$(cat GIT_TAG)
 
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${GENERATED_TAG}"
