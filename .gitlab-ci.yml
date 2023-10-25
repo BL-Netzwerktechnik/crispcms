@@ -105,6 +105,7 @@ stable:
     --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
     --build-arg GIT_TAG=${GENERATED_TAG}
     --build-arg CI_BUILD=${CI_JOB_ID}
+    --cleanup
 
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${TAG_MAJOR}"
@@ -114,6 +115,7 @@ stable:
     --build-arg GIT_TAG=${GENERATED_TAG}
     --build-arg CI_BUILD=${CI_JOB_ID}
     --build-arg REQUIRE_LICENSE=true 
+    --cleanup
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
@@ -131,6 +133,7 @@ release-candidate:
     --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
     --build-arg GIT_TAG=${GENERATED_TAG}
     --build-arg CI_BUILD=${CI_JOB_ID}
+    --cleanup
 
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
     --destination "${CI_REGISTRY_IMAGE}/licensed:${GENERATED_TAG}"
@@ -138,6 +141,7 @@ release-candidate:
     --build-arg GIT_TAG=${GENERATED_TAG}
     --build-arg CI_BUILD=${CI_JOB_ID}
     --build-arg REQUIRE_LICENSE=true 
+    --cleanup
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+\.rc\.\d+$/'
 
