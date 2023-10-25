@@ -1,0 +1,55 @@
+version: '3'
+services:
+  crispcms:
+    image: crispcms
+    container_name: crispcms
+    environment:
+      - CRISP_THEME=crisptheme
+      - LOG_LEVEL=DEBUG
+      - POSTGRES_URI=postgres://postgres:postgres@localhost:5432/postgres
+      - REDIS_HOST=localhost
+      - TZ=Europe/Berlin
+      - REDIS_INDEX=1
+      - HOST=${HOST}
+      - ROOT=${HOST}
+      - PROTO=https
+      - SENTRY_DSN=https://e1335d78665742d0bbd9a67935dbc6ed@sentry.internal.jrbit.de/5
+      - ENVIRONMENT=development
+      - CRISP_FLAGSMITH_API_KEY=K8BJRBi6xiE3HweHoRQhQA
+      - SENTRY_JS_DSN=https://sentry.internal.jrbit.de/js-sdk-loader/e1335d78665742d0bbd9a67935dbc6ed.min.js
+      - GIT_TAG=${GIT_TAG}
+    volumes:
+      - ${GITPOD_REPO_ROOT}/cms:/var/www/crisp
+      - ${GITPOD_REPO_ROOT}/data:/data
+      - ${GITPOD_REPO_ROOT}/config/nginx.conf:/etc/nginx/conf.d/default.conf
+    user: root
+    network_mode: host
+    restart: always
+
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    network_mode: host
+    restart: always
+    
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    network_mode: host
+    restart: always
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - "8080:8080"
+    network_mode: host
+    restart: always

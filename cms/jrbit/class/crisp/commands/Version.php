@@ -3,6 +3,7 @@
 namespace crisp\commands;
 
 use CLI;
+use crisp\api\Build;
 use crisp\api\Helper;
 use crisp\core;
 use crisp\core\Logger;
@@ -16,12 +17,12 @@ class Version {
         $minimal->info(sprintf("Crisp Version: %s", core::CRISP_VERSION));
         $minimal->info(sprintf("API Version: %s", core::API_VERSION));
         $minimal->info(sprintf("Release Name: %s", core::RELEASE_NAME));
-        if($_ENV['BUILD_TYPE'] !== "Stable"){
-            $minimal->warning(sprintf("Build: %s", $_ENV['BUILD_TYPE']));
+        if(Build::getBuildType() !== "Stable"){
+            $minimal->warning(sprintf("Build: %s", Build::getBuildType()));
         }else {
-            $minimal->success(sprintf("Build: %s", $_ENV['BUILD_TYPE']));
+            $minimal->success(sprintf("Build: %s", Build::getBuildType()));
         }
-        $minimal->info(sprintf("Release: %s", RELEASE));
+        $minimal->info(sprintf("Release: %s", Build::getReleaseString()));
         return true;
     }
 }

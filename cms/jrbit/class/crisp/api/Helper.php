@@ -55,7 +55,6 @@ class Helper
         return mkdir($dir) && chown($dir, 33) && chgrp($dir, 33);
     }
 
-
     public static function prettyFormatNumber(int $num): string
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
@@ -323,7 +322,7 @@ class Helper
     public static function getCommitHash(): ?string
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]);
-        return $_ENV['GIT_COMMIT'] ?: trim(exec('git log --pretty="%h" -n1 HEAD'));
+        return $_ENV['GIT_COMMIT'] ?: trim(exec('git describe --tags --always'));
     }
 
 

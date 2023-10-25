@@ -25,7 +25,7 @@ namespace crisp;
 
 use Carbon\Carbon;
 use CompileError;
-use crisp\api\{Config, GeoIP, Helper, lists\Languages, Translation};
+use crisp\api\{Build, Config, GeoIP, Helper, lists\Languages, Translation};
 use crisp\core\{Bitmask, Crypto, HookFile, RESTfulAPI, Security, Sessions, Themes, License, Logger, Router, ThemeVariables};
 use Dotenv\Dotenv;
 use Error;
@@ -86,7 +86,6 @@ class core
     public const THEME_BASE_DIR = __DIR__ . '/../themes';
 
     public const LOG_DIR = '/var/log/crisp';
-
 }
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -140,47 +139,15 @@ try {
 
 
 
-
-    $BuildType = $_ENV['BUILD_TYPE'] ?? 0;
-
-    if ($BuildType === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "rc."))) {
-        $BuildType = 2;
-    } elseif ($BuildType === 0 && (str_contains(strtolower($_ENV['GIT_TAG']), "pre-release") || str_contains(strtolower($_ENV['GIT_TAG']), "prerelease"))) {
-        $BuildType = 3;
-    } elseif ($BuildType === 0 && isset($_ENV['GIT_TAG'])) {
-        $BuildType = 1;
-    }
-
-    $_ENV['BUILD_TYPE'] = match ($BuildType) {
-        1 => "Stable",
-        2 => "Release-Candidate",
-        3 => "Pre-Release",
-        default => "Nightly"
-    };
-
-    define('BUILD_TYPE', $_ENV['BUILD_TYPE']);
-
     define('IS_API_ENDPOINT', (PHP_SAPI !== 'cli' && isset($_SERVER['IS_API_ENDPOINT'])));
     define('IS_NATIVE_API', isset($_SERVER['IS_API_ENDPOINT']));
-    define(
-        'RELEASE',
-        (IS_API_ENDPOINT ? 'api' : 'crisp')
-            . '@' .
-            (IS_API_ENDPOINT ? core::API_VERSION : core::CRISP_VERSION)
-            . '+' .
-            (Helper::getCommitHash() ?? 'nongit')
-            . '-' .
-            (BUILD_TYPE ?? 'Nightly')
-            . '.' .
-            ($_ENV['CI_BUILD'] ?? 0)
-    );
     define('REQUEST_ID', Crypto::UUIDv4("R"));
 
 
 
 
     if (PHP_SAPI !== 'cli') {
-        Logger::getLogger(__METHOD__)->info( Helper::getRequestLog());
+        Logger::getLogger(__METHOD__)->info(Helper::getRequestLog());
     }
 
     if (isset($_ENV['SENTRY_DSN'])) {
@@ -189,7 +156,7 @@ try {
             'dsn' => $_ENV['SENTRY_DSN'],
             'traces_sample_rate' => $_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
             'environment' => ENVIRONMENT,
-            'release' => RELEASE,
+            'release' => Build::getReleaseString(),
         ]);
 
         configureScope(function (Scope $scope): void {
@@ -252,7 +219,7 @@ try {
         }
 
 
-        
+
         ThemeVariables::register($TwigTheme);
         Router::register();
         HookFile::setup();
@@ -273,7 +240,7 @@ try {
 
         /* Twig Globals */
 
-        
+
 
 
         if (IS_API_ENDPOINT) {

@@ -29,6 +29,7 @@ use crisp\core;
 use crisp\core\Bitmask;
 use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
+use crisp\api\Build;
 use crisp\models\ThemeAPI;
 use finfo;
 use Twig\Environment;
@@ -61,9 +62,9 @@ class Version  {
                 "release" => core::RELEASE_NAME,
                 "theme" => $_ENV["GIT_TAG"] ?? $_ENV["GIT_COMMIT"]
             ],
-            "release" => RELEASE,
+            "release" => Build::getReleaseString(),
             "environment" => ENVIRONMENT,
-            "build" => BUILD_TYPE,
+            "build" => Build::getBuildType(),
             "installed_license" => $license
         ]);
         exit;
