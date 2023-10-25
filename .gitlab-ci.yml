@@ -86,12 +86,6 @@ nightly:
     --build-arg REQUIRE_LICENSE=true 
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-      changes:
-        - cms/*
-        - docker/*
-        - config/*
-        - Dockerfile
-        - .dockerignore
 
 stable:
   stage: publish
