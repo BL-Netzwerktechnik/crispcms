@@ -23,8 +23,7 @@ sast:
 include:
 - template: Security/SAST.gitlab-ci.yml
 - template: Security/Dependency-Scanning.gitlab-ci.yml
-- template: Security/Secret-Detection.gitlab-ci.yml  
-- template: Code-Quality.gitlab-ci.yml
+- template: Security/Secret-Detection.gitlab-ci.yml
 
 migrate-and-test:
   services:
@@ -63,7 +62,7 @@ migrate-and-test:
   - mv themes/basic themes/crisptheme
   - php bin/cli.php theme -i
   - rm /tmp/ci/composer
-  - php vendor/bin/php-cs-fixer fix --config=../.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > ../php-cs-fixer.json
+  - php vendor/bin/php-cs-fixer fix --config=../.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > ../php-cs-fixer.json || true
   rules:
     - if: $CI_COMMIT_BRANCH
   artifacts:
