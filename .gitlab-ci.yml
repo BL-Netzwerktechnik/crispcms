@@ -73,7 +73,7 @@ nightly:
     - ''
   script:
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-    --destination "${CI_REGISTRY_IMAGE}:dev" 
+    --destination "${CI_REGISTRY_IMAGE}:nightly" 
     --destination "${CI_REGISTRY_IMAGE}:latest"
     --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA} 
     --build-arg CI_BUILD=${CI_JOB_ID}
