@@ -64,8 +64,6 @@ migrate-and-test:
   - rm /tmp/ci/composer
   - git describe --tags --always > ../GIT_TAG || true
   - php vendor/bin/php-cs-fixer fix --config=../.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > ../php-cs-fixer.json || true
-  rules:
-    - if: $CI_COMMIT_BRANCH
   artifacts:
       reports:
         codequality: php-cs-fixer.json
