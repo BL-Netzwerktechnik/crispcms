@@ -258,6 +258,8 @@ pages:
 
 
 dast:
+  needs:
+    - migrate-and-test
   services:
     - name: $CI_REGISTRY_IMAGE:latest
       alias: crispcms
