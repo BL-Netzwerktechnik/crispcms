@@ -19,10 +19,9 @@ variables:
 stages:
 - compliance
 - test
-- docs
 - publish
-- release
 - pages
+- release
 - dast
 
 sast:
@@ -241,7 +240,7 @@ release:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 doxygen:
-  stage: docs
+  stage: publish
   image: tsgkadot/docker-doxygen
   script:
     - 'doxygen Doxyfile'
