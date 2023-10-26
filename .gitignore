@@ -1,7 +1,7 @@
 cms/jrbit/cache/*
 !/cms/jrbit/cache/.keep
-cms/.env
-cms/vendor
+.env
+vendor
 .idea/
 composer.phar
 licensekey.dat

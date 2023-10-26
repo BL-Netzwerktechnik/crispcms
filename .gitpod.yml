@@ -42,7 +42,7 @@ tasks:
 
   - name: CrispCMS
     init: docker build -t crispcms . && git clone https://gitlab.jrbit.de/crispcms/theme-template theme && mv theme/theme cms/themes/crisptheme && rm -rf theme
-    command: gp ports await 5432 && ./startup_dev.sh
+    command: ./startup_dev.sh
 
 vscode:
   extensions:

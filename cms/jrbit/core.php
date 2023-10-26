@@ -73,7 +73,7 @@ class core
 
     public const LOG_DIR = '/var/log/crisp';
 }
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 try {
     if (!defined('STDIN')) {
@@ -98,7 +98,7 @@ try {
 
     define("ThemeMetadata", Themes::getThemeMetadata());
 
-    $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+    $dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
     if (IS_DEV_ENV) {
         $dotenv->safeLoad();
     }

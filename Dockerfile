@@ -89,7 +89,7 @@ RUN chown -R 33:33 "/var/www" && mkdir -p /data && chown -R 33:33 "/data"  && mk
 
 USER 33
 
-COPY --chown=33:33 cms "$CRISP_WORKDIR"
+COPY --chown=33:33 . "$CRISP_WORKDIR"
 
 RUN ["/bin/bash", "-c", "/opt/entrypoint.d/bootstrap.sh"]
 

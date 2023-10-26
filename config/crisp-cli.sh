@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cd "$CRISP_WORKDIR"
-php bin/cli.php "$@"
+php cms/bin/cli.php "$@"
