@@ -14,7 +14,7 @@ variables:
   FF_NETWORK_PER_BUILD: "true"
   DAST_WEBSITE: http://crispcms
   DAST_FULL_SCAN_ENABLED: "true"
-  CS_DEFAULT_BRANCH_IMAGE: $CI_REGISTRY_IMAGE:latest
+  CS_IMAGE: $CI_REGISTRY_IMAGE:latest
 
 stages:
 - compliance
