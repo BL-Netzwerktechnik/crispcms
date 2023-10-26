@@ -15,7 +15,6 @@ variables:
   DAST_WEBSITE: http://crispcms
   DAST_FULL_SCAN_ENABLED: "true"
   CS_IMAGE: $CI_REGISTRY_IMAGE:latest
-  CI_DEBUG_SERVICES: "true"
 
 stages:
 - compliance
@@ -269,7 +268,7 @@ dast:
       alias: postgres
       variables:
         POSTGRES_PASSWORD: "postgres"
-        
+
     - name: $CI_REGISTRY_IMAGE:latest
       alias: crispcms
       variables:
