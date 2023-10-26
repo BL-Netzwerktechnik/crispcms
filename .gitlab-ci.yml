@@ -11,16 +11,22 @@ variables:
   POSTGRES_DB: crisp_dev
   POSTGRES_HOST_AUTH_METHOD: trust
   LICENSE_FINDER_CLI_OPTS: '--recursive'
+  FF_NETWORK_PER_BUILD: "true"
+  DAST_WEBSITE: http://crispcms
+  DAST_FULL_SCAN_ENABLED: "true"
+
 stages:
 - compliance
 - test
 - publish
 - docs
 - release
+- dast
 
 sast:
   stage: compliance
 include:
+- template: DAST.gitlab-ci.yml
 - template: Security/SAST.gitlab-ci.yml
 - template: Security/Dependency-Scanning.gitlab-ci.yml
 - template: Security/Secret-Detection.gitlab-ci.yml
@@ -248,3 +254,28 @@ pages:
     url: https://api-ref.crispcms.de
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+
+
+
+dast:
+  services:
+    - name: $CI_REGISTRY_IMAGE:latest
+      alias: crispcms
+      variables:
+        CRISP_THEME: "crisptheme"
+        LOG_LEVEL: "DEBUG"
+        POSTGRES_URI: "postgres://postgres:postgres@postgres:5432/postgres"
+        REDIS_HOST: "localhost"
+        TZ: "Europe/Berlin"
+        REDIS_INDEX: "1"
+        HOST: "crispcms"
+        ROOT: "crispcms"
+        PROTO: "http"
+        SENTRY_DSN: "https://e1335d78665742d0bbd9a67935dbc6ed@sentry.internal.jrbit.de/5"
+        ENVIRONMENT: "development"
+      entrypoint: ["/bin/bash", "-c", "git clone https://gitlab.jrbit.de/crispcms/theme-template theme && mv theme/theme themes/crisptheme && rm -rf theme && sleep 30 && /opt/entrypoint.d/entrypoint.sh"]
+    - name: postgres:14
+      alias: postgres
+      variables:
+        POSTGRES_PASSWORD: "postgres"
+
