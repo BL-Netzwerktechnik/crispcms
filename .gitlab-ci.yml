@@ -14,6 +14,7 @@ variables:
   FF_NETWORK_PER_BUILD: "true"
   DAST_WEBSITE: http://crispcms
   DAST_FULL_SCAN_ENABLED: "true"
+  CS_DEFAULT_BRANCH_IMAGE: $CI_REGISTRY_IMAGE:latest
 
 stages:
 - compliance
@@ -30,6 +31,7 @@ include:
 - template: Security/SAST.gitlab-ci.yml
 - template: Security/Dependency-Scanning.gitlab-ci.yml
 - template: Security/Secret-Detection.gitlab-ci.yml
+- template: Security/Container-Scanning.gitlab-ci.yml
 
 migrate-and-test:
   services:
