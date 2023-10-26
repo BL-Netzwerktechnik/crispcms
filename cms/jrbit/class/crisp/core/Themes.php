@@ -193,6 +193,7 @@ class Themes
             HookFile::postRender();
         } catch (HttpRouteNotFoundException $ex) {
 
+            http_response_code(404);
             if (Helper::templateExists("errors/notfound.twig")) {
                 echo Themes::render("errors/notfound.twig", []);
             } else {
