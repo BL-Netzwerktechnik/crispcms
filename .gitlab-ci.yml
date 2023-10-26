@@ -255,8 +255,8 @@ jekyll:
   artifacts:
     paths:
       - jekyll_out
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+  #rules:
+  #  - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 doxygen:
   stage: docs
@@ -268,8 +268,8 @@ doxygen:
   artifacts:
     paths:
       - doxygen_out
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+  #rules:
+  #  - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 image: alpine
 pages:
@@ -289,6 +289,8 @@ pages:
   environment:
     name: production
     url: https://crispcms.jrbit.de
+  #rules:
+  #  - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 
 
