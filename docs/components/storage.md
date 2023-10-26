@@ -1,13 +1,13 @@
 ## KV Storage
 
-[![Static Badge](https://img.shields.io/badge/Doxygen-API%20Documentation-purple)](https://api.crispcms.jrbit.de/d9/d4c/classcrisp_1_1api_1_1_config.html)
+[![Static Badge](https://img.shields.io/badge/Doxygen-API%20Documentation-purple)](https://crispcms.jrbit.de/api/d9/d4c/classcrisp_1_1api_1_1_config.html)
 
 Crisp features a built-in Storage Controller designed to efficiently save your data in a structured Key/Value (KV) format within its PostgreSQL database.
 
 
 ### KV Get 
 
-[![Static Badge](https://img.shields.io/badge/Doxygen-Reference-cyan)](https://api.crispcms.jrbit.de/d9/d4c/classcrisp_1_1api_1_1_config.html#aa529c4051ad0e8399e7ab71dd04f3e0c)
+[![Static Badge](https://img.shields.io/badge/Doxygen-Reference-cyan)](https://crispcms.jrbit.de/api/d9/d4c/classcrisp_1_1api_1_1_config.html#aa529c4051ad0e8399e7ab71dd04f3e0c)
 
 !> Retrieving a Key/Value (KV) employs a caching system with a default Time-to-Live (TTL) of 120 seconds.
 
@@ -32,7 +32,7 @@ $myAwesomeVariable = Config::get("my_awesome_variable");
 
 
 ### KV Set 
-[![Static Badge](https://img.shields.io/badge/Doxygen-Reference-cyan)](https://api.crispcms.jrbit.de/d9/d4c/classcrisp_1_1api_1_1_config.html#a74033a1a090875e7716e5541c111d7ce)
+[![Static Badge](https://img.shields.io/badge/Doxygen-Reference-cyan)](https://crispcms.jrbit.de/api/d9/d4c/classcrisp_1_1api_1_1_config.html#a74033a1a090875e7716e5541c111d7ce)
 
 Setting a Key-Value (KV) pair updates the provided value and creates the key if it doesn't already exist.
 
@@ -61,7 +61,7 @@ $intVarIsSet = Config::set("my_awesome_variable", 1234);
 
 Verify the existence of a Key-Value (KV) pair in the database.
 
-[![Static Badge](https://img.shields.io/badge/Doxygen-Reference-cyan)](https://api.crispcms.jrbit.de/d9/d4c/classcrisp_1_1api_1_1_config.html#a7b112ef5037b56373fa735d7b11b1c1e)
+[![Static Badge](https://img.shields.io/badge/Doxygen-Reference-cyan)](https://crispcms.jrbit.de/api/d9/d4c/classcrisp_1_1api_1_1_config.html#a7b112ef5037b56373fa735d7b11b1c1e)
 
 Example:
 
@@ -77,7 +77,7 @@ $doesExist = Config::exists("my_awesome_variable");
 
 Remove a Key-Value (KV) pair from the database if it exists.
 
-[![Static Badge](https://img.shields.io/badge/Doxygen-Reference-cyan)](https://api.crispcms.jrbit.de/d9/d4c/classcrisp_1_1api_1_1_config.html#a50988735f04237d816d027249c9d9d25)
+[![Static Badge](https://img.shields.io/badge/Doxygen-Reference-cyan)](https://crispcms.jrbit.de/api/d9/d4c/classcrisp_1_1api_1_1_config.html#a50988735f04237d816d027249c9d9d25)
 
 
 Example:
