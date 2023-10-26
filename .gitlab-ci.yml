@@ -19,9 +19,10 @@ variables:
 stages:
 - compliance
 - test
-- publish
 - docs
+- publish
 - release
+- pages
 - dast
 
 sast:
@@ -240,22 +241,54 @@ release:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 
-image: tsgkadot/docker-doxygen
-pages:
+jekyll:
   stage: docs
+  image: ruby:latest
+  variables:
+    JEKYLL_ENV: production
   script:
-    - doxygen Doxyfile > /dev/nul
+    - gem install bundler
+    - bundle install
+    - bundle exec jekyll build -d jekyll_out
+  needs:
+    - migrate-and-test
+  artifacts:
+    paths:
+      - jekyll_out
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+
+doxygen:
+  stage: docs
+  image: tsgkadot/docker-doxygen
+  script:
+    - 'doxygen Doxyfile'
+  needs:
+    - migrate-and-test
+  artifacts:
+    paths:
+      - doxygen_out
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+
+image: alpine
+pages:
+  stage: pages
+  script:
+    - mv jekyll_out public
+    - mv doxygen_out public/api
   artifacts:
     paths:
       - public
   needs:
-    - stable
-    - stable:license
+    - doxygen
+    - jekyll
+  dependencies:
+    - doxygen
+    - jekyll
   environment:
     name: production
-    url: https://api-ref.crispcms.de
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+    url: https://crispcms.jrbit.de
 
 
 
