@@ -55,7 +55,6 @@ migrate-and-test:
   image:
     name: php:8.2-buster
   script:
-  - cd cms
   - echo "# We dont need me!" > .env
   - mkdir /tmp/ci
   - cd /tmp/ci
@@ -64,14 +63,14 @@ migrate-and-test:
   - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
   - docker-php-ext-enable pdo_pgsql pdo_mysql intl gd gettext
   - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
-  - cd ${CI_PROJECT_DIR}/cms
+  - cd ${CI_PROJECT_DIR}
   - php /tmp/ci/composer install
-  - php bin/cli.php crisp -m
-  - mv themes/basic themes/crisptheme
-  - php bin/cli.php theme -i
+  - php cms/bin/cli.php crisp -m
+  - mv cms/themes/basic cms/themes/crisptheme
+  - php cms/bin/cli.php theme -i
   - rm /tmp/ci/composer
   - git describe --tags --always > ../GIT_TAG || true
-  - php vendor/bin/php-cs-fixer fix --config=../.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > ../php-cs-fixer.json || true
+  - php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > php-cs-fixer.json || true
   artifacts:
       reports:
         codequality: php-cs-fixer.json
