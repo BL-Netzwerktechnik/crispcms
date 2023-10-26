@@ -15,6 +15,7 @@ variables:
   DAST_WEBSITE: http://crispcms
   DAST_FULL_SCAN_ENABLED: "true"
   CS_IMAGE: $CI_REGISTRY_IMAGE:latest
+  CI_DEBUG_SERVICES: "true"
 
 stages:
 - compliance
@@ -261,6 +262,7 @@ pages:
 dast:
   needs:
     - migrate-and-test
+    - nightly
   services:
     - name: $CI_REGISTRY_IMAGE:latest
       alias: crispcms
