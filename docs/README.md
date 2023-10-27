@@ -29,20 +29,13 @@ services:
       - '81:81' # API
     links:
       - postgres
-      - redis
     environment:
-      - CRISP_THEME=crisptheme
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=DEBUG
       - POSTGRES_URI=postgres://postgres:postgres@postgres:5432/postgres
-      - REDIS_HOST=redis
-      - REDIS_INDEX=1
       - ENVIRONMENT=development
-      - DEFAULT_LOCALE=en
-      - LANG=en_US.UTF-8
-
-  redis:
-    image: redis:latest
-    restart: always
+      - HOST=localhost
+      - ROOT=crispcms
+      - PROTO=http
 
   postgres:
     image: postgres:latest

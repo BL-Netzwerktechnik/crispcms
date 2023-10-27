@@ -45,11 +45,7 @@ migrate-and-test:
     ENVIRONMENT: development
     GIT_COMMIT: "${CI_COMMIT_SHORT_SHA}"
     POSTGRES_URI: postgres://postgres:postgres@postgres:5432/crisp_dev #gitleaks:allow
-    REDIS_HOST: redis
-    REDIS_PORT: 6379
-    REDIS_INDEX: 2
     DEFAULT_LOCALE: en
-    CRISP_THEME: crisptheme
     LANG: en_US.utf8
     LOG_LEVEL: DEBUG
     HOST: ci
@@ -290,12 +286,9 @@ dast:
     - name: $CI_REGISTRY_IMAGE:latest
       alias: crispcms
       variables:
-        CRISP_THEME: "crisptheme"
         LOG_LEVEL: "DEBUG"
         POSTGRES_URI: "postgres://postgres:postgres@postgres:5432/postgres" #gitleaks:allow
-        REDIS_HOST: "localhost" 
         TZ: "Europe/Berlin"
-        REDIS_INDEX: "1"
         HOST: "crispcms"
         ROOT: "crispcms"
         PROTO: "http"

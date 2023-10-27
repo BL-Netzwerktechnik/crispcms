@@ -106,12 +106,10 @@ try {
     $dotenv->required([
         'POSTGRES_URI',
         'DEFAULT_LOCALE',
-        'CRISP_THEME',
         'ENVIRONMENT',
         'HOST',
         'PROTO',
         'TZ',
-        'DEFAULT_LOCALE',
         'LANG',
     ])->notEmpty();
     $dotenv->required('POSTGRES_URI')->allowedRegexValues('/^(?:([^:\/?#\s]+):\/{2})?(?:([^@\/?#\s]+)@)?([^\/?#\s]+)?(?:\/([^?#\s]*))?(?:[?]([^#\s]+))?\S*$/i');
