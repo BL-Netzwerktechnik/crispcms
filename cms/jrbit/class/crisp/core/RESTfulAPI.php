@@ -86,14 +86,6 @@ class RESTfulAPI
         return $_SERVER["REQUEST_METHOD"];
     }
 
-    public static function getVersion(): ?string
-    {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
-        list($Interface, $Version) = array_filter(explode("/", $GLOBALS["route"]->Raw));
-
-        return $Version;
-    }
-
     public static function isRequestContentType(string $contenttype = "application/json"): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);

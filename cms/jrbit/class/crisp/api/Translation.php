@@ -196,10 +196,6 @@ class Translation
             self::$Language = Helper::getLocale();
         }
 
-        if (isset($GLOBALS["route"]->GET["debug"]) && $GLOBALS["route"]->GET["debug"] = "translations") {
-            return "$Key:" . self::$Language;
-        }
-
         $UserOptions["{{ count }}"] = $Count;
 
         return nl2br(ngettext(self::get($Key, $UserOptions), self::getPlural($Key, $UserOptions), $Count));
