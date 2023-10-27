@@ -49,13 +49,12 @@ WORKDIR "${CRISP_WORKDIR}"
 
 VOLUME /data
 
+# Install Dependencies
 RUN echo 'pm.max_children = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     echo 'pm.start_servers = 50' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     echo 'pm.min_spare_servers = 50' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'pm.max_spare_servers = 150' >> /usr/local/etc/php-fpm.d/zz-docker.conf
-
-# Install Dependencies
-RUN apt-get update && \
+    echo 'pm.max_spare_servers = 150' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    apt-get update && \
     apt-get install -o DPkg::Options::="--force-confold" --no-install-recommends -y git libfreetype6-dev libjpeg62-turbo-dev libpng-dev curl zip openssl libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev locales nginx nginx-extras wget sudo && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
@@ -70,22 +69,25 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /tmp/pear && \
     rm -rf /var/cache/apt/archives && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    usermod -aG sudo www-data && \
+    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+    chown -R 33:33 "/var/www" && \
+    mkdir -p /data && chown -R 33:33 "/data" && \
+    mkdir -p /var/log/crisp && \
+    chown -R 33:33 /var/log/crisp && \
+    rm /etc/nginx/sites-enabled/default
 
-RUN usermod -aG sudo www-data && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 COPY config/php.ini /usr/local/etc/php/conf.d/php_custom.ini
 COPY config/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker /opt/entrypoint.d
 COPY config/crisp-cli.sh /usr/local/bin/crisp-cli
-RUN rm /etc/nginx/sites-enabled/default
 
-RUN ["chmod", "+x", "/opt/entrypoint.d/entrypoint.sh"]
-RUN ["chmod", "+x", "/opt/entrypoint.d/bootstrap.sh"]
-RUN ["chmod", "+x", "/usr/local/bin/crisp-cli"]
-RUN ["ln", "-s", "/usr/local/bin/crisp-cli", "/usr/local/bin/crisp"]
-
-RUN chown -R 33:33 "/var/www" && mkdir -p /data && chown -R 33:33 "/data"  && mkdir -p /var/log/crisp && chown -R 33:33 /var/log/crisp
+RUN chmod +x /opt/entrypoint.d/entrypoint.sh && \
+    chmod +x /opt/entrypoint.d/bootstrap.sh && \
+    chmod +x /usr/local/bin/crisp-cli && \
+    ln -s /usr/local/bin/crisp-cli /usr/local/bin/crisp
 
 USER 33
 
