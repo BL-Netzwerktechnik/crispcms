@@ -37,7 +37,7 @@ class Debug
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
         if (ENVIRONMENT !== 'development') {
-            echo file_get_contents(core::THEME_BASE_DIR . "/basic/not_found.html");
+            echo Themes::render("errors/notfound.twig", "themes/basic/templates");
             exit;
         }
 
@@ -90,6 +90,6 @@ class Debug
             exit;
         }
 
-        echo Themes::render("views/debug.twig");
+        echo Themes::render("views/debug.twig", "themes/basic/templates");
     }
 }

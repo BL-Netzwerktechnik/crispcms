@@ -164,7 +164,7 @@ class License
             "IssuerPrivateAvailable" => \crisp\api\License::isIssuerPrivateAvailable(),
         ]);
 
-        echo Themes::render("views/license.twig");
+        echo Themes::render("views/license.twig", "themes/basic/templates");
         exit;
 
     }

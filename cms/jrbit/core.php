@@ -176,15 +176,8 @@ try {
             $GLOBALS['guid'] = $_COOKIE['guid'];
         }
 
-        if (str_starts_with($_SERVER['REQUEST_URI'], "/_")) {
-            define("IS_SPECIAL_PAGE", true);
-            $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/basic/templates/"]);
-            Themes::initRenderer(__DIR__ . "/../themes/basic/templates/");
-        } else {
-            define("IS_SPECIAL_PAGE", false);
-            $ThemeLoader = new FilesystemLoader([__DIR__ . "/../themes/$CurrentTheme/templates/"]);
-            Themes::initRenderer();
-        }
+        define("IS_SPECIAL_PAGE", str_starts_with($_SERVER['REQUEST_URI'], "/_"));
+        Themes::initRenderer();
 
         ThemeVariables::register($TwigTheme);
         Router::register();
@@ -207,12 +200,6 @@ try {
 
             header('Access-Control-Allow-Origin: *');
             header('Cache-Control: max-age=600, public, must-revalidate');
-
-            if (!isset($_SERVER['HTTP_USER_AGENT']) || empty($_SERVER['HTTP_USER_AGENT']) || $_SERVER['HTTP_USER_AGENT'] === 'i am not valid') {
-                http_response_code(403);
-                echo $TwigTheme->render('errors/nginx/403.twig', ['error_msg' => 'Request forbidden by administrative rules. Please make sure your request has a User-Agent header']);
-                exit;
-            }
 
             new RESTfulAPI();
             exit;
