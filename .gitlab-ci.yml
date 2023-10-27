@@ -41,7 +41,7 @@ migrate-and-test:
     COMPOSER_ALLOW_SUPERUSER: 1
     ENVIRONMENT: development
     GIT_COMMIT: "${CI_COMMIT_SHORT_SHA}"
-    POSTGRES_URI: postgres://postgres:postgres@postgres:5432/crisp_dev
+    POSTGRES_URI: postgres://postgres:postgres@postgres:5432/crisp_dev #gitleaks:allow
     REDIS_HOST: redis
     REDIS_PORT: 6379
     REDIS_INDEX: 2
@@ -288,8 +288,8 @@ dast:
       variables:
         CRISP_THEME: "crisptheme"
         LOG_LEVEL: "DEBUG"
-        POSTGRES_URI: "postgres://postgres:postgres@postgres:5432/postgres"
-        REDIS_HOST: "localhost"
+        POSTGRES_URI: "postgres://postgres:postgres@postgres:5432/postgres" #gitleaks:allow
+        REDIS_HOST: "localhost" 
         TZ: "Europe/Berlin"
         REDIS_INDEX: "1"
         HOST: "crispcms"
