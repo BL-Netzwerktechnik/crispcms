@@ -242,8 +242,11 @@ doxygen:
   stage: publish
   image: tsgkadot/docker-doxygen
   script:
+    - export GENERATED_TAG=`cat GIT_TAG`
     - 'doxygen Doxyfile'
   needs:
+    - migrate-and-test
+  dependencies:
     - migrate-and-test
   artifacts:
     paths:
