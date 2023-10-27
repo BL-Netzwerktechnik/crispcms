@@ -75,7 +75,7 @@ class Themes
         }
     }
 
-    public static function initRenderer(string $dir = null): void
+    public static function initRenderer(string $dir = null): Environment
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         if (!$dir) {
@@ -144,22 +144,32 @@ class Themes
         $TwigTheme->addFilter(new TwigFilter('strtotime', 'strtotime'));
         $TwigTheme->addFilter(new TwigFilter('time', 'time'));
 
-        $GLOBALS["Crisp_ThemeLoader"] = $TwigTheme;
+        if (!$dir) {
+            $GLOBALS["Crisp_ThemeLoader"] = $TwigTheme;
+        } else {
+            $GLOBALS["Crisp_ThemeLoader_" . hash("sha512", $dir)] = $TwigTheme;
+        }
+
+        return $TwigTheme;
     }
 
-    public static function getRenderer(): Environment
+    public static function getRenderer(string $dir = null): Environment
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
-        return $GLOBALS["Crisp_ThemeLoader"];
+        if (!$dir) {
+            return $GLOBALS["Crisp_ThemeLoader"] ?? self::initRenderer();
+        } else {
+            return $GLOBALS["Crisp_ThemeLoader_" . hash("sha512", $dir)] ?? self::initRenderer($dir);
+        }
     }
 
-    public static function render(string $Template): string
+    public static function render(string $Template, string $dir = null): string
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         Logger::startTiming($TemplateRender);
         Logger::getLogger(__METHOD__)->debug("START Rendering template $Template");
-        $content = $GLOBALS["Crisp_ThemeLoader"]->render($Template, ThemeVariables::getAll());
+        $content = self::getRenderer($dir)->render($Template, ThemeVariables::getAll());
         Logger::getLogger(__METHOD__)->debug(sprintf("DONE Rendering template $Template - Took %s ms", Logger::endTiming($TemplateRender)));
 
         return $content;
@@ -173,6 +183,43 @@ class Themes
         }
 
         return realpath(sprintf(__DIR__ . "/../../../../themes/%s", core::DEFAULT_THEME));
+    }
+
+    public static function renderErrorPage(object $exception, int $code = 500, string $header = null, string $message = null): void
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
+        http_response_code($code);
+
+        if (defined('REQUEST_ID')) {
+            $refid = REQUEST_ID;
+        } else {
+            $refid = 'Core';
+        }
+
+        if (IS_DEV_ENV) {
+            echo self::getRenderer("themes/basic/templates")->render("errors/error.debug.twig", [
+                "header" => $header,
+                "message" => $message ?? $refid,
+                "stacktrace" => $exception->__toString(),
+                "httpcode" => $code,
+                "sentry_id" => SentrySdk::getCurrentHub()->getLastEventId(),
+                "SENTRY_JS_DSN" => $_ENV["SENTRY_JS_DSN"],
+            ]);
+            return;
+        }
+
+        if (IS_API_ENDPOINT) {
+            RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
+            exit;
+        }
+
+        echo self::getRenderer("themes/basic/templates")->render("errors/error.public.twig", [
+            "ref_id" => $refid,
+            "sentry_id" => SentrySdk::getCurrentHub()->getLastEventId(),
+            "SENTRY_JS_DSN" => $_ENV["SENTRY_JS_DSN"],
+        ]);
+        return;
     }
 
     /**
@@ -195,40 +242,23 @@ class Themes
 
             http_response_code(404);
             if (Helper::templateExists("errors/notfound.twig")) {
-                echo Themes::render("errors/notfound.twig", []);
+                echo Themes::render("errors/notfound.twig");
             } else {
-                echo strtr(file_get_contents(__DIR__ . '/../../../../themes/basic/not_found.html'), []);
+                if (IS_DEV_ENV) {
+                    self::renderErrorPage($ex, 404, null, "Route not found.");
+                } else {
+                    echo Themes::render("errors/notfound.twig", "themes/basic/templates");
+                }
             }
             exit;
         } catch (\Exception $ex) {
             captureException($ex);
+            Logger::getLogger(__METHOD__)->critical("Exception when rendering Twig Template", (array) $ex);
             if (PHP_SAPI === 'cli') {
-                var_dump($ex);
                 exit(1);
             }
-            http_response_code(500);
 
-            if (defined('REQUEST_ID')) {
-                $refid = REQUEST_ID;
-            } else {
-                $refid = 'Core';
-            }
-
-            if (IS_DEV_ENV) {
-                $refid = $ex->getMessage();
-            }
-
-            if (IS_API_ENDPOINT) {
-                RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
-                exit;
-            }
-
-            if (Helper::templateExists("errors/servererror.twig")) {
-                echo Themes::render("errors/servererror.twig", ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId()]);
-            } else {
-                echo strtr(file_get_contents(__DIR__ . '/../../../../themes/basic/error.html'), ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId()]);
-            }
-
+            self::renderErrorPage($ex);
             exit;
         }
     }

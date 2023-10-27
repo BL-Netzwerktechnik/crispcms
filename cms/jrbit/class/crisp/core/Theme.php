@@ -112,7 +112,7 @@ class Theme
             Logger::startTiming($PageClassRenderTime);
             $PageClass->preRender();
             Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing preRender hooks for %s - Took %s ms", $CurrentPage, Logger::endTiming($PageClassRenderTime)));
-            echo Themes::render("views/$CurrentPage.twig", ThemeVariables::getAll());
+            echo Themes::render("views/$CurrentPage.twig");
 
             if ($PageClass !== null && !method_exists($PageClass, 'postRender')) {
                 throw new \Exception("Failed to load $CurrentPage, missing postRender!");

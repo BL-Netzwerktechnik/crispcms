@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta
+		name="viewport" content="width=device-width, initial-scale=1">
+
+		<!-- Bootstrap CSS -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+		<title>CrispCMS Error</title>
+	</head>
+
+	<body>
+		<div class="alert alert-{{ severity|default("warning") }}" role="alert">
+			<h1>{{ header|default("An Error occurred!") }}
+				<span class="text-muted">({{ httpcode|default("000") }})</span>
+			</h1>
+			<p>{{ message|default("Stacktrace below") }}</p>
+		</div>
+		<div class="container-fluid">
+			<span>
+            <code>
+				{{ prettyDump(stacktrace|default("No Stacktrace available!")) }}
+                </code>
+			</span>
+			<hr>
+			<p>This page is displayed due to your
+				<code>ENVIRONMENT</code>
+				being set to
+				<code>DEVELOPMENT</code>
+			</p>
+		</div>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+		<script src="https://browser.sentry-cdn.com/6.16.1/bundle.min.js" integrity="sha384-WkFzsrcXKeJ3KlWNXojDiim8rplIj1RPsCbuv7dsLECoXY8C6Cx158CMgl+O+QKW" crossorigin="anonymous"></script>
+		<script>
+			Sentry.init({dsn: "{{ SENTRY_JS_DSN }}"});
+Sentry.showReportDialog({eventId: "{{ sentry_id }}"});
+		</script>
+	</body>
+
+</html>

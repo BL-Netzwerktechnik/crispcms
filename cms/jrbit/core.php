@@ -222,32 +222,23 @@ try {
     }
 } catch (\TypeError | \Exception | \Error | \CompileError | \ParseError | \Throwable $ex) {
     captureException($ex);
-    if (PHP_SAPI === 'cli') {
-        var_dump($ex);
-        exit(1);
-    }
+    Logger::getLogger(__METHOD__)->critical($ex->__toString(), (array) $ex);
+    if (PHP_SAPI === 'cli')  exit(1);
+
     http_response_code(500);
-    $errorraw = file_get_contents(__DIR__ . '/../themes/basic/error.html');
 
     if (defined('REQUEST_ID')) {
         $refid = REQUEST_ID;
     } else {
         $refid = 'Core';
     }
-
-    if (IS_DEV_ENV) {
-        $refid = $ex->__toString();
-    }
-
     if (IS_API_ENDPOINT) {
         RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
         exit;
     }
 
-    header("X-Sentry-ID: " . SentrySdk::getCurrentHub()->getLastEventId());
 
-    Logger::getLogger(__METHOD__)->critical($ex->__toString(), (array) $ex);
+    Themes::renderErrorPage($ex);
 
-    echo strtr($errorraw, ['{{ exception }}' => $refid, '{{ sentry_id }}' => SentrySdk::getCurrentHub()->getLastEventId(), "{{ SENTRY_JS_DSN }}" => $_ENV["SENTRY_JS_DSN"]]);
     exit;
 }
