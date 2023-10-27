@@ -278,8 +278,14 @@ pages:
 dast:
   extends: .dast_with_bas
   needs:
-    - migrate-and-test
-    - nightly
+    - job: migrate-and-test
+    
+    - job: nightly
+      optional: true
+
+    - job: stable
+      optional: true
+
   services:
     - name: postgres:14
       alias: postgres
