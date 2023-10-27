@@ -2,6 +2,8 @@
 
 ## 17.0.0
 
+!>  [[/upgrade/17.0.md|Migrate from previous version]]
+
 - [BREAKING] - Remove `CRISP_VERSION`, `API_VERSION`, `RELEASE_NAME`, `RELEASE_ICON`, `RELEASE_ART`
 - [FEAT] - Add `Build` Class for Version related Functions
 - [BREAKING] - Delete `csrf` Twig Filter
@@ -9,6 +11,25 @@
 - [BREAKING] - Delete `json` Twig Filter
 - [BREAKING] - Delete `APIKey` Class
 - [BREAKING] - Delete `LogTypes` Class
+- [BREAKING] - Refactor Directory Structure
+- [QOL] - CI Security
+- [QOL] - Add PHP-CS-Fixer
+- [QOL] - Optimize Dockerfile
+- [QOL] - Code Cleanup
+
+
+#### Release Candidates
+
+!> Release Candidates are not recommended to run in production.
+
+- 17.0.0.rc.1
+- 17.0.0.rc.2
+- 17.0.0.rc.3
+- 17.0.0.rc.4
+- 17.0.0.rc.5
+- 17.0.0.rc.6
+- 17.0.0.rc.7
+
 
 ## 16.1.2
 
