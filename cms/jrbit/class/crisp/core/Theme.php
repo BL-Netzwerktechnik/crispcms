@@ -81,7 +81,7 @@ class Theme
             }
 
             $PageClass->execute($CurrentPage);
-        } elseif (Helper::templateExists("/views/$CurrentPage.twig")) {
+        } else {
 
             require_once Themes::getThemeDirectory() . "/$_HookFile";
 
@@ -93,9 +93,6 @@ class Theme
                 throw new \Exception("Failed to load $_HookClass, missing preRender!");
             }
 
-            if (file_exists(Themes::getThemeDirectory() . "/includes/$CurrentPage.php")) {
-                require Themes::getThemeDirectory() . "/includes/$CurrentPage.php";
-            }
             $PageClass = null;
 
             if (class_exists($CurrentPage, false)) {
@@ -125,8 +122,6 @@ class Theme
             }
             $HookClass->postRender($CurrentPage, $CurrentFile);
             $PageClass->postRender();
-        } else {
-            throw new BitmaskException("Failed to load template " . $this->CurrentPage . ": Missing includes file", Bitmask::THEME_MISSING_INCLUDES);
         }
     }
 }
