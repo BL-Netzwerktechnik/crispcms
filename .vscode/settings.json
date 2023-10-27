@@ -1,7 +1,8 @@
 {
-    "php-cs-fixer.configFile": "/workspace/core/.php-cs-fixer.dist.php",
-    "php-cs-fixer.executable": "/workspace/core/cms/vendor/bin/php-cs-fixer",
-    "php-cs-fixer.executablePath": "/workspace/core/cms/vendor/bin/php-cs-fixer",
+    "php-cs-fixer.executablePath": "/workspace/core/vendor/bin/php-cs-fixer",
     "php-cs-fixer.lastDownload": 0,
-    "intelephense.telemetry.enabled": false
+    "intelephense.telemetry.enabled": false,
+    "prettier.documentSelectors": [
+        "**/*.{js,jsx,ts,tsx,vue,html,css,scss,less,json,md,mdx,graphql,yaml,yml,php}"
+    ]
 }

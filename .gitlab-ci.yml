@@ -15,6 +15,7 @@ variables:
   DAST_WEBSITE: http://crispcms
   DAST_FULL_SCAN_ENABLED: "true"
   CS_IMAGE: $CI_REGISTRY_IMAGE:latest
+  DAST_BAS_DISABLED: "true"
 
 stages:
 - compliance
@@ -274,6 +275,7 @@ pages:
 
 
 dast:
+  extends: .dast_with_bas
   needs:
     - migrate-and-test
     - nightly
