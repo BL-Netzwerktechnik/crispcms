@@ -137,7 +137,7 @@ class License
                 expires_at: $expiry,
                 data: null,
                 instance: $instance,
-                ocsp: sprintf("%s://%s/_debug_ocsp", $_ENV["PROTO"], $_ENV["HOST"])
+                ocsp: sprintf("%s://%s/_/debug_ocsp", $_ENV["PROTO"], $_ENV["HOST"])
             );
 
             if (!Config::exists("license_issuer_private_key")) {

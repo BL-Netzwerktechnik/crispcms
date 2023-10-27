@@ -49,11 +49,11 @@ class Router
     public static function registerInteralRoutes(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
-        self::add("_debug_oscp", RouteType::PUBLIC, \crisp\routes\DebugOCSP::class);
-        self::add("_debug", RouteType::PUBLIC, \crisp\routes\Debug::class);
-        self::add("_license", RouteType::PUBLIC, \crisp\routes\License::class);
-        self::add("_proxy", RouteType::PUBLIC, \crisp\routes\Proxy::class);
-        self::add("_version", RouteType::PUBLIC, \crisp\routes\Version::class);
+        self::add("_/debug/oscp", RouteType::PUBLIC, \crisp\routes\DebugOCSP::class);
+        self::add("_/debug", RouteType::PUBLIC, \crisp\routes\Debug::class);
+        self::add("_/license", RouteType::PUBLIC, \crisp\routes\License::class);
+        self::add("_/proxy", RouteType::PUBLIC, \crisp\routes\Proxy::class);
+        self::add("_/version", RouteType::PUBLIC, \crisp\routes\Version::class);
     }
 
     public static function get(RouteType $routeType): RouteCollector

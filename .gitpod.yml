@@ -35,7 +35,7 @@ ports:
 
 tasks:
 
-  - command: gp preview $(gp url 80)/_debug
+  - command: gp preview $(gp url 80)/_/debug
 
   - name: Docsify
     command: 'npm i docsify-cli -g && docsify serve ./docs'

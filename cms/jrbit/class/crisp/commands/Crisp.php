@@ -21,7 +21,7 @@ class Crisp
         } elseif ($options->getOpt("post-install")) {
             $minimal->success("Crisp has been successfully installed!");
             if (ENVIRONMENT !== core\Environment::PRODUCTION->value) {
-                $minimal->notice(sprintf("You can access the Debug menu at %s://%s/_debug", $_ENV["PROTO"], $_ENV["HOST"]));
+                $minimal->notice(sprintf("You can access the Debug menu at %s://%s/_/debug", $_ENV["PROTO"], $_ENV["HOST"]));
             }
             $minimal->success(sprintf("Your instance id is: %s", Helper::getInstanceId()));
 

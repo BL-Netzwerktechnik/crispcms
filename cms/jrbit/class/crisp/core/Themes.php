@@ -250,7 +250,7 @@ class Themes
                     echo Themes::render("errors/notfound.twig", "themes/basic/templates");
                 }
             }
-            exit;
+            return;
         } catch (\Exception $ex) {
             captureException($ex);
             Logger::getLogger(__METHOD__)->critical("Exception when rendering Twig Template", (array) $ex);
@@ -259,7 +259,7 @@ class Themes
             }
 
             self::renderErrorPage($ex);
-            exit;
+            return;
         }
     }
 
@@ -267,7 +267,7 @@ class Themes
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
         if (str_starts_with($File, "//") || str_starts_with($File, "http://")  || str_starts_with($File, "https://")) {
-            return sprintf("/_proxy/?url=%s", $File, $cacheTTL);
+            return sprintf("/_/proxy/?url=%s", $File, $cacheTTL);
         }
 
         if (str_starts_with($File, "/")) {

@@ -53,7 +53,7 @@ class Version
             "build" => Build::getBuildType(),
             "installed_license" => $license,
         ]);
-        exit;
+        return;
 
     }
 }
