@@ -77,11 +77,12 @@ class Themes
 
     public static function initRenderer(string $dir = null): Environment
     {
+        $templatedir = self::getThemeDirectory() . "/templates";
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
-        if (!$dir) {
-            $dir = self::getThemeDirectory() . "/templates";
+        if ($dir !== null) {
+            $templatedir = $dir;
         }
-        $ThemeLoader = new FilesystemLoader([$dir]);
+        $ThemeLoader = new FilesystemLoader([$templatedir]);
 
         if (ENVIRONMENT === 'production') {
             $TwigTheme = new Environment($ThemeLoader, [
