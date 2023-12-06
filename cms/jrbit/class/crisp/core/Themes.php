@@ -39,6 +39,7 @@ use Twig\Loader\FilesystemLoader;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Carbon\Carbon;
+use crisp\api\Build;
 
 use function file_exists;
 use function file_get_contents;
@@ -676,6 +677,19 @@ class Themes
         }
 
         return false;
+    }
+
+    public static function getReleaseString(): ?string
+    {
+        if (isset($_ENV["THEME_GIT_TAG"]) && isset($_ENV["THEME_GIT_COMMIT"])) {
+            return sprintf("%s@%s", $_ENV["THEME_GIT_TAG"], $_ENV["THEME_GIT_COMMIT"]);
+        }elseif (isset($_ENV["THEME_GIT_COMMIT"])) {
+            return $_ENV["THEME_GIT_COMMIT"];
+        }elseif (isset($_ENV["THEME_GIT_TAG"])) {
+            return $_ENV["THEME_GIT_TAG"];
+        }
+
+        return null;
     }
 
     /**
