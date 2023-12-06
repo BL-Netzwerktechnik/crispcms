@@ -34,7 +34,7 @@ class addexpiretoapikey extends \crisp\core\Migrations
 {
     public function run()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         try {
             $this->begin();
             $this->addColumn("apikeys", ["expires_at", self::DB_TIMESTAMP, "DEFAULT NULL"]);

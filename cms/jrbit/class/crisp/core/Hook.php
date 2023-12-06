@@ -38,7 +38,7 @@ trait Hook
      */
     public static function on(string $channel, mixed $func)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (!isset($GLOBALS['hook'][$channel])) {
 
             $GLOBALS['hook'][$channel] = [];
@@ -54,7 +54,7 @@ trait Hook
      */
     public static function broadcastHook(string $channel, ...$parameters): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (isset($GLOBALS['hook'][$channel])) {
             foreach ($GLOBALS['hook'][$channel] as $func) {
                 $GLOBALS['hook'][$channel]["parameters"] = $parameters;

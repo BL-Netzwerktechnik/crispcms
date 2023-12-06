@@ -15,7 +15,7 @@ class License
     private static function generateIssuer(\CLI $minimal, Options $options): bool
     {
 
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         if ((bool) $_ENV["REQUIRE_LICENSE"]) {
             $minimal->fatal("Issuers cannot be generated on this instance!");

@@ -34,7 +34,7 @@ class createmigration extends \crisp\core\Migrations
 {
     public function run()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         try {
             $this->begin();
             \crisp\core\Migrations::createTable("schema_migration", ["file", \crisp\core\Migrations::DB_VARCHAR]);

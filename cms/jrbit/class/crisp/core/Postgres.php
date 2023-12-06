@@ -43,7 +43,7 @@ class Postgres
      */
     public function __construct($EnvKey = 'POSTGRES_URI')
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         if ($GLOBALS["DBConn_$EnvKey"] !== null) {
             $this->Database_Connection = $GLOBALS["DBConn_$EnvKey"];
@@ -78,7 +78,7 @@ class Postgres
      */
     public function getDBConnector(): \PDO
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         return $this->Database_Connection;
     }

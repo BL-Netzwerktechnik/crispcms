@@ -27,7 +27,7 @@ class Crypto
 {
     public static function encrypt($plaintext, $pass, $encoding = null)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $iv = openssl_random_pseudo_bytes(16, $safe);
 
         if (!$safe || !$iv) {
@@ -41,7 +41,7 @@ class Crypto
 
     public static function decrypt($ciphertext, $pass, $encoding = null)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $ciphertext = $encoding === 'hex' ? hex2bin($ciphertext) : ($encoding === 'base64' ? base64_decode($ciphertext) : $ciphertext);
         if (!hash_equals(hash_hmac('sha256', substr($ciphertext, 48) . substr($ciphertext, 0, 16), hash('sha256', $pass, true), true), substr($ciphertext, 16, 32))) {
             return false;
@@ -52,7 +52,7 @@ class Crypto
 
     public static function UUIDv4($Prefix = null, $Bytes = 16): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         $data = random_bytes($Bytes);
 

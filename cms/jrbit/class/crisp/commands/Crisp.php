@@ -12,7 +12,7 @@ class Crisp
 {
     public static function run(\CLI $minimal, Options $options): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if ($options->getOpt("migrate")) {
             $Migrations = new core\Migrations();
             $Migrations->migrate();

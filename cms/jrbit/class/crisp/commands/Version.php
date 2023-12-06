@@ -9,7 +9,7 @@ class Version
 {
     public static function run(\CLI $minimal): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         $minimal->info(sprintf("Crisp Version: %s", Build::getReleaseString()));
         if (Build::getBuildType() !== "Stable") {

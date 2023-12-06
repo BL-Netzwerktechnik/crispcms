@@ -136,7 +136,7 @@ try {
             'dsn' => $_ENV['SENTRY_DSN'],
             'traces_sample_rate' => $_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
             'environment' => ENVIRONMENT,
-            'release' => Build::getReleaseString(),
+            'release' => $_ENV["THEME_GIT_TAG"] ?? Build::getReleaseString(),
         ]);
 
         configureScope(function (Scope $scope): void {
