@@ -41,7 +41,7 @@ tasks:
     command: 'npm i docsify-cli -g && docsify serve ./docs'
 
   - name: CrispCMS
-    init: docker build -t crispcms . && git clone https://gitlab.jrbit.de/crispcms/theme-template theme
+    init: docker-compose -f docker-compose.dev.yml build && git clone https://gitlab.jrbit.de/crispcms/theme-template theme
     command: npm install --global prettier @prettier/plugin-php && ./startup_dev.sh
 
 vscode:

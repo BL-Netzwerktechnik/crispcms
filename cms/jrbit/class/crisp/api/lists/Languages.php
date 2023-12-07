@@ -45,9 +45,29 @@ class Languages
      */
     private static function initDB()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Initializing Database');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
+
         $DB = new Postgres();
         self::$Database_Connection = $DB->getDBConnector();
+
+
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+        }
     }
 
     /**
@@ -58,7 +78,23 @@ class Languages
      */
     public static function fetchLanguages(bool $FetchIntoClass = true): array|Language
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+
+
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Fetching Languages');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
+
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -71,10 +107,17 @@ class Languages
                 $Array[] = new Language($Language['id']);
             }
 
-            return $Array;
+            $returnResult = $Array;
+        } else {
+            $returnResult = $statement->fetchAll(\PDO::FETCH_ASSOC);
         }
 
-        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+        }
+
+        return $returnResult;
     }
 
     /**
@@ -85,19 +128,44 @@ class Languages
      */
     public static function languageExists(string|int|null $Code): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+
+
+
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Checking Language Existence');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
 
         if ($Code === null) {
-            return false;
+            $returnResult = false;
+        } else {
+
+            if (self::$Database_Connection === null) {
+                self::initDB();
+            }
+            $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE Code = :code');
+            $statement->execute([':code' => $Code]);
+
+            $returnResult = $statement->rowCount() > 0;
+        }
+        
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
 
-        if (self::$Database_Connection === null) {
-            self::initDB();
-        }
-        $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE Code = :code');
-        $statement->execute([':code' => $Code]);
 
-        return $statement->rowCount() > 0;
+        return $returnResult;
     }
 
     /**
@@ -109,7 +177,7 @@ class Languages
      */
     public static function getLanguageByCode(string $Code, bool $FetchIntoClass = true): bool|array|Language
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -148,7 +216,7 @@ class Languages
      */
     public static function createLanguage(string $Name, string $Code, string $NativeName, string $Flag, bool $Enabled = true): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -186,7 +254,7 @@ class Languages
      */
     public static function getLanguageByID(int|string $ID, bool $FetchIntoClass = true): bool|array|Language
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (self::$Database_Connection === null) {
             self::initDB();
         }

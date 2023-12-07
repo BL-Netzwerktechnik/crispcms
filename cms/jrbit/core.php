@@ -37,6 +37,7 @@ use crisp\core\ThemeVariables;
 use Dotenv\Dotenv;
 use Sentry\SentrySdk;
 use Sentry\State\Scope;
+use Sentry\Tracing\TransactionContext;
 use Twig\Loader\FilesystemLoader;
 use function Sentry\captureException;
 use function Sentry\configureScope;
@@ -134,7 +135,8 @@ try {
 
         init([
             'dsn' => $_ENV['SENTRY_DSN'],
-            'traces_sample_rate' => $_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
+            'traces_sample_rate' => (double)$_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
+            'profiles_sample_rate' => (double)$_ENV['SENTRY_PROFILES_SAMPLE_RATE'] ?? 0.3,
             'environment' => ENVIRONMENT,
             'release' => Themes::getReleaseString() ?? Build::getReleaseString(),
         ]);
@@ -150,6 +152,12 @@ try {
 
     setlocale(LC_TIME, $_ENV["LANG"] ?? 'en_US.utf8');
     if (PHP_SAPI !== 'cli') {
+
+        $transactionContext = (new TransactionContext("HTTP Request"));
+        $transactionContext->setOp("http.server");
+        $transaction = \Sentry\startTransaction($transactionContext);
+
+        \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
 
         $GLOBALS['plugins'] = [];
         $GLOBALS['hook'] = [];
@@ -190,6 +198,8 @@ try {
 
             if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()) {
                 header("Location: _license#renew");
+                \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
+                $transaction->finish();
                 exit;
             }
         }
@@ -202,10 +212,11 @@ try {
             header('Cache-Control: max-age=600, public, must-revalidate');
 
             new RESTfulAPI();
-            exit;
+        }else{
+            Themes::load();
         }
-
-        Themes::load();
+        \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
+        $transaction->finish();
     }
 } catch (\TypeError | \Exception | \Error | \CompileError | \ParseError | \Throwable $ex) {
     captureException($ex);

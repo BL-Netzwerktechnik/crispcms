@@ -24,7 +24,7 @@
     "ext-intl": "*",
     "ext-gettext": "*",
     "ext-openssl": "*",
-    "sentry/sdk": "^3.1",
+    "sentry/sdk": "^3.5",
     "guzzlehttp/guzzle": "^7.4",
     "symfony/cache": "^5.3",
     "vlucas/phpdotenv": "^5.3",
