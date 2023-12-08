@@ -41,7 +41,27 @@ class Cache
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        return sprintf("%s/crisp/%s", core::CACHE_DIR, self::calculateCacheDir(self::getHash($Key)));
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Get Cache Directory');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
+
+        $returnResult = sprintf("%s/crisp/%s", core::CACHE_DIR, self::calculateCacheDir(self::getHash($Key)));
+
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+        }
+
+        return $returnResult;
     }
 
     /**
@@ -54,7 +74,27 @@ class Cache
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        return sprintf("%s/%s.cache", self::getCrispCacheDir($Key), self::getHash($Key));
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Get Cache File');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
+
+        $returnResult = sprintf("%s/%s.cache", self::getCrispCacheDir($Key), self::getHash($Key));
+
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+        }
+
+        return $returnResult;
     }
 
     /**
@@ -68,7 +108,27 @@ class Cache
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        return $name[$level - 1];
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Get Cache File');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
+
+        $returnResult = $name[$level - 1];
+
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+        }
+
+        return $returnResult;
     }
 
     /**
@@ -81,13 +141,28 @@ class Cache
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        return sprintf(
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Get Cache File');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
+
+        $returnResult = sprintf(
             "%s/%s/%s/%s",
             self::calculateSingleLevel($name, 1),
             self::calculateSingleLevel($name, 2),
             self::calculateSingleLevel($name, 3),
             self::calculateSingleLevel($name, 4)
         );
+
+        return $returnResult;
     }
 
     /**
@@ -100,11 +175,28 @@ class Cache
     {
 
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        if (!self::isCached($key)) {
-            return false;
+
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Get Cache File');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
         }
 
-        return json_decode(file_get_contents(self::getCrispCacheFile($key)))->expires;
+        $returnResult = !self::isCached($key) ? false : json_decode(file_get_contents(self::getCrispCacheFile($key)))->expires;
+
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+        }
+
+        return $returnResult;
     }
 
     /**
@@ -116,9 +208,31 @@ class Cache
     private static function isCached(string $key): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Get Cache File');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
+
         Logger::getLogger(__METHOD__)->debug(sprintf("Checking cache %s (%s)", self::getCrispCacheFile($key), $key));
 
-        return file_exists(self::getCrispCacheFile($key));
+        $returnResult = file_exists(self::getCrispCacheFile($key));
+
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+        }
+
+        return $returnResult;
+
     }
 
     /**

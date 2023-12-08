@@ -47,7 +47,6 @@ class Languages
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-
         $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
         $span = null;
 
@@ -62,7 +61,6 @@ class Languages
 
         $DB = new Postgres();
         self::$Database_Connection = $DB->getDBConnector();
-
 
         if ($span) {
             $span->finish();
@@ -79,8 +77,6 @@ class Languages
     public static function fetchLanguages(bool $FetchIntoClass = true): array|Language
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-
 
         $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
         $span = null;
@@ -130,9 +126,6 @@ class Languages
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-
-
-
         $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
         $span = null;
         $returnResult = null;
@@ -158,12 +151,11 @@ class Languages
 
             $returnResult = $statement->rowCount() > 0;
         }
-        
+
         if ($span) {
             $span->finish();
             \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
-
 
         return $returnResult;
     }
@@ -178,6 +170,20 @@ class Languages
     public static function getLanguageByCode(string $Code, bool $FetchIntoClass = true): bool|array|Language
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Fetching Language by Code');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
+
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -185,23 +191,28 @@ class Languages
         $statement->execute([':code' => $Code]);
         if ($statement->rowCount() > 0) {
             if ($FetchIntoClass) {
-                return new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
+                $returnResult = new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
+            } else {
+                $returnResult = $statement->fetch(\PDO::FETCH_ASSOC);
+            }
+        } else {
+            $Flag = strtolower($Code);
+
+            if (str_contains($Flag, '_')) {
+                $Flag = substr($Flag, 3);
             }
 
-            return $statement->fetch(\PDO::FETCH_ASSOC);
+            if (Languages::createLanguage("base.language.$Code", $Code, "base.language.native.$Code", $Flag)) {
+                $returnResult = self::getLanguageByCode($Code, $FetchIntoClass);
+            }
         }
 
-        $Flag = strtolower($Code);
-
-        if (str_contains($Flag, '_')) {
-            $Flag = substr($Flag, 3);
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
 
-        if (Languages::createLanguage("base.language.$Code", $Code, "base.language.native.$Code", $Flag)) {
-            return self::getLanguageByCode($Code, $FetchIntoClass);
-        }
-
-        return false;
+        return $returnResult;
     }
 
     /**
@@ -217,6 +228,20 @@ class Languages
     public static function createLanguage(string $Name, string $Code, string $NativeName, string $Flag, bool $Enabled = true): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Creating Language');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
+
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -225,24 +250,34 @@ class Languages
         $success = $statement->execute([':Name' => $Name, ':Code' => $Code, ':NativeName' => $NativeName, ':Flag' => $Flag, ':Enabled' => $Enabled]);
 
         if (!$success) {
-            return !self::$Database_Connection->rollBack();
+            $returnResult = !self::$Database_Connection->rollBack();
+        } else {
+
+            $statement2 = self::$Database_Connection->prepare("SELECT table_name, column_name, data_type FROM information_schema.columns WHERE table_name = 'translations' AND column_name = '$Code';");
+            $statement2->execute();
+            if ($statement2->rowCount() > 0) {
+                $returnResult = self::$Database_Connection->commit();
+            } else {
+
+                $statement3 = self::$Database_Connection->prepare("ALTER TABLE Translations ADD COLUMN $Code TEXT NULL");
+
+                $success3 = $statement3->execute();
+
+                if ($success3) {
+                    $returnResult = self::$Database_Connection->commit();
+                } else {
+                    $returnResult = !self::$Database_Connection->rollBack();
+                }
+
+            }
         }
 
-        $statement2 = self::$Database_Connection->prepare("SELECT table_name, column_name, data_type FROM information_schema.columns WHERE table_name = 'translations' AND column_name = '$Code';");
-        $statement2->execute();
-        if ($statement2->rowCount() > 0) {
-            return self::$Database_Connection->commit();
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
 
-        $statement3 = self::$Database_Connection->prepare("ALTER TABLE Translations ADD COLUMN $Code TEXT NULL");
-
-        $success3 = $statement3->execute();
-
-        if ($success3) {
-            return self::$Database_Connection->commit();
-        }
-
-        return !self::$Database_Connection->rollBack();
+        return $returnResult;
     }
 
     /**
@@ -255,6 +290,20 @@ class Languages
     public static function getLanguageByID(int|string $ID, bool $FetchIntoClass = true): bool|array|Language
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+        $span = null;
+        $returnResult = null;
+
+        if ($parent) {
+            $context = new \Sentry\Tracing\SpanContext();
+            $context->setOp(__METHOD__);
+            $context->setDescription('Fetching Language by ID');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        }
+
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -262,12 +311,20 @@ class Languages
         $statement->execute([':ID' => $ID]);
         if ($statement->rowCount() > 0) {
             if ($FetchIntoClass) {
-                return new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
-            }
+                $returnResult = new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
+            } else {
 
-            return $statement->fetch(\PDO::FETCH_ASSOC);
+                $returnResult = $statement->fetch(\PDO::FETCH_ASSOC);
+            }
+        } else {
+            $returnResult = false;
         }
 
-        return false;
+        if ($span) {
+            $span->finish();
+            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+        }
+
+        return $returnResult;
     }
 }
