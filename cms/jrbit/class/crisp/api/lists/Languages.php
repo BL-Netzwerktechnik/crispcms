@@ -26,6 +26,7 @@ namespace crisp\api\lists;
 use crisp\api\Language;
 use crisp\core\Postgres;
 use crisp\core\Logger;
+use crisp\core\Tracing;
 
 /**
  * Interact with all languages stored on the server.
@@ -45,27 +46,16 @@ class Languages
      */
     private static function initDB()
     {
+
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Initializing Database Connection');
 
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Initializing Database');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-        }
-
-        $DB = new Postgres();
-        self::$Database_Connection = $DB->getDBConnector();
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
+        return Tracing::traceFunction($context, function () {
+            $DB = new Postgres();
+            self::$Database_Connection = $DB->getDBConnector();
+        });
     }
 
     /**
@@ -78,42 +68,28 @@ class Languages
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Fetching Languages from Database');
 
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Fetching Languages');
-            $span = $parent->startChild($context);
+        return Tracing::traceFunction($context, function () use ($FetchIntoClass) {
+            if (self::$Database_Connection === null) {
+                self::initDB();
+            }
+            $statement = self::$Database_Connection->query('SELECT * FROM Languages');
 
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-        }
+            if ($FetchIntoClass) {
+                $Array = [];
 
-        if (self::$Database_Connection === null) {
-            self::initDB();
-        }
-        $statement = self::$Database_Connection->query('SELECT * FROM Languages');
+                foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $Language) {
+                    $Array[] = new Language($Language['id']);
+                }
 
-        if ($FetchIntoClass) {
-            $Array = [];
-
-            foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $Language) {
-                $Array[] = new Language($Language['id']);
+                return $Array;
             }
 
-            $returnResult = $Array;
-        } else {
-            $returnResult = $statement->fetchAll(\PDO::FETCH_ASSOC);
-        }
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+            return $statement->fetchAll(\PDO::FETCH_ASSOC);
+        });
     }
 
     /**
@@ -126,38 +102,25 @@ class Languages
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Checking if Language exists');
 
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Checking Language Existence');
-            $span = $parent->startChild($context);
+        return Tracing::traceFunction($context, function () use ($Code) {
 
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-        }
+            if ($Code === null) {
+                return false;
+            } else {
 
-        if ($Code === null) {
-            $returnResult = false;
-        } else {
+                if (self::$Database_Connection === null) {
+                    self::initDB();
+                }
+                $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE Code = :code');
+                $statement->execute([':code' => $Code]);
 
-            if (self::$Database_Connection === null) {
-                self::initDB();
+                return $statement->rowCount() > 0;
             }
-            $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE Code = :code');
-            $statement->execute([':code' => $Code]);
-
-            $returnResult = $statement->rowCount() > 0;
-        }
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        });
     }
 
     /**
@@ -171,31 +134,25 @@ class Languages
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Fetching Language by Code');
 
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Fetching Language by Code');
-            $span = $parent->startChild($context);
+        return Tracing::traceFunction($context, function () use ($FetchIntoClass, $Code) {
 
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-        }
-
-        if (self::$Database_Connection === null) {
-            self::initDB();
-        }
-        $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE Code = :code');
-        $statement->execute([':code' => $Code]);
-        if ($statement->rowCount() > 0) {
-            if ($FetchIntoClass) {
-                $returnResult = new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
-            } else {
-                $returnResult = $statement->fetch(\PDO::FETCH_ASSOC);
+            if (self::$Database_Connection === null) {
+                self::initDB();
             }
-        } else {
+            $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE Code = :code');
+            $statement->execute([':code' => $Code]);
+            if ($statement->rowCount() > 0) {
+                if ($FetchIntoClass) {
+                    return new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
+                }
+
+                return $statement->fetch(\PDO::FETCH_ASSOC);
+
+            }
             $Flag = strtolower($Code);
 
             if (str_contains($Flag, '_')) {
@@ -203,16 +160,12 @@ class Languages
             }
 
             if (Languages::createLanguage("base.language.$Code", $Code, "base.language.native.$Code", $Flag)) {
-                $returnResult = self::getLanguageByCode($Code, $FetchIntoClass);
+                return self::getLanguageByCode($Code, $FetchIntoClass);
             }
-        }
 
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
+            return false;
 
-        return $returnResult;
+        });
     }
 
     /**
@@ -229,55 +182,38 @@ class Languages
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Creating Language');
 
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Creating Language');
-            $span = $parent->startChild($context);
+        return Tracing::traceFunction($context, function () use ($Name, $Code, $NativeName, $Flag, $Enabled) {
 
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-        }
+            if (self::$Database_Connection === null) {
+                self::initDB();
+            }
+            self::$Database_Connection->beginTransaction();
+            $statement = self::$Database_Connection->prepare('INSERT INTO Languages (Name, Code, NativeName, Flag, Enabled) VALUES (:Name, :Code, :NativeName, :Flag, :Enabled)');
+            $success = $statement->execute([':Name' => $Name, ':Code' => $Code, ':NativeName' => $NativeName, ':Flag' => $Flag, ':Enabled' => $Enabled]);
 
-        if (self::$Database_Connection === null) {
-            self::initDB();
-        }
-        self::$Database_Connection->beginTransaction();
-        $statement = self::$Database_Connection->prepare('INSERT INTO Languages (Name, Code, NativeName, Flag, Enabled) VALUES (:Name, :Code, :NativeName, :Flag, :Enabled)');
-        $success = $statement->execute([':Name' => $Name, ':Code' => $Code, ':NativeName' => $NativeName, ':Flag' => $Flag, ':Enabled' => $Enabled]);
-
-        if (!$success) {
-            $returnResult = !self::$Database_Connection->rollBack();
-        } else {
+            if (!$success) {
+                return !self::$Database_Connection->rollBack();
+            }
 
             $statement2 = self::$Database_Connection->prepare("SELECT table_name, column_name, data_type FROM information_schema.columns WHERE table_name = 'translations' AND column_name = '$Code';");
             $statement2->execute();
             if ($statement2->rowCount() > 0) {
-                $returnResult = self::$Database_Connection->commit();
-            } else {
-
-                $statement3 = self::$Database_Connection->prepare("ALTER TABLE Translations ADD COLUMN $Code TEXT NULL");
-
-                $success3 = $statement3->execute();
-
-                if ($success3) {
-                    $returnResult = self::$Database_Connection->commit();
-                } else {
-                    $returnResult = !self::$Database_Connection->rollBack();
-                }
-
+                return self::$Database_Connection->commit();
             }
-        }
+            $statement3 = self::$Database_Connection->prepare("ALTER TABLE Translations ADD COLUMN $Code TEXT NULL");
 
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
+            $success3 = $statement3->execute();
 
-        return $returnResult;
+            if ($success3) {
+                return self::$Database_Connection->commit();
+            }
+
+            return !self::$Database_Connection->rollBack();
+        });
     }
 
     /**
@@ -291,40 +227,28 @@ class Languages
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Fetching Language by ID');
 
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Fetching Language by ID');
-            $span = $parent->startChild($context);
+        return Tracing::traceFunction($context, function () use ($FetchIntoClass, $ID) {
 
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-        }
-
-        if (self::$Database_Connection === null) {
-            self::initDB();
-        }
-        $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE ID = :ID');
-        $statement->execute([':ID' => $ID]);
-        if ($statement->rowCount() > 0) {
-            if ($FetchIntoClass) {
-                $returnResult = new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
-            } else {
-
-                $returnResult = $statement->fetch(\PDO::FETCH_ASSOC);
+            if (self::$Database_Connection === null) {
+                self::initDB();
             }
-        } else {
-            $returnResult = false;
-        }
+            $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE ID = :ID');
+            $statement->execute([':ID' => $ID]);
+            if ($statement->rowCount() > 0) {
+                if ($FetchIntoClass) {
+                    return new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
+                }
 
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
+                return $statement->fetch(\PDO::FETCH_ASSOC);
 
-        return $returnResult;
+            }
+
+            return false;
+
+        });
     }
 }

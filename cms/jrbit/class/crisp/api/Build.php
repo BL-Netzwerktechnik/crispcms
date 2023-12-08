@@ -24,6 +24,7 @@
 namespace crisp\api;
 
 use crisp\core\Logger;
+use crisp\core\Tracing;
 
 /**
  * Build related functions.
@@ -34,19 +35,32 @@ class Build
     {
         Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
-        return sprintf(
-            '%s-%s.%s',
-            $_ENV['GIT_TAG'],
-            Build::getBuildType(),
-            $_ENV['CI_BUILD'] ?? 0
-        );
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Generating Release String');
+
+        return Tracing::traceFunction($context, function () {
+            return sprintf(
+                '%s-%s.%s',
+                $_ENV['GIT_TAG'],
+                Build::getBuildType(),
+                $_ENV['CI_BUILD'] ?? 0
+            );
+
+        });
     }
 
     public static function getVersion(): string
     {
         Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
-        return $_ENV['GIT_TAG'] ?? '0.0.0';
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Generating Version String');
+
+        return Tracing::traceFunction($context, function () {
+            return $_ENV['GIT_TAG'] ?? '0.0.0';
+        });
     }
 
     /**
@@ -58,18 +72,25 @@ class Build
     {
         Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
 
-        if (str_contains(strtolower(self::getVersion()), 'rc.')) {
-            $BuildType = 2;
-        } elseif (self::getVersion() !== '0.0.0' && preg_match('/^\d+\.\d+\.\d+$/', self::getVersion())) {
-            $BuildType = 1;
-        } else {
-            $BuildType = 0;
-        }
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Generating Build Type String');
 
-        return match ($BuildType) {
-            1 => 'Stable',
-            2 => 'Pre-Release',
-            default => 'Nightly'
-        };
+        return Tracing::traceFunction($context, function () {
+            if (str_contains(strtolower(self::getVersion()), 'rc.')) {
+                $BuildType = 2;
+            } elseif (self::getVersion() !== '0.0.0' && preg_match('/^\d+\.\d+\.\d+$/', self::getVersion())) {
+                $BuildType = 1;
+            } else {
+                $BuildType = 0;
+            }
+
+            return match ($BuildType) {
+                1 => 'Stable',
+                2 => 'Pre-Release',
+                default => 'Nightly'
+            };
+
+        });
     }
 }

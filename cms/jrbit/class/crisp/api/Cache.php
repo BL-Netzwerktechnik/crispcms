@@ -25,6 +25,7 @@ namespace crisp\api;
 
 use crisp\core;
 use crisp\core\Logger;
+use crisp\core\Tracing;
 
 /**
  * Interact with the cache.
@@ -41,27 +42,15 @@ class Cache
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Get Cache Directory');
 
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Get Cache Directory');
-            $span = $parent->startChild($context);
+        return Tracing::traceFunction($context, function () use ($Key) {
 
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-        }
+            return sprintf("%s/crisp/%s", core::CACHE_DIR, self::calculateCacheDir(self::getHash($Key)));
 
-        $returnResult = sprintf("%s/crisp/%s", core::CACHE_DIR, self::calculateCacheDir(self::getHash($Key)));
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        });
     }
 
     /**
@@ -74,27 +63,15 @@ class Cache
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
+        $context = new \Sentry\Tracing\SpanContext();
+        $context->setOp(__METHOD__);
+        $context->setDescription('Get Cache Directory');
 
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Get Cache File');
-            $span = $parent->startChild($context);
+        return Tracing::traceFunction($context, function () use ($Key) {
 
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-        }
+            return sprintf("%s/%s.cache", self::getCrispCacheDir($Key), self::getHash($Key));
 
-        $returnResult = sprintf("%s/%s.cache", self::getCrispCacheDir($Key), self::getHash($Key));
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        });
     }
 
     /**
