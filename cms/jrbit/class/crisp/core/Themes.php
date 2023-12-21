@@ -128,6 +128,7 @@ class Themes
         $TwigTheme->addFunction(new TwigFunction('strtotime', 'strtotime'));
         $TwigTheme->addFunction(new TwigFunction('time', 'time'));
         $TwigTheme->addFunction(new TwigFunction('parseTime', [Carbon::class, 'parse']));
+        $TwigTheme->addFunction(new TwigFunction('generateRoute', [Router::class, 'reverse']));
 
         $Translation = new Translation(Helper::getLocale());
 

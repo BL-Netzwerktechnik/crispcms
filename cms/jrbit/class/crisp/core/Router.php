@@ -39,21 +39,32 @@ class Router
         $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
     }
 
-    public static function add(string $route, RouteType $routeType, mixed $class): void
+    public static function add(string $route, RouteType $routeType, mixed $class, string $callable = null, string $name = null): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $collector = self::get($routeType)->any([$route, $class], [$class, $routeType == RouteType::PUBLIC ? "preRender" : "execute"]);
+
+        $callable = $callable ?? ($routeType == RouteType::PUBLIC ? "preRender" : "execute");
+
+
+        $collector = self::get($routeType)->any([$route, $name ?? $class], [$class, $callable]);
         $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
+    }
+
+    public static function reverse(string $name, RouteType $routeType, array $params = []): string
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+        return self::get($routeType)->route($name, $params);
     }
 
     public static function registerInteralRoutes(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        self::add("_/debug/oscp", RouteType::PUBLIC, \crisp\routes\DebugOCSP::class);
-        self::add("_/debug", RouteType::PUBLIC, \crisp\routes\Debug::class);
-        self::add("_/license", RouteType::PUBLIC, \crisp\routes\License::class);
-        self::add("_/proxy", RouteType::PUBLIC, \crisp\routes\Proxy::class);
-        self::add("_/version", RouteType::PUBLIC, \crisp\routes\Version::class);
+        self::add("_/debug/oscp", RouteType::PUBLIC, \crisp\routes\DebugOCSP::class, name: "debug.oscp");
+        self::add("_/debug", RouteType::PUBLIC, \crisp\routes\Debug::class, name: "debug");
+        self::add("_/license", RouteType::PUBLIC, \crisp\routes\License::class, name: "license");
+        self::add("_/proxy", RouteType::PUBLIC, \crisp\routes\Proxy::class, name: "proxy");
+        self::add("_/version", RouteType::PUBLIC, \crisp\routes\Version::class, name: "version");
     }
 
     public static function get(RouteType $routeType): RouteCollector

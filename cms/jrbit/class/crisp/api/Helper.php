@@ -238,10 +238,14 @@ class Helper
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {   // to check ip is pass from proxy
-            return $_SERVER['HTTP_X_FORWARDED_FOR'];
+            return trim(explode(",", $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
         }
 
-        return "0.0.0.0";
+        if (!empty($_SERVER['HTTP_X_REAL_IP'])) {   // to check ip is pass from proxy
+            return trim(explode(",", $_SERVER['HTTP_X_REAL_IP'])[0]);
+        }
+
+        return $_SERVER["REMOTE_ADDR"] ?? "0.0.0.0";
     }
 
     /**
