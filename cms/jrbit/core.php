@@ -197,7 +197,7 @@ try {
             $GLOBALS["license"] = api\License::fromDB();
 
             if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()) {
-                header("Location: _license#renew");
+                header("Location: /_/license#renew");
                 \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
                 $transaction->finish();
                 exit;
