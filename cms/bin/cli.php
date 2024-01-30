@@ -43,6 +43,8 @@ if (PHP_SAPI !== 'cli') {
 
 require_once __DIR__ . "/../jrbit/core.php";
 
+core::init();
+
 class CLI extends SplitbrainCLI
 {
     // register options and arguments

@@ -65,16 +65,10 @@ COPY config/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker /opt/entrypoint.d
 COPY config/crisp-cli.sh /usr/local/bin/crisp-cli
 
-RUN chmod +x /opt/entrypoint.d/entrypoint.sh && \
-    chmod +x /opt/entrypoint.d/bootstrap.sh && \
-    chmod +x /usr/local/bin/crisp-cli && \
+RUN chmod +x /usr/local/bin/crisp-cli && \
     ln -s /usr/local/bin/crisp-cli /usr/local/bin/crisp
 
-USER 33
 
-COPY --chown=33:33 . "$CRISP_WORKDIR"
+COPY . "$CRISP_WORKDIR"
 
-RUN ["/bin/bash", "-c", "/opt/entrypoint.d/bootstrap.sh"]
-
-
-ENTRYPOINT ["/bin/bash", "-c", "/opt/entrypoint.d/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "-c", "chmod +x /opt/entrypoint.d/*.sh; for script in /opt/entrypoint.d/*.sh; do $script; done"]

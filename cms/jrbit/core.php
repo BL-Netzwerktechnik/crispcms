@@ -73,170 +73,176 @@ class core
     public const THEME_BASE_DIR = __DIR__ . '/../themes';
 
     public const LOG_DIR = '/var/log/crisp';
-}
-require_once __DIR__ . '/../../vendor/autoload.php';
 
-try {
-    if (!defined('STDIN')) {
-        define('STDIN', fopen('php://stdin', 'rb'));
-    }
-    if (!defined('STDOUT')) {
-        define('STDOUT', fopen('php://stdout', 'wb'));
-    }
-    if (!defined('STDERR')) {
-        define('STDERR', fopen('php://stderr', 'wb'));
-    }
-    define('IS_DEV_ENV', (isset($_SERVER['ENVIRONMENT']) && $_SERVER['ENVIRONMENT'] !== 'production'));
-    define('ENVIRONMENT', match (strtolower($_SERVER['ENVIRONMENT'] ?? 'production')) {
-        'staging' => 'staging',
-        'development' => 'development',
-        default => 'production'
-    });
 
-    if (!file_exists(core::PERSISTENT_DATA)) {
-        Helper::createDir(core::PERSISTENT_DATA);
-    }
+    public static function init()
+    {
 
-    define("ThemeMetadata", Themes::getThemeMetadata());
+        require_once __DIR__ . '/../../vendor/autoload.php';
 
-    $dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
-    if (IS_DEV_ENV) {
-        $dotenv->safeLoad();
-    }
+        try {
+            if (!defined('STDIN')) {
+                define('STDIN', fopen('php://stdin', 'rb'));
+            }
+            if (!defined('STDOUT')) {
+                define('STDOUT', fopen('php://stdout', 'wb'));
+            }
+            if (!defined('STDERR')) {
+                define('STDERR', fopen('php://stderr', 'wb'));
+            }
+            define('IS_DEV_ENV', (isset($_SERVER['ENVIRONMENT']) && $_SERVER['ENVIRONMENT'] !== 'production'));
+            define('ENVIRONMENT', match (strtolower($_SERVER['ENVIRONMENT'] ?? 'production')) {
+                'staging' => 'staging',
+                'development' => 'development',
+                default => 'production'
+            });
 
-    $dotenv->required([
-        'POSTGRES_URI',
-        'DEFAULT_LOCALE',
-        'ENVIRONMENT',
-        'HOST',
-        'PROTO',
-        'TZ',
-        'LANG',
-    ])->notEmpty();
-    $dotenv->required('POSTGRES_URI')->allowedRegexValues('/^(?:([^:\/?#\s]+):\/{2})?(?:([^@\/?#\s]+)@)?([^\/?#\s]+)?(?:\/([^?#\s]*))?(?:[?]([^#\s]+))?\S*$/i');
+            if (!file_exists(core::PERSISTENT_DATA)) {
+                Helper::createDir(core::PERSISTENT_DATA);
+            }
 
-    Helper::getInstanceId();
+            define("ThemeMetadata", Themes::getThemeMetadata());
 
-    $GLOBALS['dotenv'] = $dotenv;
+            $dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
+            if (IS_DEV_ENV) {
+                $dotenv->safeLoad();
+            }
 
-    define('CRISP_HOOKED', true);
-    /* Core headers, can be accessed anywhere */
-    /* After autoloading we include additional headers below */
+            $dotenv->required([
+                'POSTGRES_URI',
+                'DEFAULT_LOCALE',
+                'ENVIRONMENT',
+                'HOST',
+                'PROTO',
+                'TZ',
+                'LANG',
+            ])->notEmpty();
+            $dotenv->required('POSTGRES_URI')->allowedRegexValues('/^(?:([^:\/?#\s]+):\/{2})?(?:([^@\/?#\s]+)@)?([^\/?#\s]+)?(?:\/([^?#\s]*))?(?:[?]([^#\s]+))?\S*$/i');
 
-    define('IS_API_ENDPOINT', (PHP_SAPI !== 'cli' && isset($_SERVER['IS_API_ENDPOINT'])));
-    define('IS_NATIVE_API', isset($_SERVER['IS_API_ENDPOINT']));
-    define('REQUEST_ID', Crypto::UUIDv4("R"));
+            Helper::getInstanceId();
 
-    if (PHP_SAPI !== 'cli') {
-        Logger::getLogger(__METHOD__)->info(Helper::getRequestLog());
-    }
+            $GLOBALS['dotenv'] = $dotenv;
 
-    if (isset($_ENV['SENTRY_DSN'])) {
+            define('CRISP_HOOKED', true);
+            /* Core headers, can be accessed anywhere */
+            /* After autoloading we include additional headers below */
 
-        init([
-            'dsn' => $_ENV['SENTRY_DSN'],
-            'traces_sample_rate' => (double)$_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
-            'profiles_sample_rate' => (double)$_ENV['SENTRY_PROFILES_SAMPLE_RATE'] ?? 0.3,
-            'environment' => ENVIRONMENT,
-            'release' => Themes::getReleaseString() ?? Build::getReleaseString(),
-        ]);
+            define('IS_API_ENDPOINT', (PHP_SAPI !== 'cli' && isset($_SERVER['IS_API_ENDPOINT'])));
+            define('IS_NATIVE_API', isset($_SERVER['IS_API_ENDPOINT']));
+            define('REQUEST_ID', Crypto::UUIDv4("R"));
 
-        configureScope(function (Scope $scope): void {
-            $scope->setTag('request_id', REQUEST_ID);
-        });
-    }
+            if (PHP_SAPI !== 'cli') {
+                Logger::getLogger(__METHOD__)->info(Helper::getRequestLog());
+            }
 
-    define('VM_IP', exec('hostname -I'));
+            if (isset($_ENV['SENTRY_DSN'])) {
 
-    header('X-Request-ID: ' . REQUEST_ID);
+                init([
+                    'dsn' => $_ENV['SENTRY_DSN'],
+                    'traces_sample_rate' => (float)$_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
+                    'profiles_sample_rate' => (float)$_ENV['SENTRY_PROFILES_SAMPLE_RATE'] ?? 0.3,
+                    'environment' => ENVIRONMENT,
+                    'release' => Themes::getReleaseString() ?? Build::getReleaseString(),
+                ]);
 
-    setlocale(LC_TIME, $_ENV["LANG"] ?? 'en_US.utf8');
-    if (PHP_SAPI !== 'cli') {
+                configureScope(function (Scope $scope): void {
+                    $scope->setTag('request_id', REQUEST_ID);
+                });
+            }
 
-        $transactionContext = (new TransactionContext("HTTP Request"));
-        $transactionContext->setOp("http.server");
-        $transaction = \Sentry\startTransaction($transactionContext);
+            define('VM_IP', exec('hostname -I'));
 
-        \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
+            header('X-Request-ID: ' . REQUEST_ID);
 
-        $GLOBALS['plugins'] = [];
-        $GLOBALS['hook'] = [];
-        $GLOBALS['navbar'] = [];
-        $GLOBALS['navbar_right'] = [];
-        $GLOBALS['render'] = [];
-        /*
+            setlocale(LC_TIME, $_ENV["LANG"] ?? 'en_US.utf8');
+            if (PHP_SAPI !== 'cli') {
+
+                $transactionContext = (new TransactionContext("HTTP Request"));
+                $transactionContext->setOp("http.server");
+                $transaction = \Sentry\startTransaction($transactionContext);
+
+                \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
+
+                $GLOBALS['plugins'] = [];
+                $GLOBALS['hook'] = [];
+                $GLOBALS['navbar'] = [];
+                $GLOBALS['navbar_right'] = [];
+                $GLOBALS['render'] = [];
+                /*
         ini_set('session.save_path',core::PERSISTENT_DATA . "/sessions");
         session_save_path(core::PERSISTENT_DATA . "/sessions");
         ini_set('session.gc_probability', 1);
         */
-        session_start();
+                session_start();
 
-        $CurrentTheme = core::DEFAULT_THEME;
-        Themes::autoload();
+                $CurrentTheme = core::DEFAULT_THEME;
+                Themes::autoload();
 
-        api\Helper::setLocale();
-        $Locale = Helper::getLocale();
+                api\Helper::setLocale();
+                $Locale = Helper::getLocale();
 
-        if (!isset($_COOKIE['guid'])) {
-            $GLOBALS['guid'] = Crypto::UUIDv4();
-            setcookie('guid', $GLOBALS['guid'], time() + (86400 * 30), '/');
-        } else {
-            $GLOBALS['guid'] = $_COOKIE['guid'];
-        }
+                if (!isset($_COOKIE['guid'])) {
+                    $GLOBALS['guid'] = Crypto::UUIDv4();
+                    setcookie('guid', $GLOBALS['guid'], time() + (86400 * 30), '/');
+                } else {
+                    $GLOBALS['guid'] = $_COOKIE['guid'];
+                }
 
-        define("IS_SPECIAL_PAGE", str_starts_with($_SERVER['REQUEST_URI'], "/_"));
-        Themes::initRenderer();
+                define("IS_SPECIAL_PAGE", str_starts_with($_SERVER['REQUEST_URI'], "/_"));
+                Themes::initRenderer();
 
-        ThemeVariables::register($TwigTheme);
-        Router::register();
-        HookFile::setup();
+                ThemeVariables::register($TwigTheme);
+                Router::register();
+                HookFile::setup();
 
-        $_ENV['REQUIRE_LICENSE'] = $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
+                $_ENV['REQUIRE_LICENSE'] = $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
 
-        if ($_ENV['REQUIRE_LICENSE'] && !IS_SPECIAL_PAGE) {
-            $GLOBALS["license"] = api\License::fromDB();
+                if ($_ENV['REQUIRE_LICENSE'] && !IS_SPECIAL_PAGE) {
+                    $GLOBALS["license"] = api\License::fromDB();
 
-            if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()) {
-                header("Location: /_/license#renew");
+                    if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()) {
+                        header("Location: /_/license#renew");
+                        \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
+                        $transaction->finish();
+                        exit;
+                    }
+                }
+
+                /* Twig Globals */
+
+                if (IS_API_ENDPOINT) {
+
+                    header('Access-Control-Allow-Origin: *');
+                    header('Cache-Control: max-age=600, public, must-revalidate');
+
+                    new RESTfulAPI();
+                } else {
+                    Themes::load();
+                }
                 \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
                 $transaction->finish();
-                exit;
             }
+        } catch (\TypeError | \Exception | \Error | \CompileError | \ParseError | \Throwable $ex) {
+            captureException($ex);
+            Logger::getLogger(__METHOD__)->critical($ex->__toString(), (array) $ex);
+            if (PHP_SAPI === 'cli')  exit(1);
+
+            http_response_code(500);
+
+            if (defined('REQUEST_ID')) {
+                $refid = REQUEST_ID;
+            } else {
+                $refid = 'Core';
+            }
+            if (IS_API_ENDPOINT) {
+                RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
+                return;
+            }
+
+
+            Themes::renderErrorPage($ex);
+
+            return;
         }
-
-        /* Twig Globals */
-
-        if (IS_API_ENDPOINT) {
-
-            header('Access-Control-Allow-Origin: *');
-            header('Cache-Control: max-age=600, public, must-revalidate');
-
-            new RESTfulAPI();
-        }else{
-            Themes::load();
-        }
-        \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
-        $transaction->finish();
     }
-} catch (\TypeError | \Exception | \Error | \CompileError | \ParseError | \Throwable $ex) {
-    captureException($ex);
-    Logger::getLogger(__METHOD__)->critical($ex->__toString(), (array) $ex);
-    if (PHP_SAPI === 'cli')  exit(1);
-
-    http_response_code(500);
-
-    if (defined('REQUEST_ID')) {
-        $refid = REQUEST_ID;
-    } else {
-        $refid = 'Core';
-    }
-    if (IS_API_ENDPOINT) {
-        RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
-        return;
-    }
-
-
-    Themes::renderErrorPage($ex);
-
-    return;
 }

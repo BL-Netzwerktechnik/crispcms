@@ -21,7 +21,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+use crisp\core;
+
 require_once __DIR__ . "/jrbit/core.php";
 /*
  * This is our entry point, nothing cool happens in this file.
  */
+
+core::init();
