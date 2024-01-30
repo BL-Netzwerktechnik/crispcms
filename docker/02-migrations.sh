@@ -9,3 +9,6 @@ crisp theme --migrate
 crisp theme --boot
 
 crisp --post-install
+
+toilet "CrispCMS"
+/usr/games/cowsay -f tux "... is ready to go!"

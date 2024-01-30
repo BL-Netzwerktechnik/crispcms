@@ -37,7 +37,7 @@ RUN echo 'pm.max_children = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     echo 'pm.min_spare_servers = 50' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     echo 'pm.max_spare_servers = 150' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     apt-get update && \
-    apt-get install -o DPkg::Options::="--force-confold" --no-install-recommends -y git libfreetype6-dev libjpeg62-turbo-dev libpng-dev curl zip openssl libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev locales nginx nginx-extras wget sudo && \
+    apt-get install -o DPkg::Options::="--force-confold" --no-install-recommends -y git libfreetype6-dev libjpeg62-turbo-dev libpng-dev curl zip openssl libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev locales nginx nginx-extras wget sudo cowsay toilet && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
     pecl install excimer && \
