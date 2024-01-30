@@ -57,6 +57,9 @@ class CLI extends SplitbrainCLI
         $options->registerOption('version', 'print version', 'v');
         $options->registerOption('instance-id', 'print instance id', 'i');
         $options->registerOption('no-formatting', 'Remove formatting of getter methods', 'n');
+        $options->registerOption('migrate', 'Run the Database Migrations', "m");
+        $options->registerOption('post-install', 'Run the Post Install Actions', "p");
+        $options->registerOption('check-permissions', 'Check permissions of required directories', "c");
         /* Global Options */
 
         /* Maintenance Command */
@@ -81,9 +84,6 @@ class CLI extends SplitbrainCLI
         /* Maintenance Command */
 
         /* Crisp Command */
-        $options->registerCommand('crisp', 'Perform various tasks in the core of crisp');
-        $options->registerOption('migrate', 'Run the Database Migrations', "m", false, 'crisp');
-        $options->registerOption('post-install', 'Run the Post Install Actions', "p", false, 'crisp');
         /* Crisp Command */
 
         /* Crisp Command */
@@ -119,7 +119,6 @@ class CLI extends SplitbrainCLI
         $options->registerOption('install', 'Initialize the Translations from the theme.json', "i", false, 'translation');
         $options->registerOption('uninstall', 'Delete all Translation Items from the database', "u", false, 'translation');
         /* Translations Command */
-
     }
 
     // implement your code
@@ -149,9 +148,6 @@ class CLI extends SplitbrainCLI
             case 'migration':
                 Migration::run($this, $options);
                 break;
-            case 'crisp':
-                Crisp::run($this, $options);
-                break;
             case 'storage':
                 Storage::run($this, $options);
                 break;
@@ -165,12 +161,14 @@ class CLI extends SplitbrainCLI
                 License::run($this, $options);
                 break;
             default:
-                if (strlen($options->getCmd()) > 0) {
-                    $this->error(sprintf("\"%s\" command is not configured", $options->getCmd()));
+                if (!Crisp::run($this, $options)) {
+                    if (strlen($options->getCmd()) > 0) {
+                        $this->error(sprintf("\"%s\" command is not configured", $options->getCmd()));
+                    }
+                    $options->useCompactHelp();
+                    echo $options->help();
+                    exit;
                 }
-                $options->useCompactHelp();
-                echo $options->help();
-                exit;
         }
     }
 }

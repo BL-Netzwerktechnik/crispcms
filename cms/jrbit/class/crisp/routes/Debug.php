@@ -32,6 +32,9 @@ use crisp\core\Themes;
  */
 class Debug
 {
+
+    const BASE_COMMAND = "crisp --no-colors %s 2>&1";
+
     public function preRender(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
@@ -47,41 +50,47 @@ class Debug
 
             switch ($_POST["action"]) {
                 case "reload_theme":
-                    $output = shell_exec("crisp-cli --no-colors theme -u 2>&1 && crisp-cli --no-colors theme -i 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "theme --uninstall"));
+                    $output .= shell_exec(sprintf(self::BASE_COMMAND, "theme --install"));
                     break;
                 case "reload_kv":
-                    $output = shell_exec("crisp-cli --no-colors storage -i 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "storage --install"));
+                    shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
                     break;
                 case "reload_kv_force":
-                    $output = shell_exec("crisp-cli --no-colors storage -i -f 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "storage --install --force"));
+                    shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
                     break;
                 case "execute_boot":
-                    $output = shell_exec("crisp-cli --no-colors theme -b 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "theme --boot"));
+                    shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
                     break;
                 case "clear_cache":
-                    $output = shell_exec("crisp-cli --no-colors theme -c 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
                     break;
                 case "postinstall":
-                    $output = shell_exec("crisp-cli --no-colors crisp -p 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "--post-install"));
+                    shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
                     break;
-
                 case "migrate_theme":
-                    $output = shell_exec("crisp-cli --no-colors theme -m 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "theme --migrate"));
+                    shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
                     break;
 
                 case "migrate_crisp":
-                    $output = shell_exec("crisp-cli --no-colors crisp -m 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "--migrate"));
+                    $output .= shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
                     break;
 
                 case "deletelicense":
-                    $output = shell_exec("crisp-cli --no-colors license -d 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "license --delete"));
                     break;
                 case "deleteissuerpublic":
-                    $output = shell_exec("crisp-cli --no-colors license --delete-issuer 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "license --delete-issuer"));
                     break;
 
                 case "deleteissuerprivate":
-                    $output = shell_exec("crisp-cli --no-colors license --delete-issuer-private 2>&1");
+                    $output = shell_exec(sprintf(self::BASE_COMMAND, "license --delete-issuer-private"));
                     break;
 
             }

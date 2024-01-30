@@ -251,7 +251,7 @@ class License
         }
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, strtr($this->ocsp, ["{{uuid}}" => $this->uuid, "{{instance}}" => $this->instance]));
+        curl_setopt($ch, CURLOPT_URL, strtr($_ENV["LICENSE_SERVER"], ["{{key}}" => $licenseKey, "{{instance}}" => Helper::getInstanceId()]));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         $response = json_decode(curl_exec($ch));

@@ -37,9 +37,31 @@ class Crisp
             }
 
             return true;
+        } elseif ($options->getOpt("check-permissions")){
+
+            if (!is_writable(core::PERSISTENT_DATA)) {
+                $minimal->error(sprintf("Directory %s is not writable!", core::PERSISTENT_DATA));
+            } else {
+                $minimal->success(sprintf("Directory %s is writable!", core::PERSISTENT_DATA));
+            }
+
+            if (!is_writable(core::PERSISTENT_DATA . "/.instance_id")) {
+                $minimal->error(sprintf("File %s is not writable!", core::PERSISTENT_DATA . "/.instance_id"));
+            } else {
+                $minimal->success(sprintf("File %s is writable!", core::PERSISTENT_DATA . "/.instance_id"));
+            }
+
+            if (!is_writable(core::CACHE_DIR)) {
+                $minimal->error(sprintf("Directory %s is not writable!", core::CACHE_DIR));
+            } else {
+                $minimal->success(sprintf("Directory %s is writable!", core::CACHE_DIR));
+            }
+
+            return true;
+
         }
         $minimal->error("No action");
 
-        return true;
+        return false;
     }
 }
