@@ -84,6 +84,7 @@ class License
 
     }
 
+
     public function validateOCSP(&$httpCode = null): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
@@ -239,6 +240,72 @@ class License
 
         return openssl_sign($this->encode(), $this->signature, $key);
     }
+
+
+    public static function fromLicenseServer($licenseKey, $installIssuer = true, $writeToDB = true, &$httpCode = null): License|false
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+        if (!$_ENV["LICENSE_SERVER"]) {
+            return false;
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, strtr($this->ocsp, ["{{uuid}}" => $this->uuid, "{{instance}}" => $this->instance]));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = json_decode(curl_exec($ch));
+
+        if (curl_errno($ch)) {
+            return false;
+        }
+
+        $httpCode = (string) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
+        curl_close($ch);
+        
+
+        if (str_starts_with($httpCode, "2")) {
+            
+
+            $license = json_decode(base64_decode($response["license"]), true);
+            $signature = base64_decode($response["signature"]);
+            $issuerPub = base64_decode($response["issuer"]);
+
+            if($installIssuer && !self::isIssuerAvailable()){
+                Config::set("license_issuer_public_key", $issuerPub);
+                // TODO: Add Log to notify installation
+            }
+
+            $licenseObj = new License(
+                $license["version"],
+                $license["uuid"],
+                $license["whitelabel"],
+                $license["domains"],
+                $license["name"],
+                $license["issuer"],
+                $license["issued_at"],
+                $license["expires_at"],
+                $license["data"],
+                $license["instance"],
+                $license["ocsp"],
+                $signature
+            );
+
+            if($writeToDB && $licenseObj->verifySignature()){
+                Config::set("license_key", $licenseObj->exportToString());
+            }
+            
+        } elseif (str_starts_with($httpCode, "5")) {
+            // TODO: Add Error Log
+            return false;
+        }
+
+        return false;
+
+    }
+
+
 
     public static function fromDB(): License|false
     {
