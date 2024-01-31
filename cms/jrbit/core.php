@@ -192,7 +192,6 @@ class core
                 Router::register();
                 HookFile::setup();
 
-
                 if (Build::requireLicense() && !IS_SPECIAL_PAGE) {
                     $GLOBALS["license"] = api\License::fromDB();
 

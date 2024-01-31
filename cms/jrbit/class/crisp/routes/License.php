@@ -28,6 +28,7 @@ use crisp\api\Build;
 use crisp\api\Cache;
 use crisp\api\Config;
 use crisp\api\Helper;
+use crisp\api\License as ApiLicense;
 use crisp\core;
 use crisp\core\Bitmask;
 use crisp\core\Environment;
@@ -44,7 +45,7 @@ class License
 {
     public function preRender(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -52,7 +53,6 @@ class License
                 if (count($_FILES) === 0) {
                     RESTfulAPI::response(Bitmask::MISSING_PARAMETER->value, "Missing Licenses", HTTP: 400);
                     exit;
-
                 }
 
                 if (!empty($_FILES["license"])) {
@@ -66,10 +66,9 @@ class License
                     }
 
                     Logger::getLogger(__METHOD__)->info("Installing new License Key...");
-                    if (!Config::set("license_key", file_get_contents($_FILES["license"]["tmp_name"]))) {
+                    if (!Config::set("license_data", file_get_contents($_FILES["license"]["tmp_name"]))) {
                         throw new Exception("Failed to save License Key");
                     }
-
                 }
                 if (!empty($_FILES["issuer"])) {
 
@@ -82,13 +81,11 @@ class License
                     if (!Config::set("license_issuer_public_key", file_get_contents($_FILES["issuer"]["tmp_name"]))) {
                         throw new Exception("Failed to save issuer key");
                     }
-
                 }
 
                 Cache::clear();
 
                 echo "OK";
-
             } elseif ($_POST["action"] === "generate_issuer") {
                 if (\crisp\api\License::isIssuerPrivateAvailable()) {
                     RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Issuer Key already exists!", HTTP: 401);
@@ -99,7 +96,6 @@ class License
                     throw new Exception("Failed to save Issuer Key");
                 }
                 echo "OK";
-
             } elseif ($_POST["action"] === "generate_license") {
                 if (!\crisp\api\License::isIssuerPrivateAvailable()) {
                     RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Issuer Key does not exist!", HTTP: 401);
@@ -150,25 +146,40 @@ class License
                 ]);
 
                 Cache::clear();
+            } elseif ($_POST["action"] === "enter_key") {
 
+                Logger::getLogger(__METHOD__)->info("Installing new License Key...");
+                $License = ApiLicense::fromLicenseServer($_POST["key"] ?? null);
+
+                if(!$License){
+                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Could not fetch license from server", HTTP: 500);
+                    exit;
+                }
+
+
+
+                Cache::clear();
+
+                echo "OK";
             } else {
                 RESTfulAPI::response(Bitmask::INVALID_PARAMETER->value, "Unknown Action", HTTP: 404);
             }
             exit;
         }
 
-        Cache::delete("license_key");
+        Cache::delete("license_data");
 
         ThemeVariables::setMultiple([
             "license" => \crisp\api\License::fromDB(),
             "IssuerAvailable" => \crisp\api\License::isIssuerAvailable(),
             "LicenseAvailable" => \crisp\api\License::isLicenseAvailable(),
             "IssuerPrivateAvailable" => \crisp\api\License::isIssuerPrivateAvailable(),
-            "RequireLicense" => Build::requireLicense()
+            "RequireLicense" => Build::requireLicense(),
+            "RequireLicenseServer" => Build::requireLicenseServer(),
+            "LicenseKeyIsDefined" => Build::licenseKeyIsDefined(),
         ]);
 
         echo Themes::render("views/license.twig", "themes/basic/templates");
         exit;
-
     }
 }

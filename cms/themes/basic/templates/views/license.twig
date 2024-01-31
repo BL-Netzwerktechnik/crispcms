@@ -187,6 +187,39 @@
                     }
                 });
             });
+            $("#entkey").on('submit', function(e){
+                e.preventDefault();
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Uploading License... Please wait'
+                })
+
+                let fd = new FormData();
+
+                if($("#key").length > 0) {
+                    fd.append('key', $('#key').val());
+                }
+
+                fd.append('action', "enter_key");
+
+                $.ajax({
+                    url: window.location.href,
+                    type: 'post',
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function(response){
+                        window.location.reload();
+                    },
+                    error: function() {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'An error occurred installing the license Key!'
+                        })
+
+                    }
+                });
+            });
 
             $("#generate_issuer").on('click', function(e){
                 e.preventDefault();

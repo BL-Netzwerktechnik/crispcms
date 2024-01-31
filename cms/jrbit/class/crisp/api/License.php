@@ -139,7 +139,7 @@ class License
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        return Config::exists("license_key");
+        return Config::exists("license_data");
     }
 
     public static function generateIssuer(): bool
@@ -245,15 +245,27 @@ class License
     public static function fromLicenseServer($licenseKey = null, $installIssuer = true, $writeToDB = true, &$httpCode = null): License|false
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Cache::clear();
 
         if (!Build::requireLicenseServer()) {
             Logger::getLogger(__METHOD__)->error("License Server not configured");
             return false;
         }
 
+        Config::set("license_key", $licenseKey ?? $_ENV["LICENSE_KEY"] ?? Config::get("license_key") ?? null);
+
+        Logger::getLogger(__METHOD__)->debug("License Key: " . Config::get("license_key"));
+
+        Logger::getLogger(__METHOD__)->debug("Requesting License from License Server...");
+
+        Logger::getLogger(__METHOD__)->debug("License Server: " . strtr($_ENV["LICENSE_SERVER"], [
+            "{{key}}" => Config::get("license_key"), 
+            "{{instance}}" => Helper::getInstanceId()
+        ]));
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, strtr($_ENV["LICENSE_SERVER"], [
-            "{{key}}" => $licenseKey, 
+            "{{key}}" => Config::get("license_key"), 
             "{{instance}}" => Helper::getInstanceId()
         ]));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -303,7 +315,10 @@ class License
             );
 
             if($writeToDB && $licenseObj->verifySignature()){
-                Config::set("license_key", $licenseObj->exportToString());
+                $licenseObj->install();
+            }elseif(!$licenseObj->verifySignature()){
+                Logger::getLogger(__METHOD__)->error("License Signature is invalid");
+                return false;
             }
             
             return $licenseObj;
@@ -311,8 +326,9 @@ class License
         } elseif (str_starts_with($httpCode, "5")) {
             Logger::getLogger(__METHOD__)->error("License Server Error");
             return false;
-        }else{
-            Logger::getLogger(__METHOD__)->error("Curl Server Error: " . $response);
+        }elseif (str_starts_with($httpCode, "4")){
+            Logger::getLogger(__METHOD__)->error("The license has been revoked or is invalid!");
+            self::uninstall();
             return false;
         }
 
@@ -320,15 +336,39 @@ class License
 
     }
 
+    public function install(): bool
+    {
+        Logger::getLogger(__METHOD__)->info("Installing License...");
+        
+        if(!$this->isValid()){
+            Logger::getLogger(__METHOD__)->error("License is invalid");
+            return false;
+        }
+
+        Cache::clear();
+        return Config::set("license_data", $this->exportToString());
+    }
+
+    public static function uninstall(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->info("Uninstalling License...");
+        Config::delete("license_data");
+        Config::delete("license_issuer_public_key");
+        Config::delete("license_issuer_private_key");
+        Logger::getLogger(__METHOD__)->info("Uninstalled License");
+        Cache::clear();
+        return true;
+    }
 
 
     public static function fromDB(): License|false
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        if (!Config::exists("license_key")) {
+        if (!Config::exists("license_data")) {
             return false;
         }
-        $data = Config::get("license_key");
+        $data = Config::get("license_data");
 
         $exploded = explode(".", $data);
 

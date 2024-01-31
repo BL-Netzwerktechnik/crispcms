@@ -57,7 +57,7 @@ migrate-and-test:
   - echo "# We dont need me!" > .env
   - mkdir /tmp/ci
   - cd /tmp/ci
-  - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev
+  - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev sudo
     wget git-core zip zlib1g-dev libpng-dev
   - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
   - docker-php-ext-enable pdo_pgsql pdo_mysql intl gd gettext

@@ -160,8 +160,8 @@ class License
                 return false;
             }
 
-            if (!Config::set("license_key", $license->exportToString())) {
-                $minimal->fatal("Could not save license!");
+            if(!$license->install()){
+                $minimal->fatal("Could not install license!");
 
                 return false;
             }
@@ -171,7 +171,7 @@ class License
             return true;
         } elseif ($options->getOpt("delete")) {
 
-            if (!Config::delete("license_key")) {
+            if (!Config::delete("license_data")) {
                 $minimal->fatal("Could not delete license!");
 
                 return false;
@@ -245,7 +245,7 @@ class License
                 return true;
             }
 
-            $License = ApiLicense::fromLicenseServer(Crypto::UUIDv4());
+            $License = ApiLicense::fromLicenseServer();
 
             if(!$License){
                 $minimal->fatal("Could not pull license!");

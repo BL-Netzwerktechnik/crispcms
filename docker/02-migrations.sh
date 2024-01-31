@@ -8,7 +8,8 @@ sudo -E -u www-data crisp theme --install
 sudo -E -u www-data crisp --clear-cache
 sudo -E -u www-data crisp theme --migrate | true # Allow to fail
 sudo -E -u www-data crisp theme --boot | true # Allow to fail
-if [ -z "${DONT_PULL_ON_STARTUP}" ]; then
+
+if [ ! -z "${PULL_LICENSE_ON_STARTUP}" ] || [ ! -z "${LICENSE_KEY}" ]; then
     sudo -E -u www-data crisp license --pull
 fi
 

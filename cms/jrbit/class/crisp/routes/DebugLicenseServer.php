@@ -23,6 +23,7 @@
 
 namespace crisp\routes;
 
+use Carbon\Carbon;
 use crisp\api\Build;
 use crisp\api\Config;
 use crisp\api\Helper;
@@ -32,21 +33,57 @@ use crisp\core\Logger;
 
 class DebugLicenseServer
 {
-    public function preRender(): void
+    public function preRender(string $status = "valid", string $licenseKey = null): void
     {
 
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        
-        if(Build::getEnvironment() !== \crisp\core\Environment::DEVELOPMENT) {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+        if (Build::getEnvironment() !== \crisp\core\Environment::DEVELOPMENT) {
             Logger::getLogger(__METHOD__)->error("License Server is only available in Development Environment");
             exit;
         }
+
+        $licenseExpiryDate = Carbon::now()->addDays(30)->unix();
 
         $domains = ["*.gitpod.io"];
 
         if ($_ENV["HOST"]) {
             $domains[] = $_ENV["HOST"];
         }
+
+        $instance = Helper::getInstanceId();
+        
+        Logger::getLogger(__METHOD__)->debug("Status: $status");
+
+        switch ($status) {
+            case "expired":
+                $licenseExpiryDate = Carbon::now()->subDays(30)->unix();
+                break;
+            case "revoked":
+                http_response_code(403);
+                exit;
+                break;
+            case "domain_mismatch":
+                $domains = ["invalid.tld"];
+                break;
+            case "instance_mismatch":
+                $instance = Crypto::UUIDv4();
+                break;
+
+            case "key":
+                if (!$licenseKey) {
+                    Logger::getLogger(__METHOD__)->error("Missing License Key");
+                    http_response_code(400);
+                    exit;
+                }
+                if($licenseKey !== "testKey"){
+                    Logger::getLogger(__METHOD__)->error("Invalid License Key");
+                    http_response_code(403);
+                    exit;
+                }
+                break;
+        }
+
 
 
         $license = new \crisp\api\License(
@@ -57,9 +94,9 @@ class DebugLicenseServer
             name: "Test License",
             issuer: "Acme Inc.",
             issued_at: time(),
-            expires_at: time() + 3600,
+            expires_at: $licenseExpiryDate,
             data: null,
-            instance: Helper::getInstanceId()
+            instance: $instance
         );
 
         if (!Config::exists("license_issuer_private_key")) {
