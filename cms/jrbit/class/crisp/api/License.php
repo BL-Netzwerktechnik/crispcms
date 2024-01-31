@@ -329,6 +329,7 @@ class License
         }elseif (str_starts_with($httpCode, "4")){
             Logger::getLogger(__METHOD__)->error("The license has been revoked or is invalid!");
             self::uninstall();
+            Config::delete("license_key");
             return false;
         }
 
