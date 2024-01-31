@@ -51,7 +51,8 @@ class Debug
         "delete-issuer-public" => ["{{base-command}} license --delete-issuer-public"],
         "delete-issuer-private" => ["{{base-command}} license --delete-issuer-private"],
         "generate-development-license" => ["{{base-command}} license --generate-development"],
-        "whoami" => ["whoami"]
+        "whoami" => ["whoami"],
+        "check-permissions" => ["{{base-command}} --check-permissions"],
     ];
 
     public static function generateCommand(string $command, string $loglevel = null): string {

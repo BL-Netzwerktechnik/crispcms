@@ -63,13 +63,13 @@ migrate-and-test:
   - docker-php-ext-enable pdo_pgsql pdo_mysql intl gd gettext
   - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
   - cd ${CI_PROJECT_DIR}
-  - php /tmp/ci/composer install
-  - php cms/bin/cli.php crisp -m
+  - sudo -E -u www-data php /tmp/ci/composer install
+  - sudo -E -u www-data php cms/bin/cli.php crisp -m
   - mv cms/themes/basic cms/themes/crisptheme
-  - php cms/bin/cli.php theme -i
+  - sudo -E -u www-data php cms/bin/cli.php theme -i
   - rm /tmp/ci/composer
   - git describe --tags --always > GIT_TAG || true
-  - php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > php-cs-fixer.json || true
+  - sudo -E -u www-data php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > php-cs-fixer.json || true
   artifacts:
       reports:
         codequality: php-cs-fixer.json
