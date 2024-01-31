@@ -21,6 +21,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+ /**
+  * 400 = Missing License Key
+  * 401 = Invalid License Key
+  * 403 = Revoked License
+  * 2xx = OK
+  * Other error codes have a grace period of 10 Pull attempts. If the code is still not 2xx the license will be uninstalled after 10 attempts. 
+  */
+
 namespace crisp\routes;
 
 use Carbon\Carbon;
@@ -35,6 +43,8 @@ class DebugLicenseServer
 {
     public function preRender(string $status = "valid", string $licenseKey = null): void
     {
+        #http_response_code(401);
+        #exit;
 
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
@@ -78,7 +88,7 @@ class DebugLicenseServer
                 }
                 if($licenseKey !== "testKey"){
                     Logger::getLogger(__METHOD__)->error("Invalid License Key");
-                    http_response_code(403);
+                    http_response_code(401);
                     exit;
                 }
                 break;

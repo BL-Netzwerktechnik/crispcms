@@ -1,16 +1,17 @@
-{% if RequireLicense and not LicenseAvailable %}
+{% if not LicenseAvailable %}
 
-	{% if LicenseKeyIsDefined and RequireLicenseServer %}
+	{% if LicenseKeyIsDefined and RequireLicenseServer and RequireLicense %}
 
 		<h3 class="text-danger text-center">Your Distributor Requires an Installed License Key but none is loaded into CrispCMS.<br>
 			Please Restart your Container!</h3>
-	{% else %}
+	{% elseif RequireLicense %}
 		<h3 class="text-danger text-center">Your Distributor Requires an Installed License Key but none is installed</h3>
 		<h4 class="text-danger text-center">Install one with the form below</h4>
 	{% endif %}
 
 
 	{% if RequireLicenseServer and not LicenseKeyIsDefined %}
+		<h1>Enter License</h1>
 		<form id="entkey" method="post" action="" enctype="multipart/form-data">
 			<div class="row">
 				<div class="col">
@@ -71,7 +72,7 @@
 	</form>
 {% endif %}
 
-{% if RequireLicense and RequireLicenseServer %}
+{% if RequireLicenseServer %}
 	<div class="alert alert-warning mt-2" role="alert">
 		<h4 class="alert-heading">License Server Configured</h4>
 		<p class="mb-0">Your Distributor has configured a license Server. The license is updated periodically as well as on container restart.</p>
