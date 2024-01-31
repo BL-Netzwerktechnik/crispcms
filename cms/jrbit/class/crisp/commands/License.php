@@ -169,7 +169,7 @@ class License
             $minimal->success("License has been saved");
 
             return true;
-        } elseif ($options->getOpt("delete")) {
+        } elseif ($options->getOpt("delete-data")) {
 
             if (!Config::delete("license_data")) {
                 $minimal->fatal("Could not delete license!");
@@ -178,6 +178,17 @@ class License
             }
 
             $minimal->success("License has been deleted!");
+
+            return true;
+        } elseif ($options->getOpt("delete-key")) {
+
+            if (!Config::delete("license_key")) {
+                $minimal->fatal("Could not delete license key!");
+
+                return false;
+            }
+
+            $minimal->success("License key has been deleted!");
 
             return true;
         } elseif ($options->getOpt("delete-issuer-public")) {
