@@ -368,7 +368,7 @@ class License
         Logger::getLogger(__METHOD__)->info("Uninstalling License...");
         Config::delete("license_data");
         Config::delete("license_issuer_public_key");
-        Config::delete("license_issuer_private_key");
+        #Config::delete("license_issuer_private_key");
         Logger::getLogger(__METHOD__)->info("Uninstalled License");
         Cache::clear();
         return true;
