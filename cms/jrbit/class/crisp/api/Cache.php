@@ -349,10 +349,25 @@ class Cache
             \RecursiveIteratorIterator::CHILD_FIRST
         );
         foreach ($files as $file) {
+            Logger::getLogger(__METHOD__)->debug("Deleting " . $file->getRealPath());
             if ($file->isDir()) {
-                rmdir($file->getRealPath());
+                Logger::getLogger(__METHOD__)->debug("Deleting Directory " . $file->getRealPath());
+                if(rmdir($file->getRealPath())){
+                    Logger::getLogger(__METHOD__)->debug("Deleted Directory " . $file->getRealPath());
+                } elseif (is_writable($file->getRealPath())) {
+                    Logger::getLogger(__METHOD__)->debug("Directory " . $file->getRealPath() . " is writable but not deleted");
+                } else {
+                    Logger::getLogger(__METHOD__)->error("Failed to delete Directory " . $file->getRealPath(). " - MSG: " . error_get_last()["message"]);
+                }
             } else {
-                unlink($file->getRealPath());
+                Logger::getLogger(__METHOD__)->debug("Deleting File " . $file->getRealPath());
+                if(unlink($file->getRealPath())){
+                    Logger::getLogger(__METHOD__)->debug("Deleted File " . $file->getRealPath());
+                } elseif (is_writable($file->getRealPath())) {
+                    Logger::getLogger(__METHOD__)->debug("File " . $file->getRealPath() . " is writable but not deleted");
+                } else {
+                    Logger::getLogger(__METHOD__)->error("Failed to delete File " . $file->getRealPath(). " - MSG: " . error_get_last()["message"]);
+                }
             }
         }
 

@@ -41,7 +41,7 @@ class Debug
     const COMMANDS = [
         "reload-theme" => ["{{base-command}} theme --uninstall", "{{base-command}} theme --install"],
         "reload-kv" => ["{{base-command}} storage --install"],
-        "reload-kv-force" => ["{{base-command}} storage --install"],
+        "reload-kv-force" => ["{{base-command}} storage --install --force"],
         "execute-boot-files" => ["{{base-command}} theme --boot"],
         "clear-cache" => ["{{base-command}} --clear-cache"],
         "post-install" => ["{{base-command}} --post-install"],
@@ -50,6 +50,8 @@ class Debug
         "delete-license" => ["{{base-command}} license --delete"],
         "delete-issuer-public" => ["{{base-command}} license --delete-issuer-public"],
         "delete-issuer-private" => ["{{base-command}} license --delete-issuer-private"],
+        "generate-development-license" => ["{{base-command}} license --generate-development"],
+        "whoami" => ["whoami"]
     ];
 
     public static function generateCommand(string $command, string $loglevel = null): string {
@@ -84,6 +86,8 @@ class Debug
                 $output = array_merge($output, array_filter(explode(PHP_EOL, shell_exec($generatedCommand))));
                 $commands[] = $generatedCommand;
             }
+
+            Themes::clearCache();
 
             RESTfulAPI::response(Bitmask::REQUEST_SUCCESS, "OK", [
                 "output" => array_reverse($output),

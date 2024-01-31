@@ -37,8 +37,14 @@ use splitbrain\phpcli\CLI as SplitbrainCLI;
 use splitbrain\phpcli\Options;
 
 if (PHP_SAPI !== 'cli') {
-    Logger::getLogger(__METHOD__)->critical("Not from CLI!");
     exit;
+}
+
+
+// Check if user is www-data
+if (posix_getuid() !== 33) {
+    echo "Please run this script as www-data\n";
+    exit(1);
 }
 
 require_once __DIR__ . "/../jrbit/core.php";
@@ -124,7 +130,7 @@ class CLI extends SplitbrainCLI
     {
 
 
-        if($options->getOpt("loglevel")){
+        if ($options->getOpt("loglevel")) {
             Logger::overrideLogLevel($options->getOpt("loglevel"));
         }
 

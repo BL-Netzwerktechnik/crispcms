@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker exec -it crispcms crisp-cli $@
+docker exec -u 33 -it crispcms crisp-cli --loglevel=info $@
