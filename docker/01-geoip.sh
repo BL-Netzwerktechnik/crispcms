@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 if [[ -z "${MAXMIND_LICENSE}" || -z "${MAXMIND_ACCOUNT_ID}" || -z "${MAXMIND_EDITION_IDS}" ]]; then
   echo "No Maxmind credentials found, not updating geoip"

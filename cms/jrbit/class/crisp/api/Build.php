@@ -51,6 +51,10 @@ class Build
         });
     }
 
+    public static function requireLicenseServer(): bool {
+        return array_key_exists('LICENSE_SERVER', $_ENV) && $_ENV['LICENSE_SERVER'] !== '' ? true : false;
+    }
+
     public static function requireLicense(): bool {
         return $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
     }

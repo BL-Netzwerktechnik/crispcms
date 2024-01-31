@@ -71,4 +71,4 @@ RUN chmod +x /usr/local/bin/crisp-cli && \
 
 COPY . "$CRISP_WORKDIR"
 
-ENTRYPOINT ["/bin/bash", "-c", "chmod +x /opt/entrypoint.d/*.sh; for script in /opt/entrypoint.d/*.sh; do $script; done"]
+ENTRYPOINT ["/bin/bash", "-c", "chmod +x /opt/entrypoint.d/*.sh; for script in /opt/entrypoint.d/*.sh; do $script; if [ $? -eq 255 ]; then exit 255; fi; done"]

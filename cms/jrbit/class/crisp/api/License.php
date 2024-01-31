@@ -242,21 +242,26 @@ class License
     }
 
 
-    public static function fromLicenseServer($licenseKey, $installIssuer = true, $writeToDB = true, &$httpCode = null): License|false
+    public static function fromLicenseServer($licenseKey = null, $installIssuer = true, $writeToDB = true, &$httpCode = null): License|false
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        if (!$_ENV["LICENSE_SERVER"]) {
+        if (!Build::requireLicenseServer()) {
+            Logger::getLogger(__METHOD__)->error("License Server not configured");
             return false;
         }
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, strtr($_ENV["LICENSE_SERVER"], ["{{key}}" => $licenseKey, "{{instance}}" => Helper::getInstanceId()]));
+        curl_setopt($ch, CURLOPT_URL, strtr($_ENV["LICENSE_SERVER"], [
+            "{{key}}" => $licenseKey, 
+            "{{instance}}" => Helper::getInstanceId()
+        ]));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        $response = json_decode(curl_exec($ch));
+        $response = curl_exec($ch);
 
         if (curl_errno($ch)) {
+            Logger::getLogger(__METHOD__)->error("Curl Error: ". curl_error($ch));
             return false;
         }
 
@@ -264,17 +269,22 @@ class License
         
         curl_close($ch);
         
+        Logger::getLogger(__METHOD__)->debug("License Server Response: " . $response);
 
         if (str_starts_with($httpCode, "2")) {
-            
 
+            $response = json_decode($response, true);
+            
+            Logger::getLogger(__METHOD__)->debug("Decoding License...");
             $license = json_decode(base64_decode($response["license"]), true);
+            Logger::getLogger(__METHOD__)->debug("Decoding Signature...");
             $signature = base64_decode($response["signature"]);
+            Logger::getLogger(__METHOD__)->debug("Decoding Issuer...");
             $issuerPub = base64_decode($response["issuer"]);
 
             if($installIssuer && !self::isIssuerAvailable()){
                 Config::set("license_issuer_public_key", $issuerPub);
-                // TODO: Add Log to notify installation
+                Logger::getLogger(__METHOD__)->info("Installed Issuer Public Key");
             }
 
             $licenseObj = new License(
@@ -296,8 +306,13 @@ class License
                 Config::set("license_key", $licenseObj->exportToString());
             }
             
+            return $licenseObj;
+
         } elseif (str_starts_with($httpCode, "5")) {
-            // TODO: Add Error Log
+            Logger::getLogger(__METHOD__)->error("License Server Error");
+            return false;
+        }else{
+            Logger::getLogger(__METHOD__)->error("Curl Server Error: " . $response);
             return false;
         }
 
@@ -364,6 +379,15 @@ class License
         }
 
         return json_encode($fields);
+    }
+
+    public function serveToLicenseServer(): string {
+
+        return json_encode([
+            "license" => base64_encode($this->encode()),
+            "signature" => base64_encode($this->signature),
+            "issuer" => base64_encode(Config::get("license_issuer_public_key"))
+        ]);
     }
 
     public function exportToString(): string

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 
 cd "$CRISP_WORKDIR" || exit 1
@@ -20,13 +21,10 @@ update-locale LANG="$LANG"
 
 
 cd "$CRISP_WORKDIR" || exit 1
-touch .env
+touch .env | true
 
 if [[ -z "${ASSETS_S3_BUCKET}" ]]; then
   echo "Not deploying to S3"
 else
   crisp assets --deploy-to-s3
 fi
-
-
-chown 33:33 /tmp/crisp-dir -R

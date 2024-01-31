@@ -7,7 +7,9 @@ use Carbon\CarbonInterface;
 use crisp\api\Build;
 use crisp\api\Config;
 use crisp\api\Helper;
+use crisp\api\License as ApiLicense;
 use crisp\core;
+use crisp\core\Crypto;
 use crisp\core\Environment;
 use crisp\core\Logger;
 use splitbrain\phpcli\Options;
@@ -35,72 +37,77 @@ class License
         }
     }
 
+    private static function getLicenseInfo(\CLI $minimal, Options $options): bool
+    {
+        $license = \crisp\api\License::fromDB();
+
+        if (!$license) {
+            $minimal->fatal("Could not load license!");
+
+            return false;
+        }
+
+        $minimal->success("Successfully loaded license!");
+
+        $minimal->notice("Version: " . $license->getVersion());
+        $minimal->notice("UUID: " . $license->getUuid());
+        $minimal->notice("Whitelabel: " . $license->getWhitelabel());
+        $minimal->notice("Domains: " . implode(", ", $license->getDomains()));
+        $minimal->notice("Issued To: " . $license->getName());
+        $minimal->notice("Issuer: " . $license->getIssuer());
+        $minimal->notice("Instance: " . $license->getInstance());
+        $minimal->notice("OCSP: " . $license->getOcsp());
+        $minimal->notice(sprintf(
+            "Issued At: %s (%s)",
+            date(DATE_RFC7231, $license->getIssuedAt()),
+            Carbon::parse($license->getIssuedAt())->diffForHumans()
+        ));
+        if ($license->canExpire()) {
+            $minimal->notice(sprintf(
+                "Expires At: %s (%s)",
+                ($license->getExpiresAt() ? date(DATE_RFC7231, $license->getExpiresAt()) : "No Expiry Date"),
+                Carbon::parse($license->getExpiresAt())->diffForHumans()
+            ));
+        }
+        $minimal->notice("Data: " . json_encode($license->getData()));
+
+        if (\crisp\api\License::GEN_VERSION > $license->getVersion()) {
+            $minimal->warning(sprintf("The License has been generated with an older Version of CrispCMS! (Installed Version: %s, License Version: %s)", $license->getVersion(), \crisp\api\License::GEN_VERSION));
+        } elseif (\crisp\api\License::GEN_VERSION < $license->getVersion()) {
+            $minimal->warning(sprintf("The License has been generated with a newer Version of CrispCMS! (Installed Version: %s, License Version: %s)", $license->getVersion(), \crisp\api\License::GEN_VERSION));
+        }
+
+        if ($license->isExpired()) {
+            $minimal->warning("The License expired " . Carbon::parse($license->getExpiresAt())->diffForHumans());
+        }
+
+        if (!$license->canExpire()) {
+            $minimal->warning("License never Expires!");
+        } else {
+            $creationDateCarbon = Carbon::parse($license->getIssuedAt());
+            $expiryDateCarbon = Carbon::parse($license->getExpiresAt());
+
+            $minimal->warning(sprintf("License is valid for %s", $creationDateCarbon->diffForHumans($expiryDateCarbon, CarbonInterface::DIFF_ABSOLUTE)));
+        }
+
+        if (!$license->verifySignature()) {
+            $minimal->alert("License Signature is not valid!");
+        }
+        if (!$license->isValid()) {
+            $minimal->alert("License is not valid!");
+        } else {
+            $minimal->success("License is valid!");
+        }
+
+        return true;
+    }
+
     public static function run(\CLI $minimal, Options $options): bool
     {
         if ($options->getOpt("generate-issuer-private")) {
             return self::generateIssuer($minimal, $options);
         } elseif ($options->getOpt("info")) {
-            $license = \crisp\api\License::fromDB();
-
-            if (!$license) {
-                $minimal->fatal("Could not load license!");
-
-                return false;
-            }
-
-            $minimal->success("Successfully loaded license!");
-
-            $minimal->notice("Version: " . $license->getVersion());
-            $minimal->notice("UUID: " . $license->getUuid());
-            $minimal->notice("Whitelabel: " . $license->getWhitelabel());
-            $minimal->notice("Domains: " . implode(", ", $license->getDomains()));
-            $minimal->notice("Issued To: " . $license->getName());
-            $minimal->notice("Issuer: " . $license->getIssuer());
-            $minimal->notice("Instance: " . $license->getInstance());
-            $minimal->notice("OCSP: " . $license->getOcsp());
-            $minimal->notice(sprintf(
-                "Issued At: %s (%s)",
-                date(DATE_RFC7231, $license->getIssuedAt()),
-                Carbon::parse($license->getIssuedAt())->diffForHumans()
-            ));
-            if ($license->canExpire()) {
-                $minimal->notice(sprintf(
-                    "Expires At: %s (%s)",
-                    ($license->getExpiresAt() ? date(DATE_RFC7231, $license->getExpiresAt()) : "No Expiry Date"),
-                    Carbon::parse($license->getExpiresAt())->diffForHumans()
-                ));
-            }
-            $minimal->notice("Data: " . json_encode($license->getData()));
-
-            if (\crisp\api\License::GEN_VERSION > $license->getVersion()) {
-                $minimal->warning(sprintf("The License has been generated with an older Version of CrispCMS! (Installed Version: %s, License Version: %s)", $license->getVersion(), \crisp\api\License::GEN_VERSION));
-            } elseif (\crisp\api\License::GEN_VERSION < $license->getVersion()) {
-                $minimal->warning(sprintf("The License has been generated with a newer Version of CrispCMS! (Installed Version: %s, License Version: %s)", $license->getVersion(), \crisp\api\License::GEN_VERSION));
-            }
-
-            if ($license->isExpired()) {
-                $minimal->warning("The License expired " . Carbon::parse($license->getExpiresAt())->diffForHumans());
-            }
-
-            if (!$license->canExpire()) {
-                $minimal->warning("License never Expires!");
-            } else {
-                $creationDateCarbon = Carbon::parse($license->getIssuedAt());
-                $expiryDateCarbon = Carbon::parse($license->getExpiresAt());
-
-                $minimal->warning(sprintf("License is valid for %s", $creationDateCarbon->diffForHumans($expiryDateCarbon, CarbonInterface::DIFF_ABSOLUTE)));
-            }
-
-            if (!$license->verifySignature()) {
-                $minimal->alert("License Signature is not valid!");
-            }
-            if (!$license->isValid()) {
-                $minimal->alert("License is not valid!");
-            } else {
-                $minimal->success("License is valid!");
-            }
-
-            return true;
+            return self::getLicenseInfo($minimal, $options);
         } elseif ($options->getOpt("generate-development")) {
 
             if (Build::requireLicense() && Build::getEnvironment() !== Environment::DEVELOPMENT) {
@@ -231,6 +238,22 @@ class License
             }
 
             return true;
+        } elseif ($options->getOpt("pull")){
+
+            if (!Build::requireLicenseServer()) {
+                $minimal->error("This instance does not have a license server configured!");
+                return true;
+            }
+
+            $License = ApiLicense::fromLicenseServer(Crypto::UUIDv4());
+
+            if(!$License){
+                $minimal->fatal("Could not pull license!");
+                return false;
+            }
+
+            $minimal->success("Successfully pulled license!");
+            return self::getLicenseInfo($minimal, $options);
         }
         $minimal->error("No action");
 

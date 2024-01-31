@@ -53,6 +53,7 @@ class Debug
         "generate-development-license" => ["{{base-command}} license --generate-development"],
         "whoami" => ["whoami"],
         "check-permissions" => ["{{base-command}} --check-permissions"],
+        "pull-from-license-server" => ["{{base-command}} license --pull"],
     ];
 
     public static function generateCommand(string $command, string $loglevel = null): string {
