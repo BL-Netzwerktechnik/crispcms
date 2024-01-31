@@ -23,9 +23,13 @@
 
 namespace crisp\routes;
 
+use crisp\api\Build;
 use crisp\core;
+use crisp\core\Bitmask;
 use crisp\core\Logger;
 use crisp\core\Themes;
+use crisp\core\Environment;
+use crisp\core\RESTfulAPI;
 
 /**
  * Used internally, theme loader.
@@ -33,13 +37,33 @@ use crisp\core\Themes;
 class Debug
 {
 
-    const BASE_COMMAND = "crisp --no-colors %s 2>&1";
+    const BASE_COMMAND = "crisp --loglevel=%s --no-colors";
+    const COMMANDS = [
+        "reload-theme" => ["{{base-command}} theme --uninstall", "{{base-command}} theme --install"],
+        "reload-kv" => ["{{base-command}} storage --install"],
+        "reload-kv-force" => ["{{base-command}} storage --install"],
+        "execute-boot-files" => ["{{base-command}} theme --boot"],
+        "clear-cache" => ["{{base-command}} --clear-cache"],
+        "post-install" => ["{{base-command}} --post-install"],
+        "migrate-theme" => ["{{base-command}} theme --migrate"],
+        "migrate-crisp" => ["{{base-command}} --migrate"],
+        "delete-license" => ["{{base-command}} license --delete"],
+        "delete-issuer-public" => ["{{base-command}} license --delete-issuer-public"],
+        "delete-issuer-private" => ["{{base-command}} license --delete-issuer-private"],
+    ];
+
+    public static function generateCommand(string $command, string $loglevel = null): string {
+        
+        return strtr(sprintf("%s 2>&1", $command), [
+            "{{base-command}}" => sprintf(self::BASE_COMMAND, $loglevel ?? "info")
+        ]);
+    }
 
     public function preRender(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        if (ENVIRONMENT !== 'development') {
+        if (Build::getEnvironment() !== Environment::DEVELOPMENT) {
             echo Themes::render("errors/notfound.twig", "themes/basic/templates");
             exit;
         }
@@ -47,55 +71,24 @@ class Debug
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $output = [];
+            $commands = [];
 
-            switch ($_POST["action"]) {
-                case "reload_theme":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "theme --uninstall"));
-                    $output .= shell_exec(sprintf(self::BASE_COMMAND, "theme --install"));
-                    break;
-                case "reload_kv":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "storage --install"));
-                    shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
-                    break;
-                case "reload_kv_force":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "storage --install --force"));
-                    shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
-                    break;
-                case "execute_boot":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "theme --boot"));
-                    shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
-                    break;
-                case "clear_cache":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
-                    break;
-                case "postinstall":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "--post-install"));
-                    shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
-                    break;
-                case "migrate_theme":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "theme --migrate"));
-                    shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
-                    break;
-
-                case "migrate_crisp":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "--migrate"));
-                    $output .= shell_exec(sprintf(self::BASE_COMMAND, "theme --clear-cache"));
-                    break;
-
-                case "deletelicense":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "license --delete"));
-                    break;
-                case "deleteissuerpublic":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "license --delete-issuer"));
-                    break;
-
-                case "deleteissuerprivate":
-                    $output = shell_exec(sprintf(self::BASE_COMMAND, "license --delete-issuer-private"));
-                    break;
-
+            if (!array_key_exists($_POST["action"], self::COMMANDS)) {
+                echo "Command not found";
+                exit;
             }
 
-            echo implode("<br>", array_reverse(explode(PHP_EOL, $output)));
+            // Execute command in array
+            foreach (self::COMMANDS[$_POST["action"]] as $key => $command) {
+                $generatedCommand = self::generateCommand($command, $_POST["loglevel"] ?? null);
+                $output = array_merge($output, array_filter(explode(PHP_EOL, shell_exec($generatedCommand))));
+                $commands[] = $generatedCommand;
+            }
+
+            RESTfulAPI::response(Bitmask::REQUEST_SUCCESS, "OK", [
+                "output" => array_reverse($output),
+                "commands" => $commands,
+            ]);
             exit;
         }
 

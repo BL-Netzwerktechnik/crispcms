@@ -34,6 +34,11 @@ use Monolog\Handler\StreamHandler;
  */
 class Logger
 {
+    public static function overrideLogLevel(string $logLevel = "INFO"): void
+    {
+        $_ENV["LOG_LEVEL"] = $logLevel;
+    }
+    
     public static function getLogLevel(): string
     {
         return $_ENV["LOG_LEVEL"] ?? "INFO";

@@ -23,6 +23,7 @@
 
 namespace crisp\api;
 
+use crisp\core\Environment;
 use crisp\core\Logger;
 use crisp\core\Tracing;
 
@@ -48,6 +49,18 @@ class Build
             );
 
         });
+    }
+
+    public static function requireLicense(): bool {
+        return $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
+    }
+
+    public static function getEnvironment(): Environment {
+        return match (strtolower($_SERVER['ENVIRONMENT'] ?? 'production')) {
+            'staging' => Environment::STAGING,
+            'development' => Environment::DEVELOPMENT,
+            default => Environment::PRODUCTION
+        };
     }
 
     public static function getVersion(): string

@@ -27,6 +27,7 @@ use crisp\api\Build;
 use crisp\api\Helper;
 use crisp\core\Bitmask;
 use crisp\core\Crypto;
+use crisp\core\Environment;
 use crisp\core\HookFile;
 use crisp\core\RESTfulAPI;
 use crisp\core\Sessions;
@@ -42,6 +43,8 @@ use Twig\Loader\FilesystemLoader;
 use function Sentry\captureException;
 use function Sentry\configureScope;
 use function Sentry\init;
+
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 /**
  * Core class, nothing else.
@@ -78,8 +81,6 @@ class core
     public static function init()
     {
 
-        require_once __DIR__ . '/../../vendor/autoload.php';
-
         try {
             if (!defined('STDIN')) {
                 define('STDIN', fopen('php://stdin', 'rb'));
@@ -90,12 +91,8 @@ class core
             if (!defined('STDERR')) {
                 define('STDERR', fopen('php://stderr', 'wb'));
             }
-            define('IS_DEV_ENV', (isset($_SERVER['ENVIRONMENT']) && $_SERVER['ENVIRONMENT'] !== 'production'));
-            define('ENVIRONMENT', match (strtolower($_SERVER['ENVIRONMENT'] ?? 'production')) {
-                'staging' => 'staging',
-                'development' => 'development',
-                default => 'production'
-            });
+            define('IS_DEV_ENV', (Build::getEnvironment() === Environment::DEVELOPMENT));
+            define('ENVIRONMENT', Build::getEnvironment()->value);
 
             if (!file_exists(core::PERSISTENT_DATA)) {
                 Helper::createDir(core::PERSISTENT_DATA);
@@ -141,7 +138,7 @@ class core
                     'dsn' => $_ENV['SENTRY_DSN'],
                     'traces_sample_rate' => (float)$_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
                     'profiles_sample_rate' => (float)$_ENV['SENTRY_PROFILES_SAMPLE_RATE'] ?? 0.3,
-                    'environment' => ENVIRONMENT,
+                    'environment' => Build::getEnvironment()->value,
                     'release' => Themes::getReleaseString() ?? Build::getReleaseString(),
                 ]);
 
@@ -191,13 +188,12 @@ class core
                 define("IS_SPECIAL_PAGE", str_starts_with($_SERVER['REQUEST_URI'], "/_"));
                 Themes::initRenderer();
 
-                ThemeVariables::register($TwigTheme);
+                ThemeVariables::register();
                 Router::register();
                 HookFile::setup();
 
-                $_ENV['REQUIRE_LICENSE'] = $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
 
-                if ($_ENV['REQUIRE_LICENSE'] && !IS_SPECIAL_PAGE) {
+                if (Build::requireLicense() && !IS_SPECIAL_PAGE) {
                     $GLOBALS["license"] = api\License::fromDB();
 
                     if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()) {

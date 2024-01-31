@@ -4,9 +4,11 @@ namespace crisp\commands;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use crisp\api\Build;
 use crisp\api\Config;
 use crisp\api\Helper;
 use crisp\core;
+use crisp\core\Environment;
 use crisp\core\Logger;
 use splitbrain\phpcli\Options;
 
@@ -17,7 +19,7 @@ class License
 
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        if ((bool) $_ENV["REQUIRE_LICENSE"]) {
+        if (Build::requireLicense() && Build::getEnvironment() !== Environment::DEVELOPMENT) {
             $minimal->fatal("Issuers cannot be generated on this instance!");
 
             return false;
@@ -35,7 +37,7 @@ class License
 
     public static function run(\CLI $minimal, Options $options): bool
     {
-        if ($options->getOpt("generate-private-key")) {
+        if ($options->getOpt("generate-issuer-private")) {
             return self::generateIssuer($minimal, $options);
         } elseif ($options->getOpt("info")) {
             $license = \crisp\api\License::fromDB();
@@ -99,15 +101,15 @@ class License
             }
 
             return true;
-        } elseif ($options->getOpt("generate-test")) {
+        } elseif ($options->getOpt("generate-development")) {
 
-            if ((bool) $_ENV["REQUIRE_LICENSE"]) {
+            if (Build::requireLicense() && Build::getEnvironment() !== Environment::DEVELOPMENT) {
                 $minimal->fatal("Licenses cannot be generated on this instance!");
 
                 return false;
             }
 
-            $domains = ["*.example.com", "example.com"];
+            $domains = ["*.gitpod.io"];
 
             if ($_ENV["HOST"]) {
                 $domains[] = $_ENV["HOST"];
@@ -137,7 +139,7 @@ class License
                 expires_at: $expiry,
                 data: null,
                 instance: $instance,
-                ocsp: sprintf("%s://%s/_/debug_ocsp", $_ENV["PROTO"], $_ENV["HOST"])
+                //ocsp: sprintf("%s://%s/_/debug_ocsp", $_ENV["PROTO"], $_ENV["HOST"])
             );
 
             if (!Config::exists("license_issuer_private_key")) {
@@ -171,9 +173,9 @@ class License
             $minimal->success("License has been deleted!");
 
             return true;
-        } elseif ($options->getOpt("delete-issuer")) {
+        } elseif ($options->getOpt("delete-issuer-public")) {
 
-            if ($_ENV["REQUIRE_LICENSE"]) {
+            if (Build::requireLicense()) {
                 $minimal->fatal("Issuers cannot be deleted on this instance!");
 
                 return false;
@@ -214,7 +216,7 @@ class License
             }
 
             return true;
-        } elseif ($options->getOpt("get-issuer")) {
+        } elseif ($options->getOpt("get-issuer-public")) {
 
             if (!Config::exists("license_issuer_public_key")) {
                 $minimal->fatal("Issuer Public Key does not exist!");

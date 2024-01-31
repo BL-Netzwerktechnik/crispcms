@@ -24,11 +24,13 @@
 namespace crisp\routes;
 
 use Carbon\Carbon;
+use crisp\api\Build;
 use crisp\api\Cache;
 use crisp\api\Config;
 use crisp\api\Helper;
 use crisp\core;
 use crisp\core\Bitmask;
+use crisp\core\Environment;
 use crisp\core\Logger;
 use crisp\core\RESTfulAPI;
 use crisp\core\Themes;
@@ -104,7 +106,7 @@ class License
                     exit;
                 }
 
-                if ($_ENV["REQUIRE_LICENSE"]) {
+                if (Build::requireLicense() && Build::getEnvironment() !== Environment::DEVELOPMENT) {
                     RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Licenses cannot be generated on this instance!", HTTP: 401);
                     exit;
                 }
@@ -162,6 +164,7 @@ class License
             "IssuerAvailable" => \crisp\api\License::isIssuerAvailable(),
             "LicenseAvailable" => \crisp\api\License::isLicenseAvailable(),
             "IssuerPrivateAvailable" => \crisp\api\License::isIssuerPrivateAvailable(),
+            "RequireLicense" => Build::requireLicense()
         ]);
 
         echo Themes::render("views/license.twig", "themes/basic/templates");

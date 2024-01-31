@@ -5,22 +5,39 @@
 
 {% block content %}
     <div class="mt-5 container">
+
+        <!-- Select log level -->
+        <div class="row row-cols-auto">
+            <div class="col">
+                <label for="log-level" class="form-label">Log Level:</label>
+                <select class="form-select" id="log-level">
+                    <option value="debug">DEBUG</option>
+                    <option value="info" selected>INFO</option>
+                    <option value="notice">NOTICE</option>
+                    <option value="warning">WARNING</option>
+                    <option value="error">ERROR</option>
+                    <option value="critical">CRITICAL</option>
+                    <option value="success">SUCCESS</option>
+                </select>
+            </div>
+            </div>
+
         <h1 class="text-center mb-4">Themes</h1>
         <div class="row row-cols-auto">
             <div class="col">
-                <button type="button" data-action="reload_theme" class="btn btn-primary d-block mx-auto">Reload Theme</button>
+                <button type="button" data-action="reload-theme" class="btn btn-primary d-block mx-auto">Reload Theme</button>
             </div>
             <div class="col">
-                <button type="button" data-action="migrate_theme" class="btn btn-primary d-block mx-auto">Migrate Theme</button>
+                <button type="button" data-action="migrate-theme" class="btn btn-primary d-block mx-auto">Migrate Theme</button>
             </div>
             <div class="col">
-                <button type="button" data-action="reload_kv" class="btn btn-primary d-block mx-auto">Reload Storage</button>
+                <button type="button" data-action="reload-kv" class="btn btn-primary d-block mx-auto">Reload Storage</button>
             </div>
             <div class="col">
-                <button type="button" data-action="reload_kv_force" class="btn btn-danger d-block mx-auto">Reload Storage (Overwrite)</button>
+                <button type="button" data-action="reload-kv-force" class="btn btn-danger d-block mx-auto">Reload Storage (Overwrite)</button>
             </div>
             <div class="col">
-                <button type="button" data-action="execute_boot" class="btn btn-warning d-block mx-auto">Execute Boot Files</button>
+                <button type="button" data-action="execute-boot-files" class="btn btn-warning d-block mx-auto">Execute Boot Files</button>
             </div>
         </div>
 
@@ -28,13 +45,13 @@
         <h1 class="text-center mt-4">Core</h1>
         <div class="row row-cols-auto">
             <div class="col">
-                <button type="button" data-action="migrate_crisp" class="btn btn-danger d-block mx-auto">Migrate Crisp</button>
+                <button type="button" data-action="migrate-crisp" class="btn btn-danger d-block mx-auto">Migrate Crisp</button>
             </div>
             <div class="col">
-                <button type="button" data-action="postinstall" class="btn btn-primary d-block mx-auto">Execute Post Install</button>
+                <button type="button" data-action="post-install" class="btn btn-primary d-block mx-auto">Execute Post Install</button>
             </div>
             <div class="col">
-                <button type="button" data-action="clear_cache" class="btn btn-primary d-block mx-auto">Clear Cache</button>
+                <button type="button" data-action="clear-cache" class="btn btn-primary d-block mx-auto">Clear Cache</button>
             </div>
         </div>
 
@@ -42,23 +59,35 @@
         <h1 class="text-center mt-4">License</h1>
         <div class="row row-cols-auto">
             <div class="col">
-                <button type="button" data-action="deletelicense" class="btn btn-danger d-block mx-auto">Delete License</button>
+                <button type="button" data-action="delete-license" class="btn btn-danger d-block mx-auto">Delete License</button>
             </div>
             <div class="col">
-                <button type="button" data-action="deleteissuerpublic" class="btn btn-danger d-block mx-auto">Delete Issuer Public</button>
+                <button type="button" data-action="delete-issuer-public" class="btn btn-danger d-block mx-auto">Delete Issuer Public</button>
             </div>
             <div class="col">
-                <button type="button" data-action="deleteissuerprivate" class="btn btn-danger d-block mx-auto">Delete Issuer Private</button>
+                <button type="button" data-action="delete-issuer-private" class="btn btn-danger d-block mx-auto">Delete Issuer Private</button>
+            </div>
+            <div class="col">
+                <button type="button" data-action="delete-issuer-private" class="btn btn-danger d-block mx-auto">Delete Issuer Private</button>
             </div>
         </div>
 
     </div>
 
-    <div class="container mt-5">
-        <div class="card">
-            <div class="card-body"id="result">
-
-            </div>
+    <div class="container mt-5" id="response-container" style="display: none;">
+        <h1>Commands Executed</h1>
+        <div id="command-list" class="mb-4">
+            No commands executed yet.
+        </div>
+        <h1>Output</h1>
+        <small class="text-muted">(Last Entry on Top)</small>
+        <div id="output" class="mb-4">
+            No logs yet.
+        </div>
+        <h1>Log Lines</h1>
+        <small class="text-muted">(Last Entry on Top)</small>
+        <div id="loglines">
+            No logs yet.
         </div>
     </div>
 
@@ -87,8 +116,70 @@
                     icon: 'warning',
                     title: 'Queueing Command'
                 })
-                $.post( window.location.href, {action: $(this).data("action")}, function( data ) {
-                    $( "#result" ).html( data );
+                $.post( window.location.href, {action: $(this).data("action"), loglevel: $("#log-level").val()}, function( data ) {
+                    $( "#response-container" ).show();
+                    let commandListDiv = $("#command-list");
+                    let logLinesListDiv = $("#loglines");
+                    let outputDiv = $("#output");
+
+                    commandListDiv.html("");
+                    logLinesListDiv.html("");
+                    outputDiv.html("");
+
+                    let commandListElement = $('<ul class="list-group list-group-numbered"></ul>');
+                    commandListDiv.append(commandListElement);
+
+                    let logLinesListElement = $('<ul class="list-group"></ul>');
+                    logLinesListDiv.append(logLinesListElement);
+
+                    let outputListElement = $('<ul class="list-group"></ul>');
+                    outputDiv.append(outputListElement);
+
+                    data.parameters.output.forEach(function (line) {
+                        let match = line.match(/\[(.+?)\] (\S+)\.(\S+): (.*)/);
+
+                        if (match === null) {
+
+                            
+                            outputListElement.append('<li class="list-group-item"><kbd>' + line + '</kbd></li>');
+
+                            return;
+                        }
+
+
+                        let logObject = {
+                            "timestamp": match[1].trim(),
+                            "class": match[2].trim(),
+                            "level": match[3].trim(),
+                            "message": match[4].trim()
+                        };
+
+                        let logLevelColors = {
+                            "DEBUG": "secondary",
+                            "INFO": "info",
+                            "NOTICE": "primary",
+                            "WARNING": "warning",
+                            "ERROR": "danger",
+                            "CRITICAL": "danger",
+                            "SUCCESS": "success",
+                        };
+                        let outputListItem = $('<li class="list-group-item"></li>');
+                        let rowDiv = $('<div class="row flex-nowrap text-nowrap overflow-auto my-3"></div>');
+
+                        rowDiv.append('<div class="col-1"><span class="badge bg-' + logLevelColors[logObject.level] + '">' + logObject.level + '</span></div>');
+                        rowDiv.append('<div class="col-auto"><span class="badge bg-primary">' + logObject.timestamp + '</span></div>');
+                        rowDiv.append('<div class="col-auto"><span class="badge bg-secondary">' + logObject.class + '</span></div>');
+                        rowDiv.append('<div class="col-auto"><span><kbd>' + logObject.message + '</kbd></span></div>');
+
+                        outputListItem.append(rowDiv);
+                        logLinesListElement.append(outputListItem);
+
+                    });
+
+                    data.parameters.commands.forEach(function (command) {
+                        commandListElement.append('<li class="list-group-item"><kbd>' + command + '</kbd></li>');
+                    });
+
 
                     Toast.fire({
                         icon: 'success',

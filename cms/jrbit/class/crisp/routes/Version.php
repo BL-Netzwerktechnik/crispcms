@@ -49,7 +49,7 @@ class Version
 
         RESTfulAPI::response(Bitmask::REQUEST_SUCCESS->value, "This site is running CrispCMS!", [
             "release" => Build::getReleaseString(),
-            "environment" => ENVIRONMENT,
+            "environment" => Build::getEnvironment(),
             "build" => Build::getBuildType(),
             "installed_license" => $license,
         ]);

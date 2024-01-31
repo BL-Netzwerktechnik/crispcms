@@ -1,4 +1,4 @@
-{% if ENV.REQUIRE_LICENSE and not LicenseAvailable %}
+{% if RequireLicense and not LicenseAvailable %}
     <h3 class="text-danger text-center">Your Distributor Requires an Installed License Key but none is installed</h3>
     <h4 class="text-danger text-center">Install one with the form below</h4>
 {% endif %}

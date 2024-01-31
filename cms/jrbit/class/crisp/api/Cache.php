@@ -229,8 +229,13 @@ class Cache
 
             return true;
         }
-        Logger::getLogger(__METHOD__)->error(sprintf("FAIL Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
+        if(is_writable(self::getCrispCacheDir($key)) && file_exists(self::getCrispCacheDir($key))) {
+            Logger::getLogger(__METHOD__)->debug(sprintf("SKIPPED Creating cache directories %s (%s): File already exists", self::getCrispCacheDir($key), $key));
+            return true;
+        }
 
+        
+        Logger::getLogger(__METHOD__)->error(sprintf('FAIL Creating cache directories %s (%s) - MSG: "%s", IS_WRITEABLE: "%b"', self::getCrispCacheDir($key), $key, error_get_last()["message"], is_writable(self::getCrispCacheDir($key))));
         return false;
     }
 
@@ -282,6 +287,12 @@ class Cache
 
             return true;
         }
+
+        if(is_writable(self::getCrispCacheFile($key))) {
+            Logger::getLogger(__METHOD__)->debug(sprintf("SKIPPED Writing Cache %s (Already exists!)", self::getCrispCacheFile($key)));
+            return true;
+        }
+
         Logger::getLogger(__METHOD__)->error("FAIL Writing Cache ", ["cacheFile" =>self::getCrispCacheFile($key)]);
 
         return false;

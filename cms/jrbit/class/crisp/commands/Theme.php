@@ -107,15 +107,6 @@ class Theme
             $Migrations->migrate(Themes::getThemeDirectory());
 
             return true;
-        } elseif ($options->getOpt("clear-cache")) {
-            if (Themes::clearCache()) {
-                $minimal->success("The cache has been successfully cleared!");
-
-                return true;
-            }
-            $minimal->error("Failed to clear cache!");
-
-            return false;
         }
 
         if (Themes::isInstalled()) {

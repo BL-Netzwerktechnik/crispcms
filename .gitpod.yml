@@ -47,7 +47,6 @@ tasks:
 vscode:
   extensions:
     - ms-azuretools.vscode-docker
-    - eamodio.gitlens
     - TeamHub.teamhub
     - felixfbecker.php-debug
     - neilbrayfield.php-docblocker
@@ -55,7 +54,6 @@ vscode:
     - mtxr.sqltools
     - mtxr.sqltools-driver-pg
     - mblode.twig-language-2
-    - GitLab.gitlab-workflow
     - DEVSENSE.composer-php-vscode
     - caponetto.vscode-diff-viewer
     - 42Crunch.vscode-openapi

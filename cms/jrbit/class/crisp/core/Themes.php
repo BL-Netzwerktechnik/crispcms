@@ -40,6 +40,7 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Carbon\Carbon;
 use crisp\api\Build;
+use crisp\core\Environment as CoreEnvironment;
 
 use function file_exists;
 use function file_get_contents;
@@ -85,7 +86,7 @@ class Themes
         }
         $ThemeLoader = new FilesystemLoader([$templatedir]);
 
-        if (ENVIRONMENT === 'production') {
+        if (Build::getEnvironment() === CoreEnvironment::PRODUCTION) {
             $TwigTheme = new Environment($ThemeLoader, [
                 'cache' => core::CACHE_DIR,
             ]);
@@ -107,11 +108,12 @@ class Themes
         $TwigTheme->addGlobal('CLUSTER', gethostname());
         $TwigTheme->addGlobal('VM_IP', VM_IP);
         $TwigTheme->addGlobal('REQUEST_ID', REQUEST_ID);
+        $TwigTheme->addGlobal('ENVIRONMENT', Build::getEnvironment()->value);
 
         $TwigTheme->addFunction(new TwigFunction('prettyDump', [new Helper(), 'prettyDump']));
         $TwigTheme->addExtension(new StringLoaderExtension());
 
-        $TwigTheme->addGlobal('VERSION_STRING', "{{ SERVER.ENVIRONMENT |upper }} | Theme@{{ ENV.THEME_GIT_COMMIT }} | CIP: {{ VM_IP }}@{{ CLUSTER }} | CV: {{ ENV.GIT_TAG }} | RID: {{ REQUEST_ID }}");
+        $TwigTheme->addGlobal('VERSION_STRING', "{{ ENVIRONMENT|upper }} | Theme@{{ ENV.THEME_GIT_COMMIT }} | CIP: {{ VM_IP }}@{{ CLUSTER }} | CV: {{ ENV.GIT_TAG }} | RID: {{ REQUEST_ID }}");
 
         $TwigTheme->addFunction(new TwigFunction('microtime', 'microtime'));
         $TwigTheme->addFunction(new TwigFunction('includeResource', [new Themes(), 'includeResource']));
