@@ -23,6 +23,7 @@
 
 namespace crisp\api;
 
+use Carbon\Carbon;
 use crisp\core\Logger;
 
 /**
@@ -157,14 +158,14 @@ class License
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        return Config::exists("license_issuer_public_key");
+        return Config::exists("license_issuer_public_key") && !empty(Config::get("license_issuer_public_key"));
     }
 
     public static function isIssuerPrivateAvailable(): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        return Config::exists("license_issuer_private_key");
+        return Config::exists("license_issuer_private_key") && !empty(Config::get("license_issuer_private_key"));
     }
 
     public function isValid(): bool
@@ -176,6 +177,33 @@ class License
             && $this->isInstanceAllowed()
             && $this->validateOCSP()
             && $this->verifySignature();
+    }
+
+    public function getErrors(): array
+    {
+        $errors = [];
+
+        if ($this->isExpired()) {
+            $errors[] = sprintf("License Expired %s (%s)", date(DATE_RFC7231, $this->getExpiresAt()), Carbon::parse($this->getExpiresAt())->diffForHumans());
+        }
+
+        if (!$this->isDomainAllowed($_SERVER["HTTP_HOST"] ?? $_ENV["HOST"])) {
+            $errors[] = sprintf("Domain not allowed - Expected: %s, Got: %s", implode(", ", $this->domains), $_SERVER["HTTP_HOST"] ?? $_ENV["HOST"]);
+        }
+
+        if (!$this->isInstanceAllowed()) {
+            $errors[] = sprintf("Instance not allowed - Expected: %s, Got: %s", $this->instance, Helper::getInstanceId());
+        }
+
+        if (!$this->validateOCSP()) {
+            $errors[] = "OCSP Validation failed";
+        }
+
+        if (!$this->verifySignature()) {
+            $errors[] = "Signature Validation failed";
+        }
+
+        return $errors;
     }
 
     public function canExpire(): bool
@@ -205,6 +233,8 @@ class License
             return false;
         }
 
+        Logger::getLogger(__METHOD__)->debug(sprintf("License expired: %b", $this->expires_at < time()));
+
         return $this->expires_at < time();
     }
 
@@ -212,15 +242,18 @@ class License
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (count($this->domains) === 0) {
+            Logger::getLogger(__METHOD__)->debug(sprintf("License Domains are empty"));
             return true;
         }
 
         foreach ($this->domains as $allowedDomain) {
             if (fnmatch($allowedDomain, $currentDomain)) {
+                Logger::getLogger(__METHOD__)->debug(sprintf("License domain %s is allowed!", $currentDomain));
                 return true;
             }
         }
 
+        Logger::getLogger(__METHOD__)->debug(sprintf("License Domain %s does not match host %s",  $allowedDomain, $currentDomain));
         return false;
     }
 
@@ -248,14 +281,14 @@ class License
             return false;
         }
 
-        Config::set("license_key", $licenseKey ?? $_ENV["LICENSE_KEY"] ?? Config::get("license_key") ?? null);
+        Config::set("license_key", $licenseKey ?? $_ENV["LICENSE_KEY"] ?? Config::get("license_key", true) ?? null);
 
-        Logger::getLogger(__METHOD__)->debug("License Key: " . Config::get("license_key"));
+        Logger::getLogger(__METHOD__)->notice("License Key: " . Config::get("license_key", true));
 
         Logger::getLogger(__METHOD__)->debug("Requesting License from License Server...");
 
         Logger::getLogger(__METHOD__)->debug("License Server: " . strtr($_ENV["LICENSE_SERVER"], [
-            "{{key}}" => Config::get("license_key"),
+            "{{key}}" => Config::get("license_key", true),
             "{{instance}}" => Helper::getInstanceId()
         ]));
         if (!Cache::isExpired("license_key_response")) {
@@ -263,7 +296,7 @@ class License
         } else {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, strtr($_ENV["LICENSE_SERVER"], [
-                "{{key}}" => Config::get("license_key"),
+                "{{key}}" => Config::get("license_key", true),
                 "{{instance}}" => Helper::getInstanceId()
             ]));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -314,11 +347,18 @@ class License
                 $signature
             );
 
-            if ($writeToDB && $licenseObj->verifySignature()) {
+            Logger::getLogger(__METHOD__)->debug($licenseObj->encode());
+            
+
+            Logger::getLogger(__METHOD__)->notice("Verifying License...");
+
+
+
+            if ($writeToDB && $licenseObj->verifySignature() && $licenseObj->isValid()) {
+                Logger::getLogger(__METHOD__)->info("License Is Valid! Installing...");
                 $licenseObj->install();
-            } elseif (!$licenseObj->verifySignature()) {
-                Logger::getLogger(__METHOD__)->error("License Signature is invalid");
-                return false;
+            } else {
+                Logger::getLogger(__METHOD__)->error("License is invalid");
             }
             Config::delete("license_key_response_grace");
 
@@ -351,7 +391,7 @@ class License
 
     public function install(): bool
     {
-        Logger::getLogger(__METHOD__)->info("Installing License...");
+        Logger::getLogger(__METHOD__)->notice("Installing License...");
 
         if (!$this->isValid()) {
             Logger::getLogger(__METHOD__)->error("License is invalid");
@@ -365,7 +405,7 @@ class License
     public static function uninstall(): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        Logger::getLogger(__METHOD__)->info("Uninstalling License...");
+        Logger::getLogger(__METHOD__)->notice("Uninstalling License...");
         Config::delete("license_data");
         Config::delete("license_issuer_public_key");
         #Config::delete("license_issuer_private_key");

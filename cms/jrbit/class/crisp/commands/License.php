@@ -19,7 +19,7 @@ class License
     private static function generateIssuer(\CLI $minimal, Options $options): bool
     {
 
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         if (Build::requireLicense() && Build::getEnvironment() !== Environment::DEVELOPMENT) {
             $minimal->fatal("Issuers cannot be generated on this instance!");
@@ -160,7 +160,7 @@ class License
                 return false;
             }
 
-            if(!$license->install()){
+            if (!$license->install()) {
                 $minimal->fatal("Could not install license!");
 
                 return false;
@@ -249,7 +249,7 @@ class License
             }
 
             return true;
-        } elseif ($options->getOpt("pull")){
+        } elseif ($options->getOpt("pull")) {
 
             if (!Build::requireLicenseServer()) {
                 $minimal->error("This instance does not have a license server configured!");
@@ -258,7 +258,20 @@ class License
 
             $License = ApiLicense::fromLicenseServer();
 
-            if(!$License){
+            if (!$License || !$License->isValid()) {
+
+
+                if ($License) {
+                    $minimal->notice("The following errors occurred:");
+                    foreach ($License->getErrors() as $error) {
+                        $minimal->error($error);
+                    }
+                }
+
+                if(ApiLicense::isLicenseAvailable()){
+                    $License->uninstall();
+                }
+
                 $minimal->fatal("Could not pull license!");
                 return false;
             }

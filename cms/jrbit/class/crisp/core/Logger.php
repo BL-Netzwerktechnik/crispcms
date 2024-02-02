@@ -27,6 +27,7 @@ use crisp\core;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Level;
 use Monolog\Logger as MonologLogger;
+use \Bramus\Monolog\Formatter\ColoredLineFormatter;
 use Monolog\Handler\StreamHandler;
 
 /**
@@ -53,7 +54,12 @@ class Logger
     public static function getLogger(string $name): MonologLogger
     {
         $logger = new MonologLogger($name);
-        $logger->pushHandler(new StreamHandler('php://stdout', Level::fromName(self::getLogLevel())));
+
+        $streamHandler = new StreamHandler('php://stdout', Level::fromName(self::getLogLevel()));
+        $streamHandler->setFormatter(new ColoredLineFormatter());
+
+        $logger->pushHandler($streamHandler);
+        
         if (Level::fromName(self::getLogLevel()) > Level::Debug) {
             $logger->pushHandler(new RotatingFileHandler(core::LOG_DIR . sprintf("/%s.log", self::getLogLevel()), 7, Level::fromName(self::getLogLevel())));
         }

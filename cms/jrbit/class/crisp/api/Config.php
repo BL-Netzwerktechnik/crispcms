@@ -127,7 +127,7 @@ class Config
      * @param  array  $UserOptions
      * @return mixed  The value as string, on failure FALSE
      */
-    public static function get(string $Key): mixed
+    public static function get(string $Key, bool $noCache = false): mixed
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
@@ -151,7 +151,7 @@ class Config
         }
         Logger::getLogger(__METHOD__)->debug("Getting key $Key");
 
-        if (!Cache::isExpired("Config::get::$Key")) {
+        if (!Cache::isExpired("Config::get::$Key") && !$noCache) {
             Logger::getLogger(__METHOD__)->debug("Cache::Config::get::$Key");
 
             return self::evaluateRow(json_decode(Cache::get("Config::get::$Key"), true));
@@ -301,6 +301,9 @@ class Config
             \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
 
+
+        self::deleteCache($Key);
+
         return $returnResult;
     }
 
@@ -333,7 +336,7 @@ class Config
         }
         Logger::getLogger(__METHOD__)->debug("Config::delete: DELETE FROM Config WHERE key = $Key");
         $statement = self::$Database_Connection->prepare("DELETE FROM Config WHERE key = :Key");
-        self::deleteCache("Config::get::$Key");
+        self::deleteCache($Key);
 
         $returnResult = $statement->execute([":Key" => $Key]);
 
@@ -414,7 +417,7 @@ class Config
             $Value = ($Value ? 1 : 0);
         }
 
-        self::deleteCache("Config::get::$Key");
+        self::deleteCache($Key);
         Logger::getLogger(__METHOD__)->debug("Config::set: UPDATE Config SET value = $Value, type = $Type WHERE key = $Key");
         $statement = self::$Database_Connection->prepare("UPDATE Config SET value = :val, type = :type WHERE key = :key");
         $statement->execute([":val" => $Value, ":key" => $Key, ":type" => $Type]);
@@ -426,6 +429,8 @@ class Config
             $span->finish();
             \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
+
+        
 
         return $returnResult;
     }
