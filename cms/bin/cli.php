@@ -92,6 +92,10 @@ class CLI extends SplitbrainCLI
         $options->registerOption('get-issuer-public', 'Get the Issuer Public Key', null, false, 'license');
         $options->registerOption('get-issuer-private', 'Get the Issuer Private Key', null, false, 'license');
         $options->registerOption('pull', 'Pull License From License Server', "p", false, 'license');
+        $options->registerOption('pull-key', 'Pull License From License Server using the specified <key>', null, "key", 'license');
+
+
+        $options->registerArgument('key', 'Your License Key', false, "license");
         /* END Maintenance Command */
 
         /* Crisp Command */

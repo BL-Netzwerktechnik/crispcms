@@ -249,14 +249,14 @@ class License
             }
 
             return true;
-        } elseif ($options->getOpt("pull")) {
+        } elseif ($options->getOpt("pull") || $options->getOpt("pull-key")) {
 
             if (!Build::requireLicenseServer()) {
                 $minimal->error("This instance does not have a license server configured!");
                 return true;
             }
 
-            $License = ApiLicense::fromLicenseServer();
+            $License = ApiLicense::fromLicenseServer($options->getOpt("pull-key") ?? null);
 
             if (!$License || !$License->isValid()) {
 
