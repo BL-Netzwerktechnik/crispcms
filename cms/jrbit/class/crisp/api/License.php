@@ -281,7 +281,13 @@ class License
             return false;
         }
 
-        Config::set("license_key", $licenseKey ?? $_ENV["LICENSE_KEY"] ?? Config::get("license_key", true) ?? null);
+        if(!$licenseKey && isset($_ENV["LICENSE_KEY"])){
+            Config::set("license_key", $_ENV["LICENSE_KEY"]);
+        }else{
+            Config::set("license_key", $licenseKey);
+        }
+
+        
 
         Logger::getLogger(__METHOD__)->notice("License Key: " . Config::get("license_key", true));
 
