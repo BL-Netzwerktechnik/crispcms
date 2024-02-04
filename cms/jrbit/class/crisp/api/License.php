@@ -283,26 +283,28 @@ class License
 
         if(!$licenseKey && isset($_ENV["LICENSE_KEY"])){
             Config::set("license_key", $_ENV["LICENSE_KEY"]);
-        }else{
+            $licenseKey = $_ENV["LICENSE_KEY"];
+        }elseif($licenseKey !== null){
             Config::set("license_key", $licenseKey);
+        }elseif(Config::exists("license_key")){
+            $licenseKey = Config::get("license_key", true);
         }
 
         
 
-        Logger::getLogger(__METHOD__)->notice("License Key: " . Config::get("license_key", true));
-
-        Logger::getLogger(__METHOD__)->debug("Requesting License from License Server...");
-
+        Logger::getLogger(__METHOD__)->notice("License Key: $licenseKey");
+        Logger::getLogger(__METHOD__)->notice("Requesting License from License Server...");
         Logger::getLogger(__METHOD__)->debug("License Server: " . strtr($_ENV["LICENSE_SERVER"], [
-            "{{key}}" => Config::get("license_key", true),
+            "{{key}}" => $licenseKey,
             "{{instance}}" => Helper::getInstanceId()
         ]));
+
         if (!Cache::isExpired("license_key_response")) {
             $httpCode = Cache::get("license_key_response");
         } else {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, strtr($_ENV["LICENSE_SERVER"], [
-                "{{key}}" => Config::get("license_key", true),
+                "{{key}}" => $licenseKey,
                 "{{instance}}" => Helper::getInstanceId()
             ]));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
