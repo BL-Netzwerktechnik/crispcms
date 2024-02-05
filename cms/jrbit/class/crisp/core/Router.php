@@ -25,6 +25,7 @@ namespace crisp\core;
 
 use crisp\types\RouteType;
 use Phroute\Phroute\RouteCollector;
+use Phroute\Phroute\Route;
 
 /**
  * Used internally, theme loader.
@@ -39,14 +40,14 @@ class Router
         $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
     }
 
-    public static function add(string $route, RouteType $routeType, mixed $class, string $callable = null, string $name = null): void
+    public static function add(string $route, RouteType $routeType, mixed $class, string $callable = null, string $name = null, Route $method = Route::ANY): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         $callable = $callable ?? ($routeType == RouteType::PUBLIC ? "preRender" : "execute");
 
 
-        $collector = self::get($routeType)->any([$route, $name ?? $class], [$class, $callable]);
+        $collector = self::get($routeType)->addRoute($method, [$route, $name ?? $class], [$class, $callable]);
         $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
     }
 
