@@ -256,7 +256,7 @@ class License
                 return true;
             }
 
-            $License = ApiLicense::fromLicenseServer($options->getOpt("pull-key") ?? null);
+            $License = ApiLicense::fromLicenseServer($options->getOpt("pull-key") !== false ? $options->getOpt("pull-key") : null);
 
             if (!$License || !$License->isValid()) {
 

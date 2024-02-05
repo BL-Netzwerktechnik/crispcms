@@ -271,7 +271,7 @@ class License
     }
 
 
-    public static function fromLicenseServer($licenseKey = null, $installIssuer = true, $writeToDB = true, &$httpCode = null): License|false
+    public static function fromLicenseServer(?string $licenseKey = null, bool $installIssuer = true, bool $writeToDB = true, ?string &$httpCode = null): License|false
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         Cache::clear();
@@ -283,16 +283,21 @@ class License
 
         if(!$licenseKey && isset($_ENV["LICENSE_KEY"])){
             Config::set("license_key", $_ENV["LICENSE_KEY"]);
+            Logger::getLogger(__METHOD__)->notice("License Key is set via Environment File");
             $licenseKey = $_ENV["LICENSE_KEY"];
         }elseif($licenseKey !== null){
+            Logger::getLogger(__METHOD__)->notice("License Key is set via Parameter");
             Config::set("license_key", $licenseKey);
         }elseif(Config::exists("license_key")){
+            Logger::getLogger(__METHOD__)->notice("License Key is set via Config");
             $licenseKey = Config::get("license_key", true);
+        }else{
+            Logger::getLogger(__METHOD__)->notice("License Key is not set.");
         }
 
         
 
-        Logger::getLogger(__METHOD__)->notice("License Key: $licenseKey");
+        Logger::getLogger(__METHOD__)->notice("License Key: ". ($licenseKey ?? "None"));
         Logger::getLogger(__METHOD__)->notice("Requesting License from License Server...");
         Logger::getLogger(__METHOD__)->debug("License Server: " . strtr($_ENV["LICENSE_SERVER"], [
             "{{key}}" => $licenseKey,
@@ -327,6 +332,23 @@ class License
         if (str_starts_with($httpCode, "2")) {
 
             $response = json_decode($response, true);
+
+            if(!isset($response["license"])){
+                Logger::getLogger(__METHOD__)->error("Invalid Response from License Server: Missing license field");
+                Logger::getLogger(__METHOD__)->error("License Server Response: " . $response);
+                return false;
+            }
+            if(!isset($response["signature"])){
+                Logger::getLogger(__METHOD__)->error("Invalid Response from License Server: Missing signature field");
+                Logger::getLogger(__METHOD__)->error("License Server Response: " . $response);
+                return false;
+            }
+            if(!isset($response["issuer"])){
+                Logger::getLogger(__METHOD__)->error("Invalid Response from License Server: Missing issuer field");
+                Logger::getLogger(__METHOD__)->error("License Server Response: " . $response);
+                return false;
+            }
+
 
             Logger::getLogger(__METHOD__)->debug("Decoding License...");
             $license = json_decode(base64_decode($response["license"]), true);
