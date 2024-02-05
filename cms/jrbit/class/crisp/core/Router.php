@@ -25,6 +25,7 @@ namespace crisp\core;
 
 use crisp\types\RouteType;
 use Phroute\Phroute\RouteCollector;
+use Phroute\Phroute\Route;
 
 /**
  * Used internally, theme loader.
