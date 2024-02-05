@@ -68,7 +68,7 @@
                     <p>
                         Issued At:
                         {% if license.getIssuedAt() is defined %}
-                            {% include 'components/license_fields.twig' with {'field': license.getIssuedAt()|date()} %} ({{ parseTime(license.getIssuedAt()).diffForHumans() }})
+                            {% include 'components/license_fields.twig' with {'field': license.getIssuedAt()|date()} %} UTC ({{ parseTime(license.getIssuedAt()).diffForHumans() }})
                         {% else %}
                             {% include 'components/license_fields.twig' with {'field': null} %}
                         {% endif %}
