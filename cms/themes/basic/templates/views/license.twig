@@ -77,7 +77,7 @@
                         Expires At:
                         {% if license.getExpiresAt() is defined %}
                             {% if license.canExpire() %}
-                                {% include 'components/license_fields.twig' with {'field': license.getExpiresAt()|date(), 'color': license.isExpired() ? 'text-danger': 'text-success'} %}
+                                {% include 'components/license_fields.twig' with {'field': license.getExpiresAt()|date(), 'color': license.isExpired() ? 'text-danger': 'text-success'} %} UTC 
                             {% set ExpiredHuman = parseTime(license.getExpiresAt()).diffForHumans() %}
                                 {% if license.isExpired() %}
                                     <span class="text-danger">(Expired {{ ExpiredHuman }})</span>
