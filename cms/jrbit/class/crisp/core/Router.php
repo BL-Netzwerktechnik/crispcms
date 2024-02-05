@@ -32,11 +32,11 @@ use Phroute\Phroute\Route;
  */
 class Router
 {
-    public static function addFun(string $route, RouteType $routeType, mixed $function): void
+    public static function addFun(string $route, RouteType $routeType, mixed $function, Route $method = Route::ANY): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        $collector = self::get($routeType)->any($route, $function);
+        $collector = self::get($routeType)->addRoute($method, $route, $function);
         $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
     }
 
