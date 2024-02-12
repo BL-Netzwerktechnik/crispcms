@@ -133,4 +133,25 @@ class HookFile
         $HookClass->setup();
         Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing setup hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
+    public static function setupCli(): void
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        $_HookFile = Themes::getThemeMetadata()->hookFile;
+        $_HookClass = substr($_HookFile, 0, -4);
+
+        require_once Themes::getThemeDirectory() . "/$_HookFile";
+
+        if (class_exists($_HookClass, false)) {
+            $HookClass = new $_HookClass();
+        }
+
+        if ($HookClass !== null && !method_exists($HookClass, 'setupCli')) {
+            throw new \Exception("Failed to load $_HookClass, missing setupCli!");
+        }
+
+        Logger::getLogger(__METHOD__)->debug(sprintf("START executing setupCli hooks for HookFile"));
+        Logger::startTiming($HookClassRenderTime);
+        $HookClass->setupCli();
+        Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing setupCli hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
+    }
 }

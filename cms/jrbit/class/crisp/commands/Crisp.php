@@ -71,7 +71,15 @@ class Crisp
             $minimal->error("Failed to clear cache!");
 
             return false;
+        } elseif ($options->getOpt("instance-id")) {
+            if (!$options->getOpt("no-formatting")) {
+                $minimal->success(sprintf("Your instance id is: %s", Helper::getInstanceId()));
+                exit;
+            }
+            echo Helper::getInstanceId();
+            exit;
         }
+
         $minimal->error("No action");
 
         return false;
