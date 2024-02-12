@@ -132,6 +132,7 @@ class CLI
 
         self::registerOption(long: 'version', help: 'print version', short: 'v', needsarg: false, command: '', class: Version::class, callable: "run");
 
+        self::registerOption(long: 'check-permissions', help: 'Check file permissions', short: null, needsarg: false, command: '', class: Crisp::class, callable: "run");
         self::registerOption(long: 'instance-id', help: 'print instance id', short: 'i', needsarg: false, command: '', class: Crisp::class, callable: "run");
         self::registerOption(long: 'migrate', help: 'Run Crisp Core Database Migrations', short: 'm', needsarg: false, command: '', class: Crisp::class, callable: "run");
         self::registerOption(long: 'clear-cache', help: 'Clear Cache of the CMS', short: null, needsarg: false, command: '', class: Crisp::class, callable: "run");

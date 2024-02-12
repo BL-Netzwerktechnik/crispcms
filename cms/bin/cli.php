@@ -63,12 +63,13 @@ class CLI extends SplitbrainCLI
         core::init();
         CoreCLI::register($options);
         try {
-            Themes::autoload();
-            HookFile::setupCli();
-        } catch(Exception $ex){
+            if (Themes::isInstalled()) {
+                Themes::autoload();
+                HookFile::setupCli();
+            }
+        } catch (Exception $ex) {
             $this->warning($ex->__toString());
         }
-    
     }
 
     protected function main(Options $options)
