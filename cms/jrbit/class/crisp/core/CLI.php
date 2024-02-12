@@ -97,14 +97,15 @@ class CLI
 
     public static function runOption(SplitbrainCLI $minimal, Options $options)
     {
-
         $cliglob = self::get();
 
         if (!$cliglob["callables"][$options->getCmd()]) {
+            $minimal->error(sprintf("Command not found! (%s)", $options->getCmd()));
             return false;
         }
-
+        
         foreach ($cliglob["callables"][$options->getCmd()] as $key => $value) {
+
             if (!$options->getOpt($key)) continue;
 
             if (class_exists($value[0], true)) {
@@ -115,10 +116,14 @@ class CLI
                 }
 
                 call_user_func([$value[0], $value[1]], $minimal, $options);
+                exit;
             }else{
                 $minimal->critical("Invalid Class ". $value[0]);
+                exit;
             }
         }
+        echo $options->help();
+        $minimal->error(sprintf("Command combination not found! (%s)", implode(" ", $options->getArgs())));
     }
 
     public static function registerCrispCLI(): void

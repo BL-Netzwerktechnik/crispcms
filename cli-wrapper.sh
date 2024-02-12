@@ -7,8 +7,8 @@ if [ "$1" == "debug" ]; then
     # Remove debug parameter
     shift
 
-    docker exec -u 33 -it crispcms crisp-cli --loglevel=debug $@
+    docker exec -u 33 -it -e LOG_LEVEL=debug crispcms crisp-cli $@
     exit 0
 fi
 
-docker exec -u 33 -it crispcms crisp-cli --loglevel=info $@
+docker exec -u 33 -e LOG_LEVEL=info -it crispcms crisp-cli $@

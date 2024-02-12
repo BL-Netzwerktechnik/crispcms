@@ -59,26 +59,20 @@ class CLI extends SplitbrainCLI
     {
 
         $options->setHelp('Interact with CrispCMS');
-
-        $options->registerOption('loglevel', 'Override LogLevel');
-        CoreCLI::register($options);
-    }
-
-    protected function main(Options $options)
-    {
-
-
-        if ($options->getOpt("loglevel")) {
-            Logger::overrideLogLevel($options->getOpt("loglevel"));
-        }
-
+        $options->useCompactHelp();
         core::init();
+        CoreCLI::register($options);
         try {
+            Themes::autoload();
             HookFile::setupCli();
         } catch(Exception $ex){
             $this->warning($ex->__toString());
         }
     
+    }
+
+    protected function main(Options $options)
+    {
         CoreCLI::runOption($this, $options);
     }
 }
