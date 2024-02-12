@@ -64,7 +64,7 @@ migrate-and-test:
   - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
   - cd ${CI_PROJECT_DIR}
   - sudo -E -u www-data php /tmp/ci/composer install
-  - sudo -E -u www-data php cms/bin/cli.php crisp -m
+  - sudo -E -u www-data php cms/bin/cli.php -m
   - mv cms/themes/basic cms/themes/crisptheme
   - sudo -E -u www-data php cms/bin/cli.php theme -i
   - rm /tmp/ci/composer
