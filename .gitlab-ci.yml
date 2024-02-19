@@ -305,5 +305,5 @@ dast:
         PROTO: "http"
         SENTRY_DSN: "https://e1335d78665742d0bbd9a67935dbc6ed@sentry.internal.jrbit.de/5"
         ENVIRONMENT: "development"
-      entrypoint: ["/bin/bash", "-c", "git clone https://gitlab.jrbit.de/crispcms/theme-template theme && mv theme/theme cms/themes/crisptheme && rm -rf theme && sleep 30 && /opt/entrypoint.d/entrypoint.sh"]
+      entrypoint: ["/bin/bash", "-c", "git clone https://gitlab.jrbit.de/crispcms/theme-template theme && mv theme/public cms/themes/crisptheme && rm -rf theme && sleep 30 && /opt/entrypoint.d/entrypoint.sh"]
 
