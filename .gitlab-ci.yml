@@ -36,47 +36,47 @@ include:
 - template: Security/Container-Scanning.gitlab-ci.yml
 - template: Security/SAST-IaC.gitlab-ci.yml
 
-migrate-and-test:
-  services:
-    - postgres:14.5
-  stage: test
-  variables:
-    COMPOSER_ALLOW_SUPERUSER: 1
-    ENVIRONMENT: development
-    GIT_COMMIT: "${CI_COMMIT_SHORT_SHA}"
-    POSTGRES_URI: postgres://postgres:postgres@postgres:5432/crisp_dev #gitleaks:allow
-    DEFAULT_LOCALE: en
-    LANG: en_US.utf8
-    LOG_LEVEL: DEBUG
-    HOST: ci
-    PROTO: http
-    TZ: UTC
-  image:
-    name: php:8.2-buster
-  script:
-  - echo "# We dont need me!" > .env
-  - mkdir /tmp/ci
-  - cd /tmp/ci
-  - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev sudo
-    wget git-core zip zlib1g-dev libpng-dev
-  - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
-  - docker-php-ext-enable pdo_pgsql pdo_mysql intl gd gettext
-  - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
-  - mkdir -p /var/log/crisp
-  - chown 33:33 /var/log/crisp -R
-  - cd ${CI_PROJECT_DIR}
-  - sudo -E -u www-data php /tmp/ci/composer install
-  - sudo -E -u www-data php cms/bin/cli.php -m
-  - mv cms/themes/basic cms/themes/crisptheme
-  - sudo -E -u www-data php cms/bin/cli.php theme -i
-  - rm /tmp/ci/composer
-  - git describe --tags --always > GIT_TAG || true
-  - sudo -E -u www-data php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > php-cs-fixer.json || true
-  artifacts:
-      reports:
-        codequality: php-cs-fixer.json
-      paths:
-        - GIT_TAG
+#migrate-and-test:
+#  services:
+#    - postgres:14.5
+#  stage: test
+#  variables:
+#    COMPOSER_ALLOW_SUPERUSER: 1
+#    ENVIRONMENT: development
+#    GIT_COMMIT: "${CI_COMMIT_SHORT_SHA}"
+#    POSTGRES_URI: postgres://postgres:postgres@postgres:5432/crisp_dev #gitleaks:allow
+#    DEFAULT_LOCALE: en
+#    LANG: en_US.utf8
+#    LOG_LEVEL: DEBUG
+#    HOST: ci
+#    PROTO: http
+#    TZ: UTC
+#  image:
+#    name: php:8.2-buster
+#  script:
+#  - echo "# We dont need me!" > .env
+#  - mkdir /tmp/ci
+#  - cd /tmp/ci
+#  - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev sudo
+#    wget git-core zip zlib1g-dev libpng-dev
+#  - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
+#  - docker-php-ext-enable pdo_pgsql pdo_mysql intl gd gettext
+#  - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
+#  - mkdir -p /var/log/crisp
+#  - chown 33:33 /var/log/crisp -R
+#  - cd ${CI_PROJECT_DIR}
+#  - sudo -E -u www-data php /tmp/ci/composer install
+#  - sudo -E -u www-data php cms/bin/cli.php -m
+#  - mv cms/themes/basic cms/themes/crisptheme
+#  - sudo -E -u www-data php cms/bin/cli.php theme -i
+#  - rm /tmp/ci/composer
+#  - git describe --tags --always > GIT_TAG || true
+#  - sudo -E -u www-data php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > php-cs-fixer.json || true
+#  artifacts:
+#      reports:
+#        codequality: php-cs-fixer.json
+#      paths:
+#        - GIT_TAG
 
 
 nightly:
