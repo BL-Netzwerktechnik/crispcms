@@ -85,10 +85,10 @@ nightly:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
-  needs:
-    - migrate-and-test
-  dependencies:
-    - migrate-and-test
+  #needs:
+  #  - migrate-and-test
+  #dependencies:
+  #  - migrate-and-test
   script:
   - export GENERATED_TAG=`cat GIT_TAG`
   - echo Building Image for Tag $GENERATED_TAG
@@ -108,10 +108,10 @@ nightly:license:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
-  needs:
-    - migrate-and-test
-  dependencies:
-    - migrate-and-test
+  #needs:
+  #  - migrate-and-test
+  #dependencies:
+  #  - migrate-and-test
   script:
   - export GENERATED_TAG=`cat GIT_TAG`
   - echo Building Image for Tag $GENERATED_TAG
@@ -130,10 +130,10 @@ stable:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
-  needs:
-    - migrate-and-test
-  dependencies:
-    - migrate-and-test
+  #needs:
+  #  - migrate-and-test
+  #dependencies:
+  #  - migrate-and-test
   script:
   - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
   - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
@@ -157,10 +157,10 @@ stable:license:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
-  needs:
-    - migrate-and-test
-  dependencies:
-    - migrate-and-test
+  #needs:
+  #  - migrate-and-test
+  #dependencies:
+  #  - migrate-and-test
   script:
   - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
   - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
@@ -184,10 +184,10 @@ release-candidate:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
-  needs:
-    - migrate-and-test
-  dependencies:
-    - migrate-and-test
+  #needs:
+  #  - migrate-and-test
+  #dependencies:
+  #  - migrate-and-test
   script:
   - export GENERATED_TAG=`cat GIT_TAG`
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
@@ -205,10 +205,10 @@ release-candidate:license:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
-  needs:
-    - migrate-and-test
-  dependencies:
-    - migrate-and-test
+  #needs:
+  #  - migrate-and-test
+  #dependencies:
+  #  - migrate-and-test
   script:
   - export GENERATED_TAG=`cat GIT_TAG`
 
@@ -227,7 +227,7 @@ release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
-    - migrate-and-test
+    #- migrate-and-test
     - stable
     - stable:license
   script:
@@ -246,10 +246,10 @@ doxygen:
   script:
     - export GENERATED_TAG=`cat GIT_TAG`
     - 'doxygen Doxyfile'
-  needs:
-    - migrate-and-test
-  dependencies:
-    - migrate-and-test
+  #needs:
+  #  - migrate-and-test
+  #dependencies:
+  #  - migrate-and-test
   artifacts:
     paths:
       - doxygen_out
@@ -280,7 +280,7 @@ pages:
 dast:
   extends: .dast_with_bas
   needs:
-    - job: migrate-and-test
+    #- job: migrate-and-test
 
     - job: nightly
       optional: true
