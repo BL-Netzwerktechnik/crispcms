@@ -22,3 +22,11 @@ update-locale LANG="$LANG"
 
 cd "$CRISP_WORKDIR" || exit 1
 touch .env | true
+
+echo "SHELL=/bin/bash" > /etc/cron.d/crontab
+
+printenv | sed 's/^\(.*\)$/export \1/g' >> /etc/.env.sh
+
+chmod +x /etc/.env.sh
+
+echo "* * * * * www-data /bin/bash -c 'source /etc/.env.sh && cd /var/www/crisp && /usr/local/bin/crisp cron --run' >> /var/log/crisp/cron.log 2>&1" >> /etc/cron.d/crontab

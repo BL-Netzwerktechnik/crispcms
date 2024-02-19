@@ -28,6 +28,7 @@ use crisp\api\Helper;
 use crisp\api\License;
 use crisp\commands\Assets;
 use crisp\commands\Crisp;
+use crisp\commands\Cron;
 use crisp\commands\License as CommandsLicense;
 use crisp\commands\Maintenance;
 use crisp\commands\Migration;
@@ -167,6 +168,9 @@ class CLI
 
         self::registerCommand(command: "assets", help: "Perform various tasks for theme assets");
         self::registerOption(long: 'deploy-to-s3', help: 'Deploy the assets/ folder to s3', short: 'd', needsarg: false, command: 'assets', class: Assets::class, callable: "run");
+
+        self::registerCommand(command: "cron", help: "Perform various tasks for the built in scheduler");
+        self::registerOption(long: 'run', help: 'Run the scheduler', short: null, needsarg: false, command: 'cron', class: Cron::class, callable: "run");
 
 
         self::registerCommand(command: "theme", help: "Interact with your Theme for CrispCMS");

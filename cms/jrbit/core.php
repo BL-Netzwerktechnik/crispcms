@@ -26,6 +26,7 @@ namespace crisp;
 use crisp\api\Build;
 use crisp\api\Helper;
 use crisp\core\Bitmask;
+use crisp\core\Cron;
 use crisp\core\Crypto;
 use crisp\core\Environment;
 use crisp\core\HookFile;
@@ -152,6 +153,14 @@ class core
             header('X-Request-ID: ' . REQUEST_ID);
 
             setlocale(LC_TIME, $_ENV["LANG"] ?? 'en_US.utf8');
+
+
+            $CurrentTheme = core::DEFAULT_THEME;
+            Themes::autoload();
+            ThemeVariables::register();
+            Cron::register();
+            Router::register();
+
             if (PHP_SAPI !== 'cli') {
 
                 $transactionContext = (new TransactionContext("HTTP Request"));
@@ -165,15 +174,8 @@ class core
                 $GLOBALS['navbar'] = [];
                 $GLOBALS['navbar_right'] = [];
                 $GLOBALS['render'] = [];
-                /*
-        ini_set('session.save_path',core::PERSISTENT_DATA . "/sessions");
-        session_save_path(core::PERSISTENT_DATA . "/sessions");
-        ini_set('session.gc_probability', 1);
-        */
                 session_start();
 
-                $CurrentTheme = core::DEFAULT_THEME;
-                Themes::autoload();
 
                 api\Helper::setLocale();
                 $Locale = Helper::getLocale();
@@ -187,10 +189,6 @@ class core
 
                 define("IS_SPECIAL_PAGE", str_starts_with($_SERVER['REQUEST_URI'], "/_"));
                 Themes::initRenderer();
-
-                ThemeVariables::register();
-                Router::register();
-                HookFile::setup();
 
                 if (Build::requireLicense() && !IS_SPECIAL_PAGE) {
                     $GLOBALS["license"] = api\License::fromDB();
@@ -212,6 +210,7 @@ class core
 
                     new RESTfulAPI();
                 } else {
+                    HookFile::setup();    
                     Themes::load();
                 }
                 \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
