@@ -62,6 +62,8 @@ migrate-and-test:
   - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
   - docker-php-ext-enable pdo_pgsql pdo_mysql intl gd gettext
   - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
+  - mkdir -p /var/log/crisp
+  - chown 33:33 /var/log/crisp -R
   - cd ${CI_PROJECT_DIR}
   - sudo -E -u www-data php /tmp/ci/composer install
   - sudo -E -u www-data php cms/bin/cli.php -m
