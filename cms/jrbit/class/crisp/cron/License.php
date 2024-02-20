@@ -44,5 +44,6 @@ class License
         }
 
         Logger::getLogger(__METHOD__)->info("Successfully pulled license!");
+        return true;
     }
 }
