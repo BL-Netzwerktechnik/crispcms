@@ -27,7 +27,7 @@ echo "SHELL=/bin/bash" > /etc/cron.d/crontab
 
 while IFS='=' read -r name value ; do
     printf 'export %s=%q\n' "$name" "$value"
-done < <(printenv) >> /etc/.env.sh
+done < <(printenv) > /etc/.env.sh
 
 chmod +x /etc/.env.sh
 
