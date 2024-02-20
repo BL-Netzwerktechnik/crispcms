@@ -25,7 +25,9 @@ touch .env | true
 
 echo "SHELL=/bin/bash" > /etc/cron.d/crontab
 
-printenv | sed 's/^\(.*\)$/export \1/g' >> /etc/.env.sh
+while IFS='=' read -r name value ; do
+    printf 'export %s=%q\n' "$name" "$value"
+done < <(printenv) >> /etc/.env.sh
 
 chmod +x /etc/.env.sh
 
