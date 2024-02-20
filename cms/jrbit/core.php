@@ -202,6 +202,8 @@ class core
                 }
 
                 /* Twig Globals */
+                HookFile::setup();    
+                Themes::load();
 
                 if (IS_API_ENDPOINT) {
 
@@ -209,9 +211,6 @@ class core
                     header('Cache-Control: max-age=600, public, must-revalidate');
 
                     new RESTfulAPI();
-                } else {
-                    HookFile::setup();    
-                    Themes::load();
                 }
                 \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
                 $transaction->finish();
