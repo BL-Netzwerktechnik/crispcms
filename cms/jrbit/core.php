@@ -188,7 +188,6 @@ class core
                 }
 
                 define("IS_SPECIAL_PAGE", str_starts_with($_SERVER['REQUEST_URI'], "/_"));
-                Themes::initRenderer();
 
                 if (Build::requireLicense() && !IS_SPECIAL_PAGE) {
                     $GLOBALS["license"] = api\License::fromDB();
@@ -202,7 +201,9 @@ class core
                 }
 
                 /* Twig Globals */
+                Themes::initRendererDirectories();
                 HookFile::setup();   
+                Themes::initRenderer();
 
                 if (IS_API_ENDPOINT) {
 

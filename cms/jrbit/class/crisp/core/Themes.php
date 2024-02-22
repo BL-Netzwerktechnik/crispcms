@@ -77,13 +77,36 @@ class Themes
         }
     }
 
-    public static function initRenderer(string|array $dir = null): Environment
+    public static function initRendererDirectories(): void
     {
-        $templatedir = [self::getThemeDirectory() . "/templates"];
+        $templatedirs = [self::getThemeDirectory() . "/templates"];
 
         if(!isset($_ENV["EXPERIMENTAL_DISABLE_BASE_THEME_RENDERER"])){
             $templatedir[] = self::getThemeDirectory();
         }
+        $GLOBALS["Crisp_ThemeLoaderRendererDirectories"] = $templatedirs;
+    }
+    
+    public static function addRendererDirectory(string $dir): void
+    {
+        $GLOBALS["Crisp_ThemeLoaderRendererDirectories"][] = $dir;
+    }
+
+    public static function addRendererDirectories(array $dirs): void
+    {
+        $GLOBALS["Crisp_ThemeLoaderRendererDirectories"] = array_merge($GLOBALS["Crisp_ThemeLoaderRendererDirectories"], $dirs);
+    }
+
+    public static function getRendererDirectories(): array
+    {
+        return $GLOBALS["Crisp_ThemeLoaderRendererDirectories"];
+    }
+
+    public static function initRenderer(string|array $dir = null): Environment
+    {
+
+        $templatedir = self::getRendererDirectories();
+
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if ($dir !== null) {
             $templatedir = $dir;
