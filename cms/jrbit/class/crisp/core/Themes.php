@@ -114,9 +114,6 @@ class Themes
 
         $templatedir = self::getRendererDirectories();
 
-        Helper::prettyDump($templatedir);
-
-
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if ($dir !== null) {
             $templatedir = $dir;
