@@ -201,7 +201,6 @@ class core
                 }
 
                 /* Twig Globals */
-                Themes::initRendererDirectories();
                 HookFile::setup();   
                 Themes::initRenderer();
 
