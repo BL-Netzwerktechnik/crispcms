@@ -77,14 +77,18 @@ class Themes
         }
     }
 
-    public static function initRenderer(string $dir = null): Environment
+    public static function initRenderer(string|array $dir = null): Environment
     {
-        $templatedir = self::getThemeDirectory() . "/templates";
+        $templatedir = [self::getThemeDirectory() . "/templates"];
+
+        if(!isset($_ENV["EXPERIMENTAL_DISABLE_BASE_THEME_RENDERER"])){
+            $templatedir[] = self::getThemeDirectory();
+        }
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if ($dir !== null) {
             $templatedir = $dir;
         }
-        $ThemeLoader = new FilesystemLoader([$templatedir]);
+        $ThemeLoader = new FilesystemLoader(is_string($templatedir) ? [$templatedir]: $templatedir);
 
         if (Build::getEnvironment() === CoreEnvironment::PRODUCTION) {
             $TwigTheme = new Environment($ThemeLoader, [
@@ -152,24 +156,24 @@ class Themes
         if (!$dir) {
             $GLOBALS["Crisp_ThemeLoader"] = $TwigTheme;
         } else {
-            $GLOBALS["Crisp_ThemeLoader_" . hash("sha512", $dir)] = $TwigTheme;
+            $GLOBALS["Crisp_ThemeLoader_" . hash("sha512", serialize($dir))] = $TwigTheme;
         }
 
         return $TwigTheme;
     }
 
-    public static function getRenderer(string $dir = null): Environment
+    public static function getRenderer(string|array $dir = null): Environment
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         if (!$dir) {
             return $GLOBALS["Crisp_ThemeLoader"] ?? self::initRenderer();
         } else {
-            return $GLOBALS["Crisp_ThemeLoader_" . hash("sha512", $dir)] ?? self::initRenderer($dir);
+            return $GLOBALS["Crisp_ThemeLoader_" . hash("sha512", serialize($dir))] ?? self::initRenderer($dir);
         }
     }
 
-    public static function render(string $Template, string $dir = null): string
+    public static function render(string $Template, string|array $dir = null): string
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         Logger::startTiming($TemplateRender);
