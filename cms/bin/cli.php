@@ -21,23 +21,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-use crisp\api\Helper;
-use crisp\commands\License;
-use crisp\commands\Assets;
-use crisp\commands\Crisp;
-use crisp\commands\Maintenance;
-use crisp\commands\Migration;
-use crisp\commands\Storage;
-use crisp\commands\Theme;
-use crisp\commands\Translations;
-use crisp\commands\Version;
 use crisp\core;
-use crisp\core\CLI as CoreCLI;
-use crisp\core\HookFile;
+use crisp\core\CLI;
 use crisp\core\Logger;
-use crisp\core\Themes;
-use splitbrain\phpcli\CLI as SplitbrainCLI;
-use splitbrain\phpcli\Options;
 
 if (PHP_SAPI !== 'cli') {
     exit;
@@ -49,33 +35,13 @@ if (posix_getuid() !== 33) {
     echo "Please run this script as www-data\n";
     exit(1);
 }
-
 require_once __DIR__ . "/../jrbit/core.php";
 
-class CLI extends SplitbrainCLI
-{
-    // register options and arguments
-    protected function setup(Options $options)
-    {
+try {
+    core::init();
+    $cli = CLI::register();
 
-        $options->setHelp('Interact with CrispCMS');
-        $options->useCompactHelp();
-        core::init();
-        CoreCLI::register($options);
-        try {
-            if (Themes::isInstalled()) {
-                Themes::autoload();
-                HookFile::setupCli();
-            }
-        } catch (Exception $ex) {
-            $this->warning($ex->__toString());
-        }
-    }
-
-    protected function main(Options $options)
-    {
-        CoreCLI::runOption($this, $options);
-    }
+    $cli->run();
+} catch(Throwable|Exception|TypeError $ex){
+    Logger::getLogger(__METHOD__)->error($ex->getMessage());
 }
-$cli = new CLI();
-$cli->run();

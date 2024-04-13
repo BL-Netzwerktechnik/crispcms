@@ -36,101 +36,49 @@ use crisp\commands\Storage;
 use crisp\commands\Theme;
 use crisp\commands\Translations;
 use crisp\commands\Version;
-use Minimal;
-use splitbrain\phpcli\CLI as SplitbrainCLI;
-use splitbrain\phpcli\Options;
-
+use DirectoryIterator;
+use PhpCsFixer\Console\Application;
 
 class CLI
 {
 
-    public static function registerCommand(string $command, string $help): void
-    {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $options = self::get()["options"];
-        $options->registerCommand($command, $help);
-
-        $GLOBALS["Crisp_CLI"]["options"] = $options;
-    }
-
-    public static function registerArgument($arg, $help, $required = true, $command = ''): void
-    {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $options = self::get()["options"];
-        $options->registerArgument($arg, $help, $required, $command);
-
-        $GLOBALS["Crisp_CLI"]["options"] = $options;
-    }
-
-    public static function get()
+    public static function get(): Application
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         return $GLOBALS["Crisp_CLI"];
     }
 
-    /**
-     * Register an option for option parsing and help generation
-     *
-     * @param string $long multi character option (specified with --)
-     * @param string $help help text for this option
-     * @param string|null $short one character option (specified with -)
-     * @param bool|string $needsarg does this option require an argument? give it a name here
-     * @param string $command what command does this option apply to
-     * @throws Exception
-     */
-    public static function registerOption($long, $help, $short = null, $needsarg = false, $command = '', mixed $class = null, string $callable = null)
+    
+    private static function registerCrispCLI(): Application
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        $callable = $callable ?? "run";
 
-        $options = self::get()["options"];
 
-        $options->registerOption($long, $help, $short, $needsarg, $command);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        $application = self::get();
 
-        if ($class !== null) {
-            $GLOBALS["Crisp_CLI"]["callables"][$command][$long] = [$class, $callable];
-        }
-        $GLOBALS["Crisp_CLI"]["options"] = $options;
-    }
+        $iterator = new DirectoryIterator(__DIR__. '/../CommandControllers/');
+        foreach ($iterator as $fileInfo) {
+            if ($fileInfo->isFile()) {
+                $fileName = $fileInfo->getFilename();
 
-    public static function runOption(SplitbrainCLI $minimal, Options $options)
-    {
-        $cliglob = self::get();
+                $className = pathinfo($fileName, PATHINFO_FILENAME);
+                Logger::getLogger(__METHOD__)->debug("Loading command $className");
 
-        if (!$cliglob["callables"][$options->getCmd()]) {
-            $minimal->error(sprintf("Command not found! (%s)", $options->getCmd()));
-            return false;
-        }
-        
-        foreach ($cliglob["callables"][$options->getCmd()] as $key => $value) {
+                $namespace = '\\crisp\\CommandControllers\\';
+                $constructedClass = $namespace.$className;
+                $application->add(new $constructedClass());
 
-            if (!$options->getOpt($key)) continue;
-
-            if (class_exists($value[0], true)) {
-                $optClass = new $value[0]();
-
-                if ($optClass !== null && !method_exists($optClass, $value[1])) {
-                    throw new \Exception("Failed to load $optClass, missing callable!");
-                }
-
-                call_user_func([$value[0], $value[1]], $minimal, $options);
-                exit;
-            }else{
-                $minimal->critical("Invalid Class ". $value[0]);
-                exit;
+                Logger::getLogger(__METHOD__)->debug("Loaded command $className");
             }
         }
-        echo $options->help();
-        $minimal->error(sprintf("Command combination not found! (%s)", implode(" ", $options->getArgs())));
-    }
 
-    public static function registerCrispCLI(): void
-    {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
+
+        return $application;
+
+        /** 
         self::registerOption(long: 'version', help: 'print version', short: 'v', needsarg: false, command: '', class: Version::class, callable: "run");
 
         self::registerOption(long: 'check-permissions', help: 'Check file permissions', short: null, needsarg: false, command: '', class: Crisp::class, callable: "run");
@@ -193,16 +141,17 @@ class CLI
         self::registerCommand(command: "translation", help: "Interact with Crisps KVS");
         self::registerOption(long: 'install', help: 'Initialize the Translations from the theme.json', short: 'i', needsarg: false, command: 'translation', class: Translations::class, callable: "run");
         self::registerOption(long: 'uninstall', help: 'Delete all Translation Items from the database', short: 'u', needsarg: false, command: 'translation', class: Translations::class, callable: "run");
+
+        **/
     }
 
 
-    public static function register(Options $options): void
+    public static function register(): Application
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $GLOBALS["Crisp_CLI"] = [];
-
-        $GLOBALS["Crisp_CLI"]["callables"] = [];
-        $GLOBALS["Crisp_CLI"]["options"] = $options;
+        $GLOBALS["Crisp_CLI"] = new Application();
         self::registerCrispCLI();
+
+        return $GLOBALS["Crisp_CLI"];
     }
 }
