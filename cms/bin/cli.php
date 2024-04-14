@@ -23,6 +23,7 @@
 
 use crisp\core;
 use crisp\core\CLI;
+use crisp\core\HookFile;
 use crisp\core\Logger;
 
 if (PHP_SAPI !== 'cli') {
@@ -40,6 +41,8 @@ require_once __DIR__ . "/../jrbit/core.php";
 try {
     core::init();
     $cli = CLI::register();
+
+    HookFile::setupCli();
 
     $cli->run();
 } catch(Throwable|Exception|TypeError $ex){
