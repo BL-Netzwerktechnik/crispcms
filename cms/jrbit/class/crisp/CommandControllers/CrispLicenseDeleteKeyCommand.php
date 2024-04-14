@@ -11,7 +11,6 @@ use crisp\api\License;
 use crisp\core;
 use crisp\core\Environment;
 use crisp\core\Logger;
-use crisp\core\Themes;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\Input;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,13 +18,13 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class CrispLicenseDeleteCommand extends Command
+class CrispLicenseDeleteKeyCommand extends Command
 {
     protected function configure(): void
     {
         $this
-            ->setName('crisp:license:delete')
-            ->setDescription('Delete license data')
+            ->setName('crisp:license:delete:key')
+            ->setDescription('Delete license key')
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force deletion');
 
     }
@@ -42,17 +41,16 @@ class CrispLicenseDeleteCommand extends Command
             return Command::FAILURE;
         }
 
-        if(!$input->getOption('force') && !$io->confirm('Are you sure you want to delete all license data?', false)){
+        if(!$input->getOption('force') && !$io->confirm('Are you sure you want to delete license key?', false)){
             return Command::INVALID;
         }
 
-        if(Config::delete('license_data')){
-            $io->success("License has been deleted!");
-            Themes::clearCache();
+        if(Config::delete('license_key')){
+            $io->success("License key has been deleted!");
             return Command::SUCCESS;
         }
 
-        $io->error("Failed to delete license!");
+        $io->error("Failed to delete license key!");
         return Command::FAILURE;
     }
 }

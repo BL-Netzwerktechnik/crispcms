@@ -35,12 +35,6 @@ class CrispLicenseIssuerDeleteCommand extends Command
 
         $io = new SymfonyStyle($input, $output);
 
-
-        if(!License::fromDB()){
-            $io->error('No license is installed!');
-            return Command::FAILURE;
-        }
-
         if(!$input->getOption('force') && !$io->confirm('Are you sure you want to delete all license key pairs?', false)){
             return Command::INVALID;
         }

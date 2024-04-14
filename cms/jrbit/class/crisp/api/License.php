@@ -395,6 +395,9 @@ class License
             return $licenseObj;
         } 
 
+        
+        Logger::getLogger(__METHOD__)->debug("License HTTP: $httpCode");
+
         if (Config::get("license_key_response_grace") >= 10) {
             $httpCode = Cache::get("license_key_response");
             Config::delete("license_key");
@@ -405,7 +408,7 @@ class License
         } elseif ($httpCode === "400" || $httpCode === "401" || $httpCode === "403") {
             self::uninstall();
             Config::delete("license_key");
-            Logger::getLogger(__METHOD__)->error("License Revoked or Expired, uninstalling completely...");
+            Logger::getLogger(__METHOD__)->error("License Revoked or Expired ($httpCode), uninstalling completely...");
             return false;
         }else{
             if(self::isLicenseAvailable()){
