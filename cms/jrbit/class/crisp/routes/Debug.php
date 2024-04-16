@@ -37,24 +37,24 @@ use crisp\core\RESTfulAPI;
 class Debug
 {
 
-    const BASE_COMMAND = "crisp --loglevel=%s --no-colors";
+    const BASE_COMMAND = "crisp --no-interaction --no-ansi";
     const COMMANDS = [
-        "reload-theme" => ["{{base-command}} theme --uninstall", "{{base-command}} theme --install"],
-        "reload-kv" => ["{{base-command}} storage --install"],
-        "reload-kv-force" => ["{{base-command}} storage --install --force"],
+        "reload-theme" => ["{{base-command}} crisp:theme --uninstall", "{{base-command}} crisp:theme --install"],
+        "reload-kv" => ["{{base-command}} crisp:theme:storage --install"],
+        "reload-kv-force" => ["{{base-command}} crisp:theme:storage --install --force"],
         "execute-boot-files" => ["{{base-command}} theme --boot"],
-        "clear-cache" => ["{{base-command}} --clear-cache"],
-        "post-install" => ["{{base-command}} --post-install"],
-        "migrate-theme" => ["{{base-command}} theme --migrate"],
-        "migrate-crisp" => ["{{base-command}} --migrate"],
-        "delete-license" => ["{{base-command}} license --delete-data"],
-        "delete-key" => ["{{base-command}} license --delete-key"],
-        "delete-issuer-public" => ["{{base-command}} license --delete-issuer-public"],
-        "delete-issuer-private" => ["{{base-command}} license --delete-issuer-private"],
-        "generate-development-license" => ["{{base-command}} license --generate-development"],
+        "clear-cache" => ["{{base-command}} crisp:cache:clear"],
+        "post-install" => ["{{base-command}} crisp:post-install"],
+        "migrate-theme" => ["{{base-command}} crisp:migration:run --no-core"],
+        "migrate-crisp" => ["{{base-command}} crisp:migration:run --no-theme"],
+        "delete-license" => ["{{base-command}} crisp:license:delete"],
+        "delete-key" => ["{{base-command}} crisp:license:delete:key"],
+        "delete-issuer-public" => ["{{base-command}} crisp:license:issuer:delete:public"],
+        "delete-issuer-private" => ["{{base-command}} crisp:license:issuer:delete:private"],
+        "generate-development-license" => ["{{base-command}} crisp:license:generate:development"],
         "whoami" => ["whoami"],
-        "check-permissions" => ["{{base-command}} --check-permissions"],
-        "pull-from-license-server" => ["{{base-command}} license --pull"],
+        "check-permissions" => ["{{base-command}} crisp:check-permissions"],
+        "pull-from-license-server" => ["{{base-command}} crisp:license:pull"],
     ];
 
     public static function generateCommand(string $command, string $loglevel = null): string {
