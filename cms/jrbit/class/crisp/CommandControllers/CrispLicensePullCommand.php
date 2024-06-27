@@ -43,18 +43,13 @@ class CrispLicensePullCommand extends Command
 
         if (!$License || !$License->isValid()) {
 
-
             if ($License) {
                 $io->note("The following errors occurred:");
                 foreach ($License->getErrors() as $error) {
                     $io->warning($error);
                 }
             }
-
-            if(License::isLicenseAvailable()){
-                $License->uninstall();
-            }
-
+            
             $io->error("Could not pull license!");
             return Command::FAILURE;
         }

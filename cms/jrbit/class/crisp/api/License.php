@@ -426,6 +426,7 @@ class License
                 if (self::isLicenseAvailable()) {
                     Config::deleteCache("license_key_response_grace");
                     Config::set("license_key_response_grace", (Config::get("license_key_response_grace") ?? 1) + 1);
+                    Logger::getLogger(__METHOD__)->error("License Server Failure: Grace Period ". Config::get("license_key_response_grace"));
 
                     Cache::write("license_key_response", $httpCode, time() + 1800);
                 }
