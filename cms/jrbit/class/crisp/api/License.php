@@ -43,7 +43,7 @@ class License
         private readonly ?string $issuer = null,
         private readonly ?int $issued_at = null,
         private readonly ?int $expires_at = null,
-        private readonly ?string $data = null,
+        private readonly ?array $data = [],
         private readonly ?string $instance = null,
         private readonly ?string $ocsp = null,
         private ?string $signature = null,
@@ -659,7 +659,7 @@ class License
             return [];
         }
 
-        return json_decode($this->data, true);
+        return $this->data;
     }
 
     /**
