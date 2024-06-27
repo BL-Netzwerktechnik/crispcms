@@ -33,8 +33,6 @@ class CrispLicensePullCommand extends Command
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $io = new SymfonyStyle($input, $output);
-
-        var_dump($_ENV["LICENSE_SERVER"]);
         
         if (!Build::requireLicenseServer()) {
             $io->error("This instance does not have a license server configured!");

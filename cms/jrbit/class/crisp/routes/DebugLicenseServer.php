@@ -22,10 +22,10 @@
  */
 
  /**
-  * 400 = Missing License Key
-  * 401 = Invalid License Key
-  * 403 = Revoked License
-  * 2xx = OK
+  * 422 = Invalid License Key
+  * 410 = Expired License Key
+  * 403 = Revoked License Key
+  * 200 = OK
   * Other error codes have a grace period of 10 Pull attempts. If the code is still not 2xx the license will be uninstalled after 10 attempts. 
   */
 
@@ -88,7 +88,7 @@ class DebugLicenseServer
                 }
                 if($licenseKey !== "testKey"){
                     Logger::getLogger(__METHOD__)->error("Invalid License Key");
-                    http_response_code(401);
+                    http_response_code(422);
                     exit;
                 }
                 break;
