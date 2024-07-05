@@ -4,278 +4,141 @@
 
 
 {% block content %}
-    <div class="mt-5 d-grid gap-2">
-        <h1 class="text-center">
-            {% if license.getWhitelabel() %}
-            {{ license.getWhiteLabel() }}
-            {% else %}
-                <img width="50" src="/themes/basic/crisp.svg"/> CrispCMS</h1>
-            {% endif %}
+	<div class="mt-5 d-grid gap-2">
+		<h1 class="text-center">
+			{% if license.getWhitelabel() %}
+				{{ license.getWhiteLabel() }}
+			{% else %}
+				<img width="50" src="/themes/basic/crisp.svg"/>
+				CrispCMS</h1>
+		{% endif %}
+	</div>
 
-    </div>
 
+	<div class="container mt-5">
 
-<div class="container mt-5">
+		<ul class="nav nav-tabs" id="myTab" role="tablist">
+			<li class="nav-item" role="presentation">
+				<button class="nav-link active" id="license-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Enter License</button>
+			</li>
+			{% if license.getVersion() is not defined %}
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="generate-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Generate License</button>
+				</li>
+			{% endif %}
+		</ul>
+		<div class="card">
+			<div class="card-body">
+				<div class="tab-content" id="myTabContent">
+					<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="license-tab">
+						{% include 'components/license/enter_license.twig' %}
+					</div>
+					{% if license.getVersion() is not defined %}
+						<div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="generate-tab">
+							{% include 'components/license/generate_license.twig' %}
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+	{% if license.getVersion() is defined %}
+		<h2 class="text-center mt-4">This Instance is licensed to:
+		</h2>
+		<h3 class="text-center">{% include 'components/license_fields.twig' with {'field': license.getName()} %}</h3>
+		<div class="container mt-3">
+			<div class="card">
+				<div class="card-body">
+					<h4 class="mb-4">
+						Status:
+						{% if license.isValid() %}
+							<span class="text-success">VALID</span>
+						{% else %}
+							<span class="text-danger">INVALID</span>
+						{% endif %}
+					</h4>
+					<p>
+						License Version:
+						{% include 'components/license_fields.twig' with {'field': license.getVersion()} %}
+					</p>
+					<p>
+						License ID:
+						{% include 'components/license_fields.twig' with {'field': license.getUuid()} %}
+					</p>
+					<p>
+						Issuer:
+						{% include 'components/license_fields.twig' with {'field': license.getIssuer()} %}
+					</p>
+					<p>
+						Domains:
+						{% include 'components/license_fields.twig' with {'field': license.getDomains()|join(", ")} %}
+						{% if not license.isDomainAllowed(SERVER.HTTP_HOST) and license.getDomains() is defined %}
+							<span class="text-danger">(<b>{{ SERVER.HTTP_HOST }}</b>
+								is not permitted)</span>
+						{% endif %}
+					</p>
+					<p>
+						Issued At:
+						{% if license.getIssuedAt() is defined %}
+							{% include 'components/license_fields.twig' with {'field': license.getIssuedAt()|date()} %}
+							UTC ({{ parseTime(license.getIssuedAt()).diffForHumans() }})
+						{% else %}
+							{% include 'components/license_fields.twig' with {'field': null} %}
+						{% endif %}
+					</p>
+					<p>
+						Expires At:
+						{% if license.getExpiresAt() is defined %}
+							{% if license.canExpire() %}
+								{% include 'components/license_fields.twig' with {'field': license.getExpiresAt()|date(), 'color': license.isExpired() ? 'text-danger': 'text-success'} %}
+								UTC
+								{% set ExpiredHuman = parseTime(license.getExpiresAt()).diffForHumans() %}
+								{% if license.isExpired() %}
+									<span class="text-danger">(Expired
+										{{ ExpiredHuman }})</span>
+								{% else %}
+									({{ ExpiredHuman }})
+								{% endif %}
+							{% else %}
+								<span class="text-warning">NO EXPIRY DATE</span>
+							{% endif %}
 
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="license-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Enter License</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="generate-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Generate License</button>
-        </li>
-    </ul>
-    <div class="card">
-        <div class="card-body">
-    <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="license-tab">
-            {% include 'components/license/enter_license.twig' %}
-        </div>
-        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="generate-tab">
-            {% include 'components/license/generate_license.twig' %}
-        </div>
-    </div>
-    </div>
-    </div>
-</div>
-    {% if license.getVersion() is defined %}
-        <h2 class="text-center mt-4">This Instance is licensed to: </h2>
-        <h3 class="text-center">{% include 'components/license_fields.twig' with {'field': license.getName()} %}</h3>
-        <div class="container mt-3">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="mb-4">
-                        Status:
-                        {% if license.isValid() %}
-                            <span class="text-success">VALID</span>{% else %}<span class="text-danger">INVALID</span>
-                        {% endif %}
-                    </h4>
-                    <p>
-                        License Version: {% include 'components/license_fields.twig' with {'field': license.getVersion()} %}
-                    </p>
-                    <p>
-                        License ID: {% include 'components/license_fields.twig' with {'field': license.getUuid()} %}
-                    </p>
-                    <p>
-                        Issuer: {% include 'components/license_fields.twig' with {'field': license.getIssuer()} %}
-                    </p>
-                    <p>
-                        Domains: {% include 'components/license_fields.twig' with {'field': license.getDomains()|join(", ")} %}
-                        {% if not license.isDomainAllowed(SERVER.HTTP_HOST) and license.getDomains() is defined %}
-                            <span class="text-danger">(<b>{{ SERVER.HTTP_HOST }}</b> is not permitted)</span>
-                        {% endif %}
-                    </p>
-                    <p>
-                        Issued At:
-                        {% if license.getIssuedAt() is defined %}
-                            {% include 'components/license_fields.twig' with {'field': license.getIssuedAt()|date()} %} UTC ({{ parseTime(license.getIssuedAt()).diffForHumans() }})
-                        {% else %}
-                            {% include 'components/license_fields.twig' with {'field': null} %}
-                        {% endif %}
-                    </p>
-                    <p>
-                        Expires At:
-                        {% if license.getExpiresAt() is defined %}
-                            {% if license.canExpire() %}
-                                {% include 'components/license_fields.twig' with {'field': license.getExpiresAt()|date(), 'color': license.isExpired() ? 'text-danger': 'text-success'} %} UTC 
-                            {% set ExpiredHuman = parseTime(license.getExpiresAt()).diffForHumans() %}
-                                {% if license.isExpired() %}
-                                    <span class="text-danger">(Expired {{ ExpiredHuman }})</span>
-                                {% else %}
-                                    ({{ ExpiredHuman }})
-                                {% endif %}
-                            {% else %}
-                                <span class="text-warning">NO EXPIRY DATE</span>
-                            {% endif %}
+						{% else %}
+							{% include 'components/license_fields.twig' with {'field': null} %}
+						{% endif %}
+					</p>
+					<p>
+						OCSP:
+						{% include 'components/license_fields.twig' with {'field': license.getOcsp()} %}
 
-                        {% else %}
-                            {% include 'components/license_fields.twig' with {'field': null} %}
-                        {% endif %}
-                    </p>
-                    <p>
-                        OCSP: {% include 'components/license_fields.twig' with {'field': license.getOcsp()} %}
-
-                        {% if license.validateOCSP() and license.getHttpCodeOCSP()|slice(0,1) == 2 %}
-                            <span class="text-success">(VALID)</span>
-                        {% elseif license.getOcsp() %}
-                            <span class="text-danger">(FAILED with {{ license.getHttpCodeOCSP() }}) Attempt {{ license.getGraceOCSP()|default(1) }}/3</span>
-                        {% endif %}
-                        {% if license.getOcsp() and license.getTimestampNextOCSP() > time() %}
-                            (Next check: {{ parseTime(license.getTimestampNextOCSP()).diffForHumans() }})
-                        {% endif %}
-                    </p>
-                    <p>
-                        Signature:
-                        {% if license.verifySignature() %}
-                            <span class="text-success">VALID</span>{% else %}<span class="text-danger">INVALID</span>
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-        </div>
-    {% endif %}
+						{% if license.validateOCSP() and license.getHttpCodeOCSP()|slice(0,1) == 2 %}
+							<span class="text-success">(VALID)</span>
+						{% elseif license.getOcsp() %}
+							<span class="text-danger">(FAILED with
+								{{ license.getHttpCodeOCSP() }}) Attempt
+								{{ license.getGraceOCSP()|default(1) }}/3</span>
+						{% endif %}
+						{% if license.getOcsp() and license.getTimestampNextOCSP() > time() %}
+							(Next check:
+							{{ parseTime(license.getTimestampNextOCSP()).diffForHumans() }})
+						{% endif %}
+					</p>
+					<p>
+						Signature:
+						{% if license.verifySignature() %}
+							<span class="text-success">VALID</span>
+						{% else %}
+							<span class="text-danger">INVALID</span>
+						{% endif %}
+					</p>
+				</div>
+			</div>
+		</div>
+	{% endif %}
 
 {% endblock %}
 
 
 {% block scripts %}
-
-
-    <script>
-
-        function download(filename, text) {
-            var element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            element.setAttribute('download', filename);
-
-            element.style.display = 'none';
-            document.body.appendChild(element);
-
-            element.click();
-
-            document.body.removeChild(element);
-        }
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer)
-                toast.addEventListener('mouseleave', Swal.resumeTimer)
-            }
-        });
-
-
-        $(document).ready(function() {
-            $("#entlic").on('submit', function(e){
-                e.preventDefault();
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Uploading License... Please wait'
-                })
-
-                let fd = new FormData();
-                fd.append('license', $('#license')[0].files[0]);
-
-                if($("#issuer").length) {
-                    fd.append('issuer', $('#issuer')[0].files[0]);
-                }
-
-                if($("#instance").length) {
-                    fd.append('instance', $('#instance').val());
-                }
-
-                fd.append('action', "enter_license");
-
-                $.ajax({
-                    url: window.location.href,
-                    type: 'post',
-                    data: fd,
-                    contentType: false,
-                    processData: false,
-                    success: function(response){
-                        window.location.reload();
-                    },
-                    error: function() {
-                        Toast.fire({
-                            icon: 'error',
-                            title: 'An error occurred installing the license Key!'
-                        })
-
-                    }
-                });
-            });
-            $("#entkey").on('submit', function(e){
-                e.preventDefault();
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Uploading License... Please wait'
-                })
-
-                let fd = new FormData();
-
-                if($("#key").length > 0) {
-                    fd.append('key', $('#key').val());
-                }
-
-                fd.append('action', "enter_key");
-
-                $.ajax({
-                    url: window.location.href,
-                    type: 'post',
-                    data: fd,
-                    contentType: false,
-                    processData: false,
-                    success: function(response){
-                        window.location.reload();
-                    },
-                    error: function() {
-                        Toast.fire({
-                            icon: 'error',
-                            title: 'An error occurred installing the license Key!'
-                        })
-
-                    }
-                });
-            });
-
-            $("#generate_issuer").on('click', function(e){
-                e.preventDefault();
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Generating License... Please wait'
-                })
-
-                let fd = new FormData();
-
-                fd.append('action', "generate_issuer");
-
-                $.ajax({
-                    url: window.location.href,
-                    type: 'post',
-                    data: fd,
-                    contentType: false,
-                    processData: false,
-                    success: function(response){
-                        window.location.reload();
-                    },
-                    error: function() {
-                        Toast.fire({
-                            icon: 'error',
-                            title: 'An error occurred generating the license Key!'
-                        })
-
-                    }
-                });
-            });
-
-            $("#genlic").on('submit', function(e){
-                e.preventDefault();
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Generating License... Please wait'
-                })
-
-                $.post(window.location.href,  $(this).serialize())
-                    .done(function(response){
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Licenses have been generated and will be downloaded!'
-                        });
-
-                        download("issuer.pub", response.parameters.issuerpub);
-                        download("license.key", response.parameters.license);
-                    })
-                    .fail(function() {
-                        Toast.fire({
-                            icon: 'error',
-                            title: 'An error occurred generating the license Key!'
-                        })
-
-                    });
-                });
-        });
-    </script>
+	<script>{% include 'components/scripts/license.js.twig' %}</script>
 {% endblock %}

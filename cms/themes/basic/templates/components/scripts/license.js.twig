@@ -1,0 +1,189 @@
+
+        function download(filename, text) {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+        }
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+
+        $(document).ready(function() {
+            $("#entlic").on('submit', function(e){
+                e.preventDefault();
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Uploading License... Please wait'
+                })
+
+                let fd = new FormData();
+                fd.append('license', $('#license')[0].files[0]);
+
+                if($("#issuer").length) {
+                    fd.append('issuer', $('#issuer')[0].files[0]);
+                }
+
+                if($("#instance").length) {
+                    fd.append('instance', $('#instance').val());
+                }
+
+                fd.append('action', "enter_license");
+
+                $.ajax({
+                    url: window.location.href,
+                    type: 'post',
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function(response){
+                        window.location.reload();
+                    },
+                    error: function() {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'An error occurred installing the license Key!'
+                        })
+
+                    }
+                });
+            });
+            $("#refresh").on('submit', function(e){
+                e.preventDefault();
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Refreshing License... Please wait'
+                })
+
+
+
+                let fd = new FormData();
+
+                fd.append('action', "refresh");
+
+
+                $.ajax({
+                    url: window.location.href,
+                    type: 'post',
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function(response){
+                        window.location.reload();
+                    },
+                    error: function() {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'An error occurred refreshing the license!'
+                        })
+
+                    }
+                });
+            });
+
+            
+            $("#entkey").on('submit', function(e){
+                e.preventDefault();
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Uploading License... Please wait'
+                })
+
+                let fd = new FormData();
+
+                if($("#key").length > 0) {
+                    fd.append('key', $('#key').val());
+                }
+
+                fd.append('action', "enter_key");
+
+                $.ajax({
+                    url: window.location.href,
+                    type: 'post',
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function(response){
+                        window.location.reload();
+                    },
+                    error: function() {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'An error occurred installing the license Key!'
+                        })
+
+                    }
+                });
+            });
+
+            $("#generate_issuer").on('click', function(e){
+                e.preventDefault();
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Generating License... Please wait'
+                })
+
+                let fd = new FormData();
+
+                fd.append('action', "generate_issuer");
+
+                $.ajax({
+                    url: window.location.href,
+                    type: 'post',
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function(response){
+                        window.location.reload();
+                    },
+                    error: function() {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'An error occurred generating the license Key!'
+                        })
+
+                    }
+                });
+            });
+
+            $("#genlic").on('submit', function(e){
+                e.preventDefault();
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Generating License... Please wait'
+                })
+
+                $.post(window.location.href,  $(this).serialize())
+                    .done(function(response){
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Licenses have been generated and will be downloaded!'
+                        });
+
+                        download("issuer.pub", response.parameters.issuerpub);
+                        download("license.key", response.parameters.license);
+                    })
+                    .fail(function() {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'An error occurred generating the license Key!'
+                        })
+
+                    });
+                });
+        });

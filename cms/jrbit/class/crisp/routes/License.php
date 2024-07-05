@@ -161,6 +161,21 @@ class License
                 Cache::clear();
 
                 echo "OK";
+            } elseif ($_POST["action"] === "refresh") {
+
+                Logger::getLogger(__METHOD__)->info("Refreshing License...");
+                $License = ApiLicense::fromLicenseServer();
+
+                if(!$License){
+                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Could not fetch license from server", HTTP: 500);
+                    exit;
+                }
+
+
+
+                Cache::clear();
+
+                echo "OK";
             } else {
                 RESTfulAPI::response(Bitmask::INVALID_PARAMETER->value, "Unknown Action", HTTP: 404);
             }
