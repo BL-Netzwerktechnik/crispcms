@@ -1,32 +1,29 @@
-{% if not LicenseAvailable %}
+{% if LicenseKeyIsDefined and RequireLicenseServer and RequireLicense and not LicenseAvailable %}
 
-	{% if LicenseKeyIsDefined and RequireLicenseServer and RequireLicense %}
-
-		<h3 class="text-danger text-center">Your Distributor Requires an Installed License Key but none is loaded into CrispCMS.<br>
-			Please Restart your Container!</h3>
-	{% elseif RequireLicense %}
-		<h3 class="text-danger text-center">Your Distributor Requires an Installed License Key but none is installed</h3>
-		<h4 class="text-danger text-center">Install one with the form below</h4>
-	{% endif %}
+	<h3 class="text-danger text-center">Your Distributor Requires an Installed License Key but none is loaded into CrispCMS.<br>
+		Please Restart your Container!</h3>
+{% elseif RequireLicense and not LicenseAvailable %}
+	<h3 class="text-danger text-center">Your Distributor Requires an Installed License Key but none is installed</h3>
+	<h4 class="text-danger text-center">Install one with the form below</h4>
+{% endif %}
 
 
-	{% if RequireLicenseServer and not LicenseKeyIsDefined %}
-		<h1>Enter License</h1>
-		<form id="entkey" method="post" action="" enctype="multipart/form-data">
-			<div class="row">
-				<div class="col">
-					<div class="form-group">
-						<label for="instance">License Key</label>
-						<input name="key" class="form-control" type="text" id="key">
-						<small id="key" class="form-text text-muted">You should have received this by your distributor</small>
-					</div>
+{% if RequireLicenseServer and not LicenseKeyIsDefined %}
+	<h1>Enter License</h1>
+	<form id="entkey" method="post" action="" enctype="multipart/form-data">
+		<div class="row">
+			<div class="col">
+				<div class="form-group">
+					<label for="instance">License Key</label>
+					<input name="key" class="form-control" type="text" id="key">
+					<small id="key" class="form-text text-muted">You should have received this by your distributor</small>
 				</div>
 			</div>
-			<div class="d-grid gap-2 mt-4">
-				<button class="btn btn-primary" type="submit">Submit</button>
-			</div>
-		</form>
-	{% endif %}
+		</div>
+		<div class="d-grid gap-2 mt-4">
+			<button class="btn btn-primary" type="submit">Submit</button>
+		</div>
+	</form>
 {% endif %}
 
 {% if not RequireLicenseServer %}
