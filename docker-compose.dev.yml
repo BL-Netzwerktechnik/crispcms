@@ -1,12 +1,43 @@
-version: '3'
 services:
+  postgres_license:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres #gitleaks:allow
+
+
+  license:
+    image: registry.jrbit.de/jrb-it/rest-license:stable
+    links:
+      - postgres_license
+    environment:
+      - LOG_LEVEL=DEBUG
+      - POSTGRES_URI=postgres://postgres:postgres@postgres_license:5432/postgres #gitleaks:allow
+      - TZ=Europe/Berlin
+      - HOST=${HOST}
+      - ROOT=${HOST}
+      - PROTO=https
+      - SENTRY_DSN=https://4129710f0e07a134fc7291ec974cf504@o3.ingest.sentry.jrbit.de/41
+      - SENTRY_SAMPLE_RATE=1.0
+      - SENTRY_PROFILES_SAMPLE_RATE=1.0
+      - ENVIRONMENT=production
+      - REST_MASTER_KEY=dev
+      - SENTRY_JS_DSN=https://sentry.internal.jrbit.de/js-sdk-loader/4129710f0e07a134fc7291ec974cf504.min.js
+
+
   crispcms:
     build:
      context: .
     container_name: crispcms
+    links:
+      - license
+      - mailhog
+      - postgres
+    ports:
+      - 80:80
+      - 81:81
     environment:
       - LOG_LEVEL=DEBUG
-      - POSTGRES_URI=postgres://postgres:postgres@localhost:5432/postgres #gitleaks:allow
+      - POSTGRES_URI=postgres://postgres:postgres@postgres:5432/postgres #gitleaks:allow
       - TZ=Europe/Berlin
       - HOST=${HOST}
       - ROOT=${HOST}
@@ -17,11 +48,9 @@ services:
       - ENVIRONMENT=development
       - SENTRY_JS_DSN=https://sentry.internal.jrbit.de/js-sdk-loader/4129710f0e07a134fc7291ec974cf504.min.js
       - GIT_TAG=${GIT_TAG}
-      #- LICENSE_SERVER=https://${HOST}/_/debug/license/server/key/{{key}}
-      #- LICENSE_SERVER=https://api.pixelcowboys.de/license/v1?key={{key}}&instance={{instance}}
-      #- REQUIRE_LICENSE=true
+      - LICENSE_SERVER=http://license:81/validate/v1?key={{key}}&instance={{instance}}
+      - REQUIRE_LICENSE=true
       #- LICENSE_KEY=testKey
-      #- PULL_LICENSE_ON_STARTUP=true
     volumes:
       - ${GITPOD_REPO_ROOT}:/var/www/crisp
       - crisp:/data
@@ -30,36 +59,29 @@ services:
       - ${GITPOD_REPO_ROOT}/config/crisp-cli.sh:/usr/local/bin/crisp-cli
       - ${GITPOD_REPO_ROOT}/docker:/opt/entrypoint.d
     user: root
-    network_mode: host
 
 
   postgres:
     image: postgres
-    container_name: postgres
     environment:
       - POSTGRES_PASSWORD=postgres #gitleaks:allow
-    ports:
-      - "5432:5432"
-    network_mode: host
     restart: always
     volumes:
       - postgres:/var/lib/postgresql/data
     
   mailhog:
     image: mailhog/mailhog
-    container_name: mailhog
     ports:
       - "1025:1025"
       - "8025:8025"
-    network_mode: host
     restart: always
 
   adminer:
     image: adminer
-    container_name: adminer
+    links:
+      - postgres
     ports:
       - "8080:8080"
-    network_mode: host
     restart: always
 
 volumes:
