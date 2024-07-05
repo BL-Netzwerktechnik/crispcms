@@ -54,7 +54,7 @@ class Build
     public static function licenseKeyIsDefined(): bool
     {
         Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
-        return array_key_exists('LICENSE_KEY', $_ENV) && $_ENV['LICENSE_KEY'] !== '' ? true : false;
+        return (array_key_exists('LICENSE_KEY', $_ENV) && $_ENV['LICENSE_KEY'] !== '' ? true : false) || Config::exists('license_key');
     }
 
     public static function requireLicenseServer(): bool {

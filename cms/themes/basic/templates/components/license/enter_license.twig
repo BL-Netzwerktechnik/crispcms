@@ -72,7 +72,7 @@
 	</form>
 {% endif %}
 
-{% if RequireLicenseServer %}
+{% if RequireLicenseServer and LicenseKeyIsDefined %}
 	<div class="alert alert-warning mt-2" role="alert">
 		<h4 class="alert-heading">License Server Configured</h4>
 		<p class="mb-0">Your Distributor has configured a license Server. The license is updated periodically as well as on container restart.</p>
