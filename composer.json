@@ -13,7 +13,7 @@
     }
   ],
   "require": {
-    "twig/twig": "3.4.3",
+    "twig/twig": "^3.14",
     "nette/utils": "3.0",
     "beberlei/assert": "^3.3",
     "league/oauth2-client": "^2.6",
@@ -28,10 +28,7 @@
     "guzzlehttp/guzzle": "^7.4",
     "symfony/cache": "^5.3",
     "vlucas/phpdotenv": "^5.3",
-    "jrbit/oauth2-keycloak": "dev-master",
     "aws/aws-sdk-php": "^3.185",
-    "flagsmith/flagsmith-php-client": "2.1.1",
-    "jrb-it/php-cli": "^1.0",
     "ext-fileinfo": "*",
     "nesbot/carbon": "^2.67",
     "geoip2/geoip2": "^2.13",
