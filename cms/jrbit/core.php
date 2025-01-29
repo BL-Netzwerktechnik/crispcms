@@ -25,22 +25,29 @@ namespace crisp;
 
 use crisp\api\Build;
 use crisp\api\Helper;
+use crisp\Controllers\EventController;
 use crisp\core\Bitmask;
 use crisp\core\Cron;
 use crisp\core\Crypto;
 use crisp\core\Environment;
 use crisp\core\HookFile;
 use crisp\core\RESTfulAPI;
-use crisp\core\Sessions;
 use crisp\core\Themes;
 use crisp\core\Logger;
 use crisp\core\Router;
 use crisp\core\ThemeVariables;
+use crisp\Events\LicenseValidatedEvent;
+use crisp\Events\LicenseValidationEvent;
+use crisp\Events\ThemeEvents;
+use crisp\routes\License;
 use Dotenv\Dotenv;
+use Sentry\Event;
 use Sentry\SentrySdk;
 use Sentry\State\Scope;
 use Sentry\Tracing\TransactionContext;
-use Twig\Loader\FilesystemLoader;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Contracts\EventDispatcher\Event as EventDispatcherEvent;
+
 use function Sentry\captureException;
 use function Sentry\configureScope;
 use function Sentry\init;
@@ -77,7 +84,6 @@ class core
     public const THEME_BASE_DIR = __DIR__ . '/../themes';
 
     public const LOG_DIR = '/var/log/crisp';
-
 
     public static function init()
     {
@@ -137,8 +143,8 @@ class core
 
                 init([
                     'dsn' => $_ENV['SENTRY_DSN'],
-                    'traces_sample_rate' => (float)$_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
-                    'profiles_sample_rate' => (float)$_ENV['SENTRY_PROFILES_SAMPLE_RATE'] ?? 0.3,
+                    'traces_sample_rate' => (float) $_ENV['SENTRY_SAMPLE_RATE'] ?? 0.3,
+                    'profiles_sample_rate' => (float) $_ENV['SENTRY_PROFILES_SAMPLE_RATE'] ?? 0.3,
                     'environment' => Build::getEnvironment()->value,
                     'release' => Themes::getReleaseString() ?? Build::getReleaseString(),
                 ]);
@@ -154,20 +160,14 @@ class core
 
             setlocale(LC_TIME, $_ENV["LANG"] ?? 'en_US.utf8');
 
-
-            $CurrentTheme = core::DEFAULT_THEME;
+            EventController::register();
             Themes::autoload();
             ThemeVariables::register();
             Cron::register();
             Router::register();
 
             if (PHP_SAPI !== 'cli') {
-
-                $transactionContext = (new TransactionContext("HTTP Request"));
-                $transactionContext->setOp("http.server");
-                $transaction = \Sentry\startTransaction($transactionContext);
-
-                \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
+                HookFile::setup();
 
                 $GLOBALS['plugins'] = [];
                 $GLOBALS['hook'] = [];
@@ -176,9 +176,7 @@ class core
                 $GLOBALS['render'] = [];
                 session_start();
 
-
-                api\Helper::setLocale();
-                $Locale = Helper::getLocale();
+                Helper::setLocale();
 
                 if (!isset($_COOKIE['guid'])) {
                     $GLOBALS['guid'] = Crypto::UUIDv4();
@@ -189,20 +187,21 @@ class core
 
                 define("IS_SPECIAL_PAGE", str_starts_with($_SERVER['REQUEST_URI'], "/_"));
 
-                if (Build::requireLicense() && !IS_SPECIAL_PAGE) {
-                    $GLOBALS["license"] = api\License::fromDB();
+                
+                $GLOBALS["license"] = api\License::fromDB();
 
-                    if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid()) {
-                        header("Location: /_/license#renew");
-                        \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
-                        $transaction->finish();
+                $LicenseEvent = EventController::getEventDispatcher()->dispatch(new LicenseValidationEvent($GLOBALS["license"]));
+                
+                /* Twig Globals */
+                Themes::initRenderer();
+
+                if (Build::requireLicense() && !IS_SPECIAL_PAGE) {
+
+                    if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid() || $LicenseEvent->isPropagationStopped()) {
+                        (new License())->preRender($LicenseEvent->getErrorMessages(), 'danger');
                         exit;
                     }
                 }
-
-                /* Twig Globals */
-                HookFile::setup();   
-                Themes::initRenderer();
 
                 if (IS_API_ENDPOINT) {
 
@@ -210,16 +209,16 @@ class core
                     header('Cache-Control: max-age=600, public, must-revalidate');
 
                     new RESTfulAPI();
-                }else{
-                    Themes::load();
+                } else {
+                    Themes::loadTheme();
                 }
-                \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
-                $transaction->finish();
             }
         } catch (\TypeError | \Exception | \Error | \CompileError | \ParseError | \Throwable $ex) {
             captureException($ex);
             Logger::getLogger(__METHOD__)->critical($ex->__toString(), (array) $ex);
-            if (PHP_SAPI === 'cli')  exit(1);
+            if (PHP_SAPI === 'cli') {
+                exit(1);
+            }
 
             http_response_code(500);
 
@@ -230,9 +229,9 @@ class core
             }
             if (IS_API_ENDPOINT) {
                 RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
+
                 return;
             }
-
 
             Themes::renderErrorPage($ex);
 

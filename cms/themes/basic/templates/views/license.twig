@@ -17,6 +17,16 @@
 
 	<div class="container mt-5">
 
+		{% if HeaderMessage is not empty %}
+			<div class="alert alert-{{ HeaderColor }} alert-dismissible fade show" role="alert">
+			<h4 class="alert-heading">License Validation Failed</h4>
+				<ol>
+					{% for Message in HeaderMessage %}
+						<li>{{ Message }}</li>
+					{% endfor %}
+				</ol>
+			</div>
+		{% endif %}
 		<ul class="nav nav-tabs" id="myTab" role="tablist">
 			<li class="nav-item" role="presentation">
 				<button class="nav-link active" id="license-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Enter License</button>
@@ -140,5 +150,5 @@
 
 
 {% block scripts %}
-	<script>{% include 'components/scripts/license.js.twig' %}</script>
+	 <script>{% include 'components/scripts/license.js.twig' %}</script>
 {% endblock %}

@@ -267,7 +267,7 @@ class Themes
      * @param  string      $CurrentPage
      * @throws \Exception
      */
-    public static function load(): void
+    public static function loadTheme(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 

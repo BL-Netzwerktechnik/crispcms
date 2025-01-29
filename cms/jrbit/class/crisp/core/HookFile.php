@@ -23,135 +23,118 @@
 
 namespace crisp\core;
 
+use crisp\Controllers\EventController;
+use crisp\Events\ThemeEvents;
+use Symfony\Contracts\EventDispatcher\Event;
+
 /**
  * Used internally, theme loader.
  */
 class HookFile
 {
+    private static function loadHookFile()
+    {
+
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        $_HookFile = Themes::getThemeMetadata()->hookFile;
+
+        include_once Themes::getThemeDirectory() . "/$_HookFile";
+
+        $_HookClass = substr($_HookFile, 0, -4);
+        if (file_exists(Themes::getThemeDirectory() . "/$_HookFile") && class_exists($_HookClass, false)) {
+            return new $_HookClass();
+        }
+
+        return null;
+    }
+
     public static function preRender(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $_HookFile = Themes::getThemeMetadata()->hookFile;
-        $_HookClass = substr($_HookFile, 0, -4);
+        $HookClass = self::loadHookFile();
 
-        require_once Themes::getThemeDirectory() . "/$_HookFile";
 
-        if (class_exists($_HookClass, false)) {
-            $HookClass = new $_HookClass();
-        }
-
-        if ($HookClass !== null && !method_exists($HookClass, 'preRender')) {
-            throw new \Exception("Failed to load $_HookClass, missing preRender!");
-        }
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing preRender hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
-        $HookClass->preRender();
+        EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::PRE_RENDER);
+
+        if ($HookClass !== null && method_exists($HookClass, 'preRender')) {
+            $HookClass->preRender();
+        }
         Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing preRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
 
     public static function postRender(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $_HookFile = Themes::getThemeMetadata()->hookFile;
-        $_HookClass = substr($_HookFile, 0, -4);
-
-        require_once Themes::getThemeDirectory() . "/$_HookFile";
-
-        if (class_exists($_HookClass, false)) {
-            $HookClass = new $_HookClass();
-        }
-
-        if ($HookClass !== null && !method_exists($HookClass, 'postRender')) {
-            throw new \Exception("Failed to load $_HookClass, missing postRender!");
-        }
+        $HookClass = self::loadHookFile();
+        
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing postRender hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
-        $HookClass->postRender();
+        EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::POST_RENDER);
+        if ($HookClass !== null && method_exists($HookClass, 'postRender')) {
+            $HookClass->postRender();
+        }
         Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing postRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
 
     public static function postExecute(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $_HookFile = Themes::getThemeMetadata()->hookFile;
-        $_HookClass = substr($_HookFile, 0, -4);
-
-        require_once Themes::getThemeDirectory() . "/$_HookFile";
-
-        if (class_exists($_HookClass, false)) {
-            $HookClass = new $_HookClass();
-        }
-
-        if ($HookClass !== null && !method_exists($HookClass, 'postExecute')) {
-            throw new \Exception("Failed to load $_HookClass, missing postExecute!");
-        }
+        $HookClass = self::loadHookFile();
+        
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing postExecute hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
-        $HookClass->postExecute();
+        EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::POST_EXECUTE);
+        if ($HookClass !== null && method_exists($HookClass, 'postExecute')) {
+            $HookClass->postExecute();
+        }
         Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing postExecute hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
 
     public static function preExecute(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $_HookFile = Themes::getThemeMetadata()->hookFile;
-        $_HookClass = substr($_HookFile, 0, -4);
+        $HookClass = self::loadHookFile();
 
-        require_once Themes::getThemeDirectory() . "/$_HookFile";
-
-        if (class_exists($_HookClass, false)) {
-            $HookClass = new $_HookClass();
-        }
-
-        if ($HookClass !== null && !method_exists($HookClass, 'preExecute')) {
-            throw new \Exception("Failed to load $_HookClass, missing preExecute!");
-        }
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing preExecute hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
+        EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::PRE_EXECUTE);
         $HookClass->preExecute();
+        if ($HookClass !== null && method_exists($HookClass, 'preExecute')) {
+            $HookClass->preExecute();
+        }
         Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing preExecute hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
 
     public static function setup(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $_HookFile = Themes::getThemeMetadata()->hookFile;
-        $_HookClass = substr($_HookFile, 0, -4);
-
-        require_once Themes::getThemeDirectory() . "/$_HookFile";
-
-        if (class_exists($_HookClass, false)) {
-            $HookClass = new $_HookClass();
-        }
-
-        if ($HookClass !== null && !method_exists($HookClass, 'setup')) {
-            throw new \Exception("Failed to load $_HookClass, missing setup!");
-        }
+        $HookClass = self::loadHookFile();
+        
 
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing setup hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
-        $HookClass->setup();
+        EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::SETUP);
+        
+        if ($HookClass !== null && method_exists($HookClass, 'setup')) {
+            $HookClass->setup();
+        }
         Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing setup hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
+
     public static function setupCli(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $_HookFile = Themes::getThemeMetadata()->hookFile;
-        $_HookClass = substr($_HookFile, 0, -4);
-
-        require_once Themes::getThemeDirectory() . "/$_HookFile";
-
-        if (class_exists($_HookClass, false)) {
-            $HookClass = new $_HookClass();
-        }
-
-        if ($HookClass !== null && !method_exists($HookClass, 'setupCli')) {
-            throw new \Exception("Failed to load $_HookClass, missing setupCli!");
-        }
+        $HookClass = self::loadHookFile();
+        
 
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing setupCli hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
-        $HookClass->setupCli();
+        EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::SETUP_CLI);
+        if ($HookClass !== null && method_exists($HookClass, 'setupCli')) {
+            $HookClass->setupCli();
+        }
         Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing setupCli hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
     }
 }
