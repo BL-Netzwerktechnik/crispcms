@@ -35,8 +35,6 @@ use Twig\Error\SyntaxError;
 class Theme
 {
 
-    use Hook;
-
     public string $CurrentFile;
     public string $CurrentPage;
 
