@@ -6,7 +6,7 @@ use crisp\api\License;
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
- * This event is dispatched each time the license verified
+ * This event is dispatched each time the license verified.
  */
 final class LicenseValidationEvent extends Event
 {
@@ -14,8 +14,9 @@ final class LicenseValidationEvent extends Event
     private array $errorMessages = [];
 
     public function __construct(
-        private? License $license
-        ) {}
+        private ? License $license
+    ) {
+    }
 
     public function getLicense(): ?License
     {

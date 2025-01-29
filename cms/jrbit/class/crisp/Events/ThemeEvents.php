@@ -2,11 +2,8 @@
 
 namespace crisp\Events;
 
-use crisp\api\License;
-use Symfony\Contracts\EventDispatcher\Event;
-
 /**
- * Generic Theme Events
+ * Generic Theme Events.
  */
 final class ThemeEvents
 {

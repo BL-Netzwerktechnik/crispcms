@@ -54,7 +54,6 @@ class Config
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-
         $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
         $span = null;
 
@@ -69,7 +68,6 @@ class Config
 
         $DB = new Postgres();
         self::$Database_Connection = $DB->getDBConnector();
-
 
         if ($span) {
             $span->finish();
@@ -86,8 +84,6 @@ class Config
     public static function exists(string|int $Key): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-
 
         $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
         $span = null;
@@ -107,9 +103,6 @@ class Config
         Logger::getLogger(__METHOD__)->debug("Config::exists: SELECT value FROM Config WHERE key = :ID");
         $statement = self::$Database_Connection->prepare("SELECT value FROM Config WHERE key = :ID");
         $statement->execute([":ID" => $Key]);
-
-
-
 
         $returnResult = $statement->rowCount() > 0;
         if ($span) {
@@ -145,7 +138,6 @@ class Config
             \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
         }
 
-
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -169,7 +161,6 @@ class Config
 
             $returnResult = self::evaluateRow($Result);
         }
-
 
         if ($span) {
             $span->finish();
@@ -195,7 +186,6 @@ class Config
             \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
         }
 
-
         $returnResult = match ($Result["type"]) {
             'serialized' => unserialize($Result["value"]),
             'boolean' => (bool) $Result["value"],
@@ -203,7 +193,6 @@ class Config
             'double' => (float) $Result["value"],
             default => $Result["value"],
         };
-
 
         if ($span) {
             $span->finish();
@@ -224,7 +213,6 @@ class Config
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         $returnResult = false;
-
 
         $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
         $span = null;
@@ -253,7 +241,6 @@ class Config
             $span->finish();
             \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
-
 
         return $returnResult;
     }
@@ -301,7 +288,6 @@ class Config
             \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
 
-
         self::deleteCache($Key);
 
         return $returnResult;
@@ -316,7 +302,6 @@ class Config
     public static function delete(string $Key): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        
 
         $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
         $span = null;
@@ -383,7 +368,6 @@ class Config
     public static function set(string $Key, mixed $Value): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        
 
         $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
         $span = null;
@@ -397,7 +381,6 @@ class Config
 
             \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
         }
-
 
         if (self::$Database_Connection === null) {
             self::initDB();
@@ -424,13 +407,10 @@ class Config
 
         $returnResult = $statement->rowCount() > 0;
 
-
         if ($span) {
             $span->finish();
             \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
-
-        
 
         return $returnResult;
     }
@@ -444,8 +424,6 @@ class Config
     public static function list(bool $KV = false): array
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        
-        
 
         $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
         $span = null;
@@ -459,7 +437,7 @@ class Config
 
             \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
         }
-        
+
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -476,8 +454,8 @@ class Config
             }
 
             $returnResult = $Array;
-        }else{
-           $returnResult = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        } else {
+            $returnResult = $statement->fetchAll(\PDO::FETCH_ASSOC);
         }
 
         if ($span) {
@@ -485,7 +463,6 @@ class Config
             \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
 
-        
         return $returnResult;
     }
 }

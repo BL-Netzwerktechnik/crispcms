@@ -25,19 +25,18 @@ class CrispMigrationRunCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        
+
         $Migrations = new core\Migrations();
 
-        if(!$input->getOption('no-core')){
+        if (!$input->getOption('no-core')) {
             $output->writeln('Running core migrations...');
             $Migrations->migrate();
         }
 
-        if(!$input->getOption('no-theme')){
+        if (!$input->getOption('no-theme')) {
             $output->writeln('Running theme migrations...');
             $Migrations->migrate(Themes::getThemeDirectory());
         }
-
 
         return Command::SUCCESS;
     }

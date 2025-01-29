@@ -115,7 +115,7 @@ class Translation
 
             $Array = [];
 
-            foreach (lists\Languages::fetchLanguages() as $Language) {
+            foreach (Languages::fetchLanguages() as $Language) {
                 $Array[$Language->getCode()] = [];
                 foreach ($Translations as $Item) {
                     $Array[$Language->getCode()][$Item["key"]] = $Item[$Language->getCode()];

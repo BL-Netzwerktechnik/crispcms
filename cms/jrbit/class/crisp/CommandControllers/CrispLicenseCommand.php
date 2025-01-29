@@ -4,7 +4,6 @@ namespace crisp\CommandControllers;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use crisp\core;
 use crisp\core\Logger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -58,7 +57,7 @@ class CrispLicenseCommand extends Command
                     ($license->getExpiresAt() ? date(DATE_RFC7231, $license->getExpiresAt()) : "No Expiry Date"),
                     Carbon::parse($license->getExpiresAt())->diffForHumans()
                 )],
-                ['Data', json_encode($license->getData())]
+                ['Data', json_encode($license->getData())],
             ]
         );
 

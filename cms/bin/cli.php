@@ -30,7 +30,6 @@ if (PHP_SAPI !== 'cli') {
     exit;
 }
 
-
 // Check if user is www-data
 if (posix_getuid() !== 33) {
     echo "Please run this script as www-data\n";
@@ -45,6 +44,6 @@ try {
     HookFile::setupCli();
 
     $cli->run();
-} catch(Throwable|Exception|TypeError $ex){
+} catch (Throwable|Exception|TypeError $ex) {
     Logger::getLogger(__METHOD__)->error($ex->getMessage());
 }

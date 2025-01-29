@@ -23,7 +23,6 @@
 
 namespace crisp\core;
 
-use crisp\api\Helper;
 use crisp\exceptions\BitmaskException;
 use Twig\Environment;
 use Twig\Error\LoaderError;

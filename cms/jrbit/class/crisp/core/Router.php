@@ -44,10 +44,7 @@ class Router
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        
-
         $callable = $callable ?? ($routeType == RouteType::PUBLIC ? "preRender" : "execute");
-
 
         $collector = self::get($routeType)->addRoute($method, [$route, $name ?? $class], [$class, $callable]);
         $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;

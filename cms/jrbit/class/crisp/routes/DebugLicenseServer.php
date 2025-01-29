@@ -21,13 +21,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
- /**
-  * 422 = Invalid License Key
-  * 410 = Expired License Key
-  * 403 = Revoked License Key
-  * 200 = OK
-  * Other error codes have a grace period of 10 Pull attempts. If the code is still not 2xx the license will be uninstalled after 10 attempts. 
-  */
+/**
+ * 422 = Invalid License Key
+ * 410 = Expired License Key
+ * 403 = Revoked License Key
+ * 200 = OK
+ * Other error codes have a grace period of 10 Pull attempts. If the code is still not 2xx the license will be uninstalled after 10 attempts.
+ */
 
 namespace crisp\routes;
 
@@ -43,8 +43,8 @@ class DebugLicenseServer
 {
     public function preRender(string $status = "valid", string $licenseKey = null): void
     {
-        #http_response_code(401);
-        #exit;
+        # http_response_code(401);
+        # exit;
 
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
@@ -62,7 +62,7 @@ class DebugLicenseServer
         }
 
         $instance = Helper::getInstanceId();
-        
+
         Logger::getLogger(__METHOD__)->debug("Status: $status");
 
         switch ($status) {
@@ -86,7 +86,7 @@ class DebugLicenseServer
                     http_response_code(400);
                     exit;
                 }
-                if($licenseKey !== "testKey"){
+                if ($licenseKey !== "testKey") {
                     Logger::getLogger(__METHOD__)->error("Invalid License Key");
                     http_response_code(422);
                     exit;
@@ -94,10 +94,8 @@ class DebugLicenseServer
                 break;
         }
 
-
-
-        $license = new \crisp\api\License(
-            version: \crisp\api\License::GEN_VERSION,
+        $license = new License(
+            version: License::GEN_VERSION,
             uuid: Crypto::UUIDv4(),
             whitelabel: "Acme Inc.",
             domains: $domains,

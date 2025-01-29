@@ -2,12 +2,7 @@
 
 namespace crisp\CommandControllers;
 
-use crisp\api\Config;
-use crisp\api\Helper;
-use crisp\core;
 use crisp\core\Logger;
-use crisp\core\Migrations;
-use crisp\core\Theme;
 use crisp\core\Themes;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -37,10 +32,12 @@ class CrispThemeTranslationsCommand extends Command
 
             if (!Themes::isInstalled()) {
                 $io->error("Theme is not already installed");
+
                 return Command::FAILURE;
             }
             if (!Themes::isValid()) {
                 $io->error("Theme is not mounted. Check your Docker Configuration");
+
                 return Command::FAILURE;
             }
 
@@ -51,8 +48,9 @@ class CrispThemeTranslationsCommand extends Command
                 $io->error("Failed to install translations!");
             }
             Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+
             return Command::SUCCESS;
-        }elseif($input->getOption('uninstall')){
+        } elseif ($input->getOption('uninstall')) {
 
             if (!Themes::isInstalled()) {
                 $io->error("Theme is not installed");
@@ -72,6 +70,7 @@ class CrispThemeTranslationsCommand extends Command
                 $io->error("Failed to uninstall translations!");
             }
             Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+
             return Command::SUCCESS;
         }
 

@@ -4,11 +4,9 @@ namespace crisp\CommandControllers;
 
 use crisp\core\Cron;
 use crisp\core\Logger;
-use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use TypeError;
 
 class CrispCronRunCommand extends Command
 {
@@ -22,7 +20,6 @@ class CrispCronRunCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        
 
         $output->writeln('Running scheduler');
 

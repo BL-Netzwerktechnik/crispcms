@@ -2,17 +2,9 @@
 
 namespace crisp\CommandControllers;
 
-use Carbon\Carbon;
-use Carbon\CarbonInterface;
-use crisp\api\Build;
 use crisp\api\Config;
-use crisp\api\Helper;
-use crisp\api\License;
-use crisp\core;
-use crisp\core\Environment;
 use crisp\core\Logger;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\Input;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -36,39 +28,41 @@ class CrispMaintenanceCommand extends Command
 
         $io = new SymfonyStyle($input, $output);
 
-        if($input->getOption('on')){
+        if ($input->getOption('on')) {
 
             if (Config::set("maintenance_enabled", true)) {
                 $io->success("Maintenance Mode successfully enabled.");
+
                 return Command::SUCCESS;
             }
-            
+
             $io->error("Maintenance Mode could not be enabled.");
+
             return Command::FAILURE;
 
         }
 
-        if($input->getOption('off')){
+        if ($input->getOption('off')) {
 
             if (Config::set("maintenance_enabled", false)) {
                 $io->success("Maintenance Mode successfully disabled.");
+
                 return Command::SUCCESS;
             }
-            
+
             $io->error("Maintenance Mode could not be disabled.");
+
             return Command::FAILURE;
 
         }
 
-
-
         if (Config::get("maintenance_enabled")) {
             $io->warning("Maintenance Mode is currently enabled");
-        }else{
+        } else {
             $io->success("Maintenance Mode is currently disabled");
         }
 
         return Command::SUCCESS;
-        
+
     }
 }

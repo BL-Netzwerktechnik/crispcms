@@ -54,21 +54,28 @@ class Build
     public static function licenseKeyIsDefined(): bool
     {
         Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return (array_key_exists('LICENSE_KEY', $_ENV) && $_ENV['LICENSE_KEY'] !== '' ? true : false) || Config::exists('license_key');
     }
 
-    public static function requireLicenseServer(): bool {
+    public static function requireLicenseServer(): bool
+    {
         Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return array_key_exists('LICENSE_SERVER', $_ENV) && $_ENV['LICENSE_SERVER'] !== '' ? true : false;
     }
 
-    public static function requireLicense(): bool {
+    public static function requireLicense(): bool
+    {
         Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return $_ENV['REQUIRE_LICENSE'] === "true" ? true : false;
     }
 
-    public static function getEnvironment(): Environment {
+    public static function getEnvironment(): Environment
+    {
         Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+
         return match (strtolower($_SERVER['ENVIRONMENT'] ?? 'production')) {
             'staging' => Environment::STAGING,
             'development' => Environment::DEVELOPMENT,

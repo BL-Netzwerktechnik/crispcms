@@ -24,7 +24,7 @@ class CrispPostInstallCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        
+
         $output->writeln("Crisp has been successfully installed!");
         if (Build::getEnvironment() !== Environment::PRODUCTION->value) {
             $output->writeln(sprintf("You can access the Debug menu at %s://%s/_/debug", $_ENV["PROTO"], $_ENV["HOST"]));

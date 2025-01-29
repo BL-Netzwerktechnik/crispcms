@@ -36,17 +36,10 @@ use crisp\core\Themes;
 use crisp\core\Logger;
 use crisp\core\Router;
 use crisp\core\ThemeVariables;
-use crisp\Events\LicenseValidatedEvent;
 use crisp\Events\LicenseValidationEvent;
-use crisp\Events\ThemeEvents;
 use crisp\routes\License;
 use Dotenv\Dotenv;
-use Sentry\Event;
-use Sentry\SentrySdk;
 use Sentry\State\Scope;
-use Sentry\Tracing\TransactionContext;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Contracts\EventDispatcher\Event as EventDispatcherEvent;
 
 use function Sentry\captureException;
 use function Sentry\configureScope;
@@ -170,7 +163,6 @@ class core
                 HookFile::setup();
 
                 $GLOBALS['plugins'] = [];
-                $GLOBALS['hook'] = [];
                 $GLOBALS['navbar'] = [];
                 $GLOBALS['navbar_right'] = [];
                 $GLOBALS['render'] = [];
@@ -187,11 +179,10 @@ class core
 
                 define("IS_SPECIAL_PAGE", str_starts_with($_SERVER['REQUEST_URI'], "/_"));
 
-                
                 $GLOBALS["license"] = api\License::fromDB();
 
                 $LicenseEvent = EventController::getEventDispatcher()->dispatch(new LicenseValidationEvent($GLOBALS["license"]));
-                
+
                 /* Twig Globals */
                 Themes::initRenderer();
 

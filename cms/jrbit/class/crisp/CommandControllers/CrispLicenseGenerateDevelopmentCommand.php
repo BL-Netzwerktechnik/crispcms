@@ -2,8 +2,6 @@
 
 namespace crisp\CommandControllers;
 
-use Carbon\Carbon;
-use Carbon\CarbonInterface;
 use crisp\api\Build;
 use crisp\api\Config;
 use crisp\api\Helper;
@@ -37,7 +35,6 @@ class CrispLicenseGenerateDevelopmentCommand extends Command
 
         $io = new SymfonyStyle($input, $output);
 
-
         if (Build::requireLicense() && Build::getEnvironment() !== Environment::DEVELOPMENT) {
             $io->error("Licenses cannot be generated on this instance!");
 
@@ -63,8 +60,8 @@ class CrispLicenseGenerateDevelopmentCommand extends Command
             $instance = core\Crypto::UUIDv4("I");
         }
 
-        $license = new \crisp\api\License(
-            version: \crisp\api\License::GEN_VERSION,
+        $license = new License(
+            version: License::GEN_VERSION,
             uuid: core\Crypto::UUIDv4(),
             whitelabel: "Acme Inc.",
             domains: $domains,
@@ -74,7 +71,7 @@ class CrispLicenseGenerateDevelopmentCommand extends Command
             expires_at: $expiry,
             data: null,
             instance: $instance,
-            //ocsp: sprintf("%s://%s/_/debug_ocsp", $_ENV["PROTO"], $_ENV["HOST"])
+            // ocsp: sprintf("%s://%s/_/debug_ocsp", $_ENV["PROTO"], $_ENV["HOST"])
         );
 
         if (!Config::exists("license_issuer_private_key")) {
@@ -91,7 +88,7 @@ class CrispLicenseGenerateDevelopmentCommand extends Command
         if (!$license->install()) {
             $io->error("Could not install license!");
 
-            return command::FAILURE;
+            return Command::FAILURE;
         }
 
         $io->success("Test License has been saved");

@@ -21,7 +21,7 @@ class CrispCheckPermissionsCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        
+
         $formatter = $this->getHelper('formatter');
 
         $exitCode = Command::SUCCESS;

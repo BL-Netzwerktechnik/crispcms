@@ -2,7 +2,6 @@
 
 namespace crisp\CommandControllers;
 
-use crisp\core;
 use crisp\core\Logger;
 use crisp\core\Themes;
 use Symfony\Component\Console\Command\Command;
@@ -22,7 +21,6 @@ class CrispCacheClearCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        
 
         if (Themes::clearCache()) {
             $output->writeln("The cache has been successfully cleared!");
@@ -30,6 +28,7 @@ class CrispCacheClearCommand extends Command
             return Command::SUCCESS;
         }
         $output->writeln('Failed to clear cache!');
+
         return Command::FAILURE;
     }
 }

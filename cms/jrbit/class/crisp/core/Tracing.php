@@ -30,7 +30,6 @@ class Tracing
         return \Sentry\SentrySdk::getCurrentHub()->getSpan();
     }
 
-
     public static function traceFunction(\Sentry\Tracing\SpanContext $spanContext, callable $callback, ...$args)
     {
         $span = self::getParentSpan();

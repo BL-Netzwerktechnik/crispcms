@@ -24,7 +24,6 @@
 namespace crisp\routes;
 
 use crisp\api\Build;
-use crisp\core;
 use crisp\core\Bitmask;
 use crisp\core\Logger;
 use crisp\core\Themes;
@@ -37,8 +36,8 @@ use crisp\core\RESTfulAPI;
 class Debug
 {
 
-    const BASE_COMMAND = "crisp --no-interaction --no-ansi";
-    const COMMANDS = [
+    public const BASE_COMMAND = "crisp --no-interaction --no-ansi";
+    public const COMMANDS = [
         "reload-theme" => ["{{base-command}} crisp:theme --uninstall", "{{base-command}} crisp:theme --install"],
         "reload-kv" => ["{{base-command}} crisp:theme:storage --install"],
         "reload-kv-force" => ["{{base-command}} crisp:theme:storage --install --force"],
@@ -57,10 +56,11 @@ class Debug
         "pull-from-license-server" => ["{{base-command}} crisp:license:pull"],
     ];
 
-    public static function generateCommand(string $command, string $loglevel = null): string {
-        
+    public static function generateCommand(string $command, string $loglevel = null): string
+    {
+
         return strtr(sprintf("%s 2>&1", $command), [
-            "{{base-command}}" => sprintf(self::BASE_COMMAND, $loglevel ?? "info")
+            "{{base-command}}" => sprintf(self::BASE_COMMAND, $loglevel ?? "info"),
         ]);
     }
 

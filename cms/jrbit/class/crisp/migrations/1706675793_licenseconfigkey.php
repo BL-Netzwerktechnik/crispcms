@@ -38,15 +38,17 @@ class licenseconfigkey extends \crisp\core\Migrations
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         try {
             $this->begin();
-            if(Config::exists("license_key")){
-                if(Config::set("license_data", Config::get("license_key"))){
-                    if(Config::delete("license_key")){
+            if (Config::exists("license_key")) {
+                if (Config::set("license_data", Config::get("license_key"))) {
+                    if (Config::delete("license_key")) {
                         return $this->end();
                     }
                     Logger::getLogger(__METHOD__)->error("Could not delete license_key");
+
                     return $this->rollback();
-                }else{
+                } else {
                     Logger::getLogger(__METHOD__)->error("Could not set license_data");
+
                     return $this->rollback();
                 }
             }

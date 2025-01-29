@@ -29,7 +29,6 @@ use Monolog\Level;
 use Monolog\Logger as MonologLogger;
 use \Bramus\Monolog\Formatter\ColoredLineFormatter;
 use Monolog\Handler\StreamHandler;
-use PhpCsFixer\Cache\FileHandler;
 
 /**
  * I like the way phpcli outputs the log, so lets initiate the abstract class.
@@ -40,7 +39,7 @@ class Logger
     {
         $_ENV["LOG_LEVEL"] = $logLevel;
     }
-    
+
     public static function getLogLevel(): string
     {
         return $_ENV["LOG_LEVEL"] ?? "INFO";
@@ -59,10 +58,9 @@ class Logger
         $streamHandler = new StreamHandler('php://stdout', Level::fromName(self::getLogLevel()));
         $streamHandler->setFormatter(new ColoredLineFormatter());
 
-
         $logger->pushHandler($streamHandler);
         $logger->pushHandler(new StreamHandler('/var/log/crisp/crisp.log', Level::fromName(self::getLogLevel())));
-        
+
         if (Level::fromName(self::getLogLevel()) > Level::Debug) {
             $logger->pushHandler(new RotatingFileHandler(core::LOG_DIR . sprintf("/%s.log", self::getLogLevel()), 7, Level::fromName(self::getLogLevel())));
         }

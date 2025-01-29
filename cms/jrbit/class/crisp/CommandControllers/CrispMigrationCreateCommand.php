@@ -2,7 +2,6 @@
 
 namespace crisp\CommandControllers;
 
-use crisp\core;
 use crisp\core\Logger;
 use crisp\core\Migrations;
 use crisp\core\Themes;
@@ -31,18 +30,19 @@ class CrispMigrationCreateCommand extends Command
 
         $io = new SymfonyStyle($input, $output);
 
-        if(!$input->getOption('name')){
+        if (!$input->getOption('name')) {
             $io->error('Please specify a --name');
 
             return Command::FAILURE;
         }
 
-        if($input->getOption('theme')){
+        if ($input->getOption('theme')) {
             Migrations::create($input->getOption('name'), Themes::getThemeDirectory());
-        }elseif($input->getOption('core')){
+        } elseif ($input->getOption('core')) {
             Migrations::create($input->getOption('name'));
-        }else{
+        } else {
             $io->error('Please specify either --core or --theme');
+
             return Command::FAILURE;
         }
 

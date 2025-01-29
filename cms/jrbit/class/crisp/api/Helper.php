@@ -262,8 +262,8 @@ class Helper
             $Locale = $_ENV['DEFAULT_LOCALE'] ?? 'en';
         }
 
-        if (isset($_COOKIE[\crisp\core\Config::$Cookie_Prefix . 'language']) && !isset($_GET["crisp_locale"])) {
-            $Locale = $_COOKIE[\crisp\core\Config::$Cookie_Prefix . 'language'];
+        if (isset($_COOKIE[core\Config::$Cookie_Prefix . 'language']) && !isset($_GET["crisp_locale"])) {
+            $Locale = $_COOKIE[core\Config::$Cookie_Prefix . 'language'];
         }
 
         return $Locale;
@@ -278,7 +278,7 @@ class Helper
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        return setcookie(\crisp\core\Config::$Cookie_Prefix . 'language', self::getLocale(), time() + (86400 * 30), '/');
+        return setcookie(core\Config::$Cookie_Prefix . 'language', self::getLocale(), time() + (86400 * 30), '/');
     }
 
     /**
@@ -304,7 +304,7 @@ class Helper
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         list($width, $height) = explode("x", $Size);
-        $faker = \Faker\Factory::create();
+        $faker = Factory::create();
         $faker->addProvider(new ImagesGeneratorProvider($faker));
 
         $imgPath = $faker->imageGenerator(width: $width, height: $height, text: $Text, backgroundColor: $backgroundColor, textColor: $textColor);

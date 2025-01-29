@@ -44,9 +44,7 @@ use crisp\core\Environment as CoreEnvironment;
 
 use function file_exists;
 use function file_get_contents;
-use function function_exists;
 use function is_array;
-use function is_callable;
 use function is_object;
 use function Sentry\captureException;
 use function serialize;
@@ -56,9 +54,6 @@ use function serialize;
  */
 class Themes
 {
-
-    use Hook;
-
     /**
      * Load API files and check if theme matches it.
      *
@@ -106,6 +101,7 @@ class Themes
     public static function getRendererDirectories(): array
     {
         self::initRendererDirectories();
+
         return $GLOBALS["Crisp_ThemeLoaderRendererDirectories"];
     }
 
@@ -245,6 +241,7 @@ class Themes
                 "sentry_id" => SentrySdk::getCurrentHub()->getLastEventId(),
                 "SENTRY_JS_DSN" => $_ENV["SENTRY_JS_DSN"],
             ]);
+
             return;
         }
 
@@ -258,6 +255,7 @@ class Themes
             "sentry_id" => SentrySdk::getCurrentHub()->getLastEventId(),
             "SENTRY_JS_DSN" => $_ENV["SENTRY_JS_DSN"],
         ]);
+
         return;
     }
 
@@ -289,6 +287,7 @@ class Themes
                     echo Themes::render("errors/notfound.twig", "themes/basic/templates");
                 }
             }
+
             return;
         } catch (\Exception $ex) {
             captureException($ex);
@@ -298,6 +297,7 @@ class Themes
             }
 
             self::renderErrorPage($ex);
+
             return;
         }
     }
@@ -387,7 +387,7 @@ class Themes
 
         if (isset(ThemeMetadata->onInstall->createKVStorageItems) && is_object(ThemeMetadata->onInstall->createKVStorageItems)) {
             foreach (ThemeMetadata->onInstall->createKVStorageItems as $Key => $Value) {
-                \crisp\api\Config::delete($Key);
+                Config::delete($Key);
             }
         }
 
@@ -413,14 +413,12 @@ class Themes
 
         self::clearCache();
 
-        \crisp\api\Config::set("theme", null);
+        Config::set("theme", null);
 
         if (!is_object(ThemeMetadata) && !isset(ThemeMetadata->hookFile)) {
             return false;
         }
         self::performOnUninstall();
-
-        self::broadcastHook("themeUninstall", null);
 
         return true;
     }
@@ -467,44 +465,6 @@ class Themes
     }
 
     /**
-     * Registers an uninstall hook for your theme.
-     *
-     * @param  string $ThemeName
-     * @param  mixed  $Function  Callback function, either anonymous or a string to a function
-     * @return bool
-     */
-    public static function registerUninstallHook(mixed $Function): bool
-    {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        if (is_callable($Function) || function_exists($Function)) {
-            self::on("themeUninstall", $Function);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Registers an install hook for your theme.
-     *
-     * @param  string $ThemeName
-     * @param  mixed  $Function  Callback function, either anonymous or a string to a function
-     * @return bool
-     */
-    public static function registerInstallHook(mixed $Function): bool
-    {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        if (is_callable($Function) || function_exists($Function)) {
-            self::on("themeInstall", $Function);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * @return bool
      * @throws \JsonException
      */
@@ -540,13 +500,13 @@ class Themes
                 if (is_array($Value) || is_object($Value)) {
                     $Value = serialize($Value);
                 }
-                if (!$Overwrite && \crisp\api\Config::exists($Key)) {
+                if (!$Overwrite && Config::exists($Key)) {
                     Logger::getLogger(__METHOD__)->warning("Skipping KV key $Key as it already exists and overwrite is false");
                     continue;
                 }
                 try {
                     Logger::getLogger(__METHOD__)->info("Installing KV key $Key");
-                    if (\crisp\api\Config::create($Key, $Value)) {
+                    if (Config::create($Key, $Value)) {
                         Logger::getLogger(__METHOD__)->notice("Successfully Installed KV key $Key");
                     } else {
                         Logger::getLogger(__METHOD__)->error("Failed to Install  KV key $Key");
@@ -738,7 +698,7 @@ class Themes
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        return \crisp\api\Config::get("theme") === core::DEFAULT_THEME;
+        return Config::get("theme") === core::DEFAULT_THEME;
     }
 
     /**
@@ -748,7 +708,7 @@ class Themes
     public static function install(): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        if (\crisp\api\Config::get("theme") !== false && \crisp\api\Config::get("theme") === core::DEFAULT_THEME) {
+        if (Config::get("theme") !== false && Config::get("theme") === core::DEFAULT_THEME) {
             return false;
         }
 
@@ -766,8 +726,6 @@ class Themes
             return false;
         }
 
-        self::broadcastHook("themeInstall", time());
-
-        return \crisp\api\Config::set("theme", "crisptheme");
+        return Config::set("theme", "crisptheme");
     }
 }

@@ -4,9 +4,7 @@ namespace crisp\CommandControllers;
 
 use crisp\api\Config;
 use crisp\api\Helper;
-use crisp\core;
 use crisp\core\Logger;
-use crisp\core\Migrations;
 use crisp\core\Themes;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -41,10 +39,12 @@ class CrispThemeStorageCommand extends Command
 
             if (!Themes::isInstalled()) {
                 $io->error("Theme is not installed");
+
                 return Command::FAILURE;
             }
             if (!Themes::isValid()) {
                 $io->error("Theme is not mounted. Check your Docker Configuration");
+
                 return Command::FAILURE;
             }
 
@@ -55,8 +55,9 @@ class CrispThemeStorageCommand extends Command
                 $io->error("Failed to install KVStorage!");
             }
             Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+
             return Command::SUCCESS;
-        }elseif($input->getOption('uninstall')){
+        } elseif ($input->getOption('uninstall')) {
 
             if (!Themes::isInstalled()) {
                 $io->error("Theme is not installed");
@@ -76,61 +77,66 @@ class CrispThemeStorageCommand extends Command
                 $io->error("Failed to uninstall KVStorage!");
             }
             Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
-            return Command::SUCCESS;
-        }elseif($input->getOption('key')){
 
-            if($input->getOption('edit') && !$input->getOption('value')){
+            return Command::SUCCESS;
+        } elseif ($input->getOption('key')) {
+
+            if ($input->getOption('edit') && !$input->getOption('value')) {
                 $io->error('You must specify a value to set');
+
                 return Command::FAILURE;
             }
 
-            if($input->getOption('value')){
+            if ($input->getOption('value')) {
                 Config::set($input->getOption('key'), $input->getOption('value'));
                 $io->success(sprintf('%s set to %s', $input->getOption('key'), $input->getOption('value')));
+
                 return Command::SUCCESS;
             }
 
-            if(!Config::exists($input->getOption('key'))){
+            if (!Config::exists($input->getOption('key'))) {
                 $io->error(sprintf('%s key does not exist!', $input->getOption('key')));
+
                 return Command::FAILURE;
             }
 
-            if($input->getOption('delete')){
-                if(Config::delete($input->getOption('delete'))){
+            if ($input->getOption('delete')) {
+                if (Config::delete($input->getOption('delete'))) {
                     $io->success(sprintf('%s key has been deleted!', $input->getOption('key')));
+
                     return Command::SUCCESS;
                 }
                 $io->error(sprintf('%s key does not exist!', $input->getOption('key')));
+
                 return Command::FAILURE;
             }
 
             $output->writeln(Config::get($input->getOption('key')));
+
             return Command::SUCCESS;
         }
 
-
         $items = [];
 
-        foreach(Config::list(true) as $item){
+        foreach (Config::list(true) as $item) {
 
             $value = $item["value"];
 
-            if(is_array($value)){
+            if (is_array($value)) {
                 $value = '(array)';
             }
 
-            if(is_string($value)){
+            if (is_string($value)) {
                 $value = Helper::truncateText($value, 200);
             }
 
-            if(is_bool($value)){
+            if (is_bool($value)) {
                 $value = sprintf("%s (boolean)", $value);
             }
 
-            if(is_null($value)){
+            if (is_null($value)) {
                 $value = 'NULL';
             }
-
 
             $items[] = [$item["key"], $value];
         }

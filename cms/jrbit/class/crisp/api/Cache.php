@@ -229,13 +229,14 @@ class Cache
 
             return true;
         }
-        if(is_writable(self::getCrispCacheDir($key)) && file_exists(self::getCrispCacheDir($key))) {
+        if (is_writable(self::getCrispCacheDir($key)) && file_exists(self::getCrispCacheDir($key))) {
             Logger::getLogger(__METHOD__)->debug(sprintf("SKIPPED Creating cache directories %s (%s): File already exists", self::getCrispCacheDir($key), $key));
+
             return true;
         }
 
-        
         Logger::getLogger(__METHOD__)->error(sprintf('FAIL Creating cache directories %s (%s) - MSG: "%s", IS_WRITEABLE: "%b"', self::getCrispCacheDir($key), $key, error_get_last()["message"], is_writable(self::getCrispCacheDir($key))));
+
         return false;
     }
 
@@ -288,8 +289,9 @@ class Cache
             return true;
         }
 
-        if(is_writable(self::getCrispCacheFile($key))) {
+        if (is_writable(self::getCrispCacheFile($key))) {
             Logger::getLogger(__METHOD__)->debug(sprintf("SKIPPED Writing Cache %s (Already exists!)", self::getCrispCacheFile($key)));
+
             return true;
         }
 
@@ -352,21 +354,21 @@ class Cache
             Logger::getLogger(__METHOD__)->debug("Deleting " . $file->getRealPath());
             if ($file->isDir()) {
                 Logger::getLogger(__METHOD__)->debug("Deleting Directory " . $file->getRealPath());
-                if(rmdir($file->getRealPath())){
+                if (rmdir($file->getRealPath())) {
                     Logger::getLogger(__METHOD__)->debug("Deleted Directory " . $file->getRealPath());
                 } elseif (is_writable($file->getRealPath())) {
                     Logger::getLogger(__METHOD__)->debug("Directory " . $file->getRealPath() . " is writable but not deleted");
                 } else {
-                    Logger::getLogger(__METHOD__)->error("Failed to delete Directory " . $file->getRealPath(). " - MSG: " . error_get_last()["message"]);
+                    Logger::getLogger(__METHOD__)->error("Failed to delete Directory " . $file->getRealPath() . " - MSG: " . error_get_last()["message"]);
                 }
             } else {
                 Logger::getLogger(__METHOD__)->debug("Deleting File " . $file->getRealPath());
-                if(unlink($file->getRealPath())){
+                if (unlink($file->getRealPath())) {
                     Logger::getLogger(__METHOD__)->debug("Deleted File " . $file->getRealPath());
                 } elseif (is_writable($file->getRealPath())) {
                     Logger::getLogger(__METHOD__)->debug("File " . $file->getRealPath() . " is writable but not deleted");
                 } else {
-                    Logger::getLogger(__METHOD__)->error("Failed to delete File " . $file->getRealPath(). " - MSG: " . error_get_last()["message"]);
+                    Logger::getLogger(__METHOD__)->error("Failed to delete File " . $file->getRealPath() . " - MSG: " . error_get_last()["message"]);
                 }
             }
         }

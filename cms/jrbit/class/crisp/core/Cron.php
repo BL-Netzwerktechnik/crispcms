@@ -23,31 +23,15 @@
 
 namespace crisp\core;
 
-use CLI as GlobalCLI;
-use crisp\api\Helper;
-use crisp\api\License;
-use crisp\commands\Assets;
-use crisp\commands\Crisp;
-use crisp\commands\License as CommandsLicense;
-use crisp\commands\Maintenance;
-use crisp\commands\Migration;
-use crisp\commands\Storage;
-use crisp\commands\Theme;
-use crisp\commands\Translations;
-use crisp\commands\Version;
 use crisp\cron\License as CronLicense;
 use GO\Scheduler;
-use Minimal;
-use splitbrain\phpcli\CLI as SplitbrainCLI;
-use splitbrain\phpcli\Options;
-
 
 class Cron
 {
-
     public static function get(): Scheduler
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
         return $GLOBALS["Crisp_Cron"];
     }
 
@@ -74,7 +58,6 @@ class Cron
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $GLOBALS["Crisp_Cron"] = new Scheduler();
-
 
         self::registerInternals();
 
