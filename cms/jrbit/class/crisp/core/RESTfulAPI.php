@@ -23,6 +23,8 @@
 
 namespace crisp\core;
 
+use crisp\Controllers\EventController;
+use crisp\Events\ApiErrorEvent;
 use crisp\types\RouteType;
 use Phroute\Phroute\Dispatcher;
 use Phroute\Phroute\Exception\HttpRouteNotFoundException;
@@ -49,6 +51,17 @@ class RESTfulAPI
             HookFile::postExecute();
         } catch (HttpRouteNotFoundException $ex) {
 
+
+            $Event = EventController::getEventDispatcher()->dispatch(new ApiErrorEvent($ex->getMessage()), ApiErrorEvent::ROUTE_NOT_FOUND);
+
+            if($Event->isPropagationStopped()) {
+                return;
+            }
+            
+            
+            /**
+             * @deprecated 19.0.0 Use EventSubscriber instead
+             */
             $_NFFile = Themes::getThemeMetadata()->api->pages->notFound;
             $_NFClass = substr($_NFFile, 0, -4);
 
@@ -57,6 +70,9 @@ class RESTfulAPI
                 exit;
             }
 
+            /**
+             * @deprecated 19.0.0 Use EventSubscriber instead
+             */
             if (file_exists(Themes::getThemeDirectory() . "/includes/api/$_NFFile")) {
                 require Themes::getThemeDirectory() . "/includes/api/$_NFFile";
 

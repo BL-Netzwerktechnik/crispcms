@@ -30,6 +30,6 @@ final class LicenseValidationEvent extends Event
 
     public function getErrorMessages(): array
     {
-        return $this->errorMessages;
+        return $this->license->getErrors() + $this->errorMessages;
     }
 }
