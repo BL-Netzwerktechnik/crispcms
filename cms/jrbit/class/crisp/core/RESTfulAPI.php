@@ -51,7 +51,6 @@ class RESTfulAPI
             HookFile::postExecute();
         } catch (HttpRouteNotFoundException $ex) {
 
-
             $Event = EventController::getEventDispatcher()->dispatch(new ApiErrorEvent($ex->getMessage()), ApiErrorEvent::ROUTE_NOT_FOUND);
 
             if($Event->isPropagationStopped()) {

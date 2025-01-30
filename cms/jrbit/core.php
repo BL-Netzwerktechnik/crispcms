@@ -199,7 +199,6 @@ class core
 
                     header('Access-Control-Allow-Origin: *');
                     header('Cache-Control: max-age=600, public, must-revalidate');
-
                     new RESTfulAPI();
                 } else {
                     Themes::loadTheme();
@@ -222,13 +221,16 @@ class core
 
             $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent($ex->getMessage()), ThemePageErrorEvent::SERVER_ERROR);
 
-            if($Event->isPropagationStopped()) {
+            if ($Event->isPropagationStopped()) {
                 return;
             }
 
             if (IS_API_ENDPOINT) {
-                RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
-
+                if (Build::getEnvironment() === Environment::DEVELOPMENT) {
+                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', (array)$ex);
+                } else {
+                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
+                }
                 return;
             }
 
