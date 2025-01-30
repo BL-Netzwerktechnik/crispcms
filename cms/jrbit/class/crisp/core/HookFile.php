@@ -99,7 +99,6 @@ class HookFile
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing preExecute hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
         EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::PRE_EXECUTE);
-        $HookClass->preExecute();
         if ($HookClass !== null && method_exists($HookClass, 'preExecute')) {
             $HookClass->preExecute();
         }
