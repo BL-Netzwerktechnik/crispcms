@@ -189,7 +189,13 @@ class core
 
                 if (Build::requireLicense() && !IS_SPECIAL_PAGE) {
 
+
                     if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid() || $LicenseEvent->isPropagationStopped()) {
+
+                        if (IS_API_ENDPOINT) {
+                            RESTfulAPI::response(Bitmask::LICENSE_INVALID->value, 'License Error', ["error_message" => $LicenseEvent->getErrorMessages()]);
+                            exit;
+                        }
                         (new License())->preRender($LicenseEvent->getErrorMessages(), 'danger');
                         exit;
                     }
