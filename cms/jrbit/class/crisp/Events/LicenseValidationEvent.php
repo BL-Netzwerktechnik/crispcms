@@ -14,11 +14,11 @@ final class LicenseValidationEvent extends Event
     private array $errorMessages = [];
 
     public function __construct(
-        private ? License $license
+        private null|false|License $license
     ) {
     }
 
-    public function getLicense(): ?License
+    public function getLicense(): null|false|License
     {
         return $this->license;
     }
@@ -30,6 +30,9 @@ final class LicenseValidationEvent extends Event
 
     public function getErrorMessages(): array
     {
+        if($this->license === false) {
+            return ['License is invalid or not installed'];
+        }
         return $this->license->getErrors() + $this->errorMessages;
     }
 }
