@@ -37,6 +37,7 @@ use crisp\core\Logger;
 use crisp\core\Router;
 use crisp\core\ThemeVariables;
 use crisp\Events\LicenseValidationEvent;
+use crisp\Events\ThemePageErrorEvent;
 use crisp\routes\License;
 use Dotenv\Dotenv;
 use Sentry\State\Scope;
@@ -205,7 +206,6 @@ class core
                 }
             }
         } catch (\TypeError | \Exception | \Error | \CompileError | \ParseError | \Throwable $ex) {
-            captureException($ex);
             Logger::getLogger(__METHOD__)->critical($ex->__toString(), (array) $ex);
             if (PHP_SAPI === 'cli') {
                 exit(1);
@@ -218,6 +218,14 @@ class core
             } else {
                 $refid = 'Core';
             }
+
+
+            $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent($ex->getMessage()), ThemePageErrorEvent::ROUTE_NOT_FOUND);
+
+            if($Event->isPropagationStopped()) {
+                return;
+            }
+
             if (IS_API_ENDPOINT) {
                 RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
 
