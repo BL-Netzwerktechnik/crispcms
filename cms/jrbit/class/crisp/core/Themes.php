@@ -40,7 +40,12 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Carbon\Carbon;
 use crisp\api\Build;
+use crisp\Controllers\EventController;
 use crisp\core\Environment as CoreEnvironment;
+use crisp\Events\ThemeEvents;
+use crisp\Events\ThemePageErrorEvent;
+use crisp\Events\ThemePageErrorEvents;
+use Symfony\Contracts\EventDispatcher\Event;
 
 use function file_exists;
 use function file_get_contents;
@@ -278,6 +283,13 @@ class Themes
         } catch (HttpRouteNotFoundException $ex) {
 
             http_response_code(404);
+
+            $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent("Route not found"), ThemePageErrorEvent::ROUTE_NOT_FOUND);
+
+            if($Event->isPropagationStopped()) {
+                return;
+            }
+
             if (Helper::templateExists("errors/notfound.twig")) {
                 echo Themes::render("errors/notfound.twig");
             } else {
@@ -290,8 +302,14 @@ class Themes
 
             return;
         } catch (\Exception $ex) {
-            captureException($ex);
             Logger::getLogger(__METHOD__)->critical("Exception when rendering Twig Template", (array) $ex);
+            
+            $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent($ex->getMessage()), ThemePageErrorEvent::ROUTE_NOT_FOUND);
+
+            if($Event->isPropagationStopped()) {
+                return;
+            }
+            
             if (PHP_SAPI === 'cli') {
                 exit(1);
             }
