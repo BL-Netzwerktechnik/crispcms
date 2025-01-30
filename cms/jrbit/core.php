@@ -220,7 +220,7 @@ class core
             }
 
 
-            $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent($ex->getMessage()), ThemePageErrorEvent::ROUTE_NOT_FOUND);
+            $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent($ex->getMessage()), ThemePageErrorEvent::SERVER_ERROR);
 
             if($Event->isPropagationStopped()) {
                 return;

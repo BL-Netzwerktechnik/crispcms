@@ -304,12 +304,12 @@ class Themes
         } catch (\Exception $ex) {
             Logger::getLogger(__METHOD__)->critical("Exception when rendering Twig Template", (array) $ex);
             
-            $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent($ex->getMessage()), ThemePageErrorEvent::ROUTE_NOT_FOUND);
+            $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent($ex->getMessage()), ThemePageErrorEvent::SERVER_ERROR);
 
             if($Event->isPropagationStopped()) {
                 return;
             }
-            
+
             if (PHP_SAPI === 'cli') {
                 exit(1);
             }
