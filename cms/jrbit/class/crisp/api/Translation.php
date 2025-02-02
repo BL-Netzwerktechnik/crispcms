@@ -233,7 +233,7 @@ class Translation
                     return $Key;
                 }
 
-                return $Translation[$_ENV['DEFAULT_LOCALE'] ?? 'en'];
+                return strtr($Translation[$_ENV['DEFAULT_LOCALE'] ?? 'en'], $UserOptions);
             }
 
             return strtr($Translation[strtolower(self::$Language)], $UserOptions);
