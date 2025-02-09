@@ -276,17 +276,22 @@ class Themes
 
         try {
 
+
             HookFile::preRender();
+            EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::PRE_RENDER);
+
             $dispatcher = new Dispatcher(Router::get(RouteType::PUBLIC)->getData());
             echo $dispatcher->dispatch($_SERVER['REQUEST_METHOD'], parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+
             HookFile::postRender();
+            EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::POST_RENDER);
         } catch (HttpRouteNotFoundException $ex) {
 
             http_response_code(404);
 
             $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent("Route not found"), ThemePageErrorEvent::ROUTE_NOT_FOUND);
 
-            if($Event->isPropagationStopped()) {
+            if ($Event->isPropagationStopped()) {
                 return;
             }
 
@@ -303,10 +308,10 @@ class Themes
             return;
         } catch (\Exception $ex) {
             Logger::getLogger(__METHOD__)->critical("Exception when rendering Twig Template", (array) $ex);
-            
+
             $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent($ex->getMessage()), ThemePageErrorEvent::SERVER_ERROR);
 
-            if($Event->isPropagationStopped()) {
+            if ($Event->isPropagationStopped()) {
                 return;
             }
 

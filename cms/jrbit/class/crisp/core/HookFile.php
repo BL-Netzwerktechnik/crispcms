@@ -32,17 +32,22 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 class HookFile
 {
-    private static function loadHookFile()
+    public static function loadHookFile()
     {
 
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if ($GLOBALS['crisp_hookFile']) {
+            return $GLOBALS['crisp_hookFile'];
+        }
+
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $_HookFile = Themes::getThemeMetadata()->hookFile;
 
         include_once Themes::getThemeDirectory() . "/$_HookFile";
 
         $_HookClass = substr($_HookFile, 0, -4);
         if (file_exists(Themes::getThemeDirectory() . "/$_HookFile") && class_exists($_HookClass, false)) {
-            return new $_HookClass();
+            $GLOBALS['crisp_hookFile'] = new $_HookClass();
+            return $GLOBALS['crisp_hookFile'];
         }
 
         return null;
@@ -50,13 +55,11 @@ class HookFile
 
     public static function preRender(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $HookClass = self::loadHookFile();
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
+        $HookClass = self::loadHookFile();
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing preRender hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
-        EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::PRE_RENDER);
-
         if ($HookClass !== null && method_exists($HookClass, 'preRender')) {
             $HookClass->preRender();
         }
@@ -65,12 +68,11 @@ class HookFile
 
     public static function postRender(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $HookClass = self::loadHookFile();
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
+        $HookClass = self::loadHookFile();
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing postRender hooks for HookFile"));
         Logger::startTiming($HookClassRenderTime);
-        EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::POST_RENDER);
         if ($HookClass !== null && method_exists($HookClass, 'postRender')) {
             $HookClass->postRender();
         }
@@ -79,7 +81,7 @@ class HookFile
 
     public static function postExecute(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $HookClass = self::loadHookFile();
 
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing postExecute hooks for HookFile"));
@@ -93,7 +95,7 @@ class HookFile
 
     public static function preExecute(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $HookClass = self::loadHookFile();
 
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing preExecute hooks for HookFile"));
@@ -107,7 +109,7 @@ class HookFile
 
     public static function setup(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $HookClass = self::loadHookFile();
 
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing setup hooks for HookFile"));
@@ -122,7 +124,7 @@ class HookFile
 
     public static function setupCli(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $HookClass = self::loadHookFile();
 
         Logger::getLogger(__METHOD__)->debug(sprintf("START executing setupCli hooks for HookFile"));
