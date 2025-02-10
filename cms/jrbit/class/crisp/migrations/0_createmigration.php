@@ -37,11 +37,12 @@ class createmigration extends \crisp\core\Migrations
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         try {
             $this->begin();
-            \crisp\core\Migrations::createTable("schema_migration", ["file", \crisp\core\Migrations::DB_VARCHAR]);
-
-            if (!$this->isMigrated("1608994339_addplugintomigration")) {
-                $this->addColumn("schema_migration", ["plugin", self::DB_VARCHAR, "DEFAULT NULL"]);
-            }
+            
+            $this->createTable(
+                "schema_migration",
+                ["file", $this::DB_VARCHAR],
+                ["plugin", $this::DB_VARCHAR, "DEFAULT NULL"],
+            );
 
             return $this->end();
         } catch (\Exception $ex) {
