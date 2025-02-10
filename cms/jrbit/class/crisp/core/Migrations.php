@@ -24,7 +24,10 @@
 namespace crisp\core;
 
 use crisp\api\Helper;
+use crisp\Controllers\EventController;
+use crisp\Events\MigrationEvents;
 use PDO;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Crisp DB Migration Class.
@@ -94,7 +97,9 @@ class Migrations
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         Logger::getLogger(__METHOD__)->debug("Rolling back transaction...");
+        EventController::getEventDispatcher()->dispatch(new Event(), MigrationEvents::BEFORE_ROLLBACK);
         if ($this->Database->rollBack()) {
+            EventController::getEventDispatcher()->dispatch(new Event(), MigrationEvents::AFTER_ROLLBACK);
             Logger::getLogger(__METHOD__)->debug("Rolled back transaction!");
 
             return true;
@@ -115,7 +120,10 @@ class Migrations
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         Logger::getLogger(__METHOD__)->debug("Committing Transaction...");
+
+        EventController::getEventDispatcher()->dispatch(new Event(), MigrationEvents::BEFORE_COMMIT);
         if ($this->Database->commit()) {
+            EventController::getEventDispatcher()->dispatch(new Event(), MigrationEvents::AFTER_COMMIT);
             Logger::getLogger(__METHOD__)->debug("Transaction committed!");
 
             return true;
@@ -135,7 +143,7 @@ class Migrations
      *
      * @return bool
      */
-    public function isMigrated(string $file): bool
+    public function isMigrated(string $file, ?string $plugin = null): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if ($file === "createmigration") {
@@ -143,13 +151,18 @@ class Migrations
         }
 
         try {
-            Logger::getLogger(__METHOD__)->debug("SELECT * FROM schema_migration WHERE file = $file");
-            $statement = $this->Database->prepare("SELECT * FROM schema_migration WHERE file =:file");
+            Logger::getLogger(__METHOD__)->info(sprintf("SELECT * FROM schema_migration WHERE file = '$file' AND plugin %s", $plugin !== null ? "= '$plugin'" : "IS NULL"));
+            $statement = $this->Database->prepare(sprintf("SELECT * FROM schema_migration WHERE file = :file AND plugin %s", $plugin !== null ? "= :plugin" : "IS NULL"));
 
-            $statement->execute([":file" => $file]);
+            if($plugin === null) {
+                $statement->execute([":file" => $file]);
+            } else {
+                $statement->execute([":file" => $file, ":plugin" => $plugin]);
+            }
 
             return $statement->rowCount() > 0;
-        } catch (\Exception) {
+        } catch (\Exception $ex) {
+            Logger::getLogger(__METHOD__)->error($ex);
             return false;
         }
     }
@@ -202,7 +215,7 @@ class Migrations
 
             $MigrationName = substr(basename($file), 0, -4);
 
-            if ($this->isMigrated($MigrationName)) {
+            if ($this->isMigrated($MigrationName, $Plugin)) {
                 Logger::getLogger(__METHOD__)->warning("$MigrationName is already migrated, skipping.");
                 continue;
             }
@@ -213,6 +226,7 @@ class Migrations
             include $file;
 
             try {
+                EventController::getEventDispatcher()->dispatch(new Event(), MigrationEvents::BEFORE_MIGRATE);
                 $Migration = new $Class();
 
                 if ($Migration->run()) {
@@ -221,13 +235,17 @@ class Migrations
 
                     $statement->execute([":file" => $MigrationName, ":plugin" => $Plugin]);
 
+                    EventController::getEventDispatcher()->dispatch(new Event(), MigrationEvents::AFTER_MIGRATE);
+
                     Logger::getLogger(__METHOD__)->notice("Successfully Migrated $MigrationName");
                 } else {
 
                     Logger::getLogger(__METHOD__)->error("Failed to migrate $MigrationName");
+                    break;
                 }
             } catch (\Exception $ex) {
                 Logger::getLogger(__METHOD__)->error($ex);
+                break;
             }
         }
     }

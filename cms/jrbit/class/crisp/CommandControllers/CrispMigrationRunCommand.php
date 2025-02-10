@@ -2,13 +2,16 @@
 
 namespace crisp\CommandControllers;
 
+use crisp\Controllers\EventController;
 use crisp\core;
 use crisp\core\Logger;
 use crisp\core\Themes;
+use crisp\Events\MigrationEvents;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class CrispMigrationRunCommand extends Command
 {
@@ -31,11 +34,13 @@ class CrispMigrationRunCommand extends Command
         if (!$input->getOption('no-core')) {
             $output->writeln('Running core migrations...');
             $Migrations->migrate();
+            EventController::getEventDispatcher()->dispatch(new Event(), MigrationEvents::CORE_MIGRATIONS_FINISHED);
         }
 
         if (!$input->getOption('no-theme')) {
             $output->writeln('Running theme migrations...');
             $Migrations->migrate(Themes::getThemeDirectory());
+            EventController::getEventDispatcher()->dispatch(new Event(), MigrationEvents::THEME_MIGRATIONS_FINISHED);
         }
 
         return Command::SUCCESS;
