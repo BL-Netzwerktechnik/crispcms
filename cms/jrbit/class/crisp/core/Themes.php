@@ -287,13 +287,13 @@ class Themes
             EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::POST_RENDER);
         } catch (HttpRouteNotFoundException $ex) {
 
-            http_response_code(404);
-
             $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent("Route not found"), ThemePageErrorEvent::ROUTE_NOT_FOUND);
 
             if ($Event->isPropagationStopped()) {
                 return;
             }
+
+            http_response_code(404);
 
             if (Helper::templateExists("errors/notfound.twig")) {
                 echo Themes::render("errors/notfound.twig");
