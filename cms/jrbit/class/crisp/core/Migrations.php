@@ -151,7 +151,7 @@ class Migrations
         }
 
         try {
-            Logger::getLogger(__METHOD__)->info(sprintf("SELECT * FROM schema_migration WHERE file = '$file' AND plugin %s", $plugin !== null ? "= '$plugin'" : "IS NULL"));
+            Logger::getLogger(__METHOD__)->debug(sprintf("SELECT * FROM schema_migration WHERE file = '$file' AND plugin %s", $plugin !== null ? "= '$plugin'" : "IS NULL"));
             $statement = $this->Database->prepare(sprintf("SELECT * FROM schema_migration WHERE file = :file AND plugin %s", $plugin !== null ? "= :plugin" : "IS NULL"));
 
             if($plugin === null) {
