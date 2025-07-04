@@ -1,4 +1,4 @@
-FROM gitlab.jrbit.de/crispcms/dependency_proxy/containers/php:8.4-fpm-bullseye
+FROM php:8.4-fpm-bullseye
 
 
 ENV POSTGRES_URI ""
