@@ -270,6 +270,11 @@ class License
         return openssl_sign($this->encode(), $this->signature, $key);
     }
 
+    public static function fromMemory(): License|false|null
+    {
+        return $GLOBALS["license"];
+    }
+
     public static function fromLicenseServer(?string $licenseKey = null, bool $installIssuer = true, bool $writeToDB = true, ?string &$httpCode = null): License|false
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
