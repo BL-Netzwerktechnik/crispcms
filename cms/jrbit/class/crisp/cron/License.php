@@ -25,7 +25,7 @@ class License
 
         $License = ApiLicense::fromLicenseServer();
 
-        if (!$License || !$License->isValid()) {
+        if ($License !== false && !$License->isValid()) {
 
 
             if ($License) {
