@@ -47,8 +47,7 @@ class License
         private readonly ?string $instance = null,
         private readonly ?string $ocsp = null,
         private ?string $signature = null,
-    ) {
-    }
+    ) {}
 
     public function getTimestampNextOCSP(): int|null
     {
@@ -81,7 +80,6 @@ class License
 
         return Config::get("license_ocsp_response_grace");
     }
-
 
     /**
      * @deprecated 18
@@ -241,17 +239,20 @@ class License
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (count($this->domains) === 0) {
             Logger::getLogger(__METHOD__)->debug(sprintf("License Domains are empty"));
+
             return true;
         }
 
         foreach ($this->domains as $allowedDomain) {
             if (fnmatch($allowedDomain, $currentDomain)) {
                 Logger::getLogger(__METHOD__)->debug(sprintf("License domain %s is allowed!", $currentDomain));
+
                 return true;
             }
         }
 
-        Logger::getLogger(__METHOD__)->debug(sprintf("License Domain %s does not match host %s",  $allowedDomain, $currentDomain));
+        Logger::getLogger(__METHOD__)->debug(sprintf("License Domain %s does not match host %s", $allowedDomain, $currentDomain));
+
         return false;
     }
 
@@ -268,6 +269,10 @@ class License
         return openssl_sign($this->encode(), $this->signature, $key);
     }
 
+    public static function fromMemory(): License|false|null
+    {
+        return $GLOBALS["license"];
+    }
 
     public static function fromLicenseServer(?string $licenseKey = null, bool $installIssuer = true, bool $writeToDB = true, ?string &$httpCode = null): License|false
     {
@@ -276,6 +281,7 @@ class License
 
         if (!Build::requireLicenseServer()) {
             Logger::getLogger(__METHOD__)->error("License Server not configured");
+
             return false;
         }
 
@@ -293,25 +299,20 @@ class License
             Logger::getLogger(__METHOD__)->notice("License Key is not set.");
         }
 
-
-
         Logger::getLogger(__METHOD__)->notice("License Key: " . ($licenseKey ?? "None"));
         Logger::getLogger(__METHOD__)->notice("Requesting License from License Server...");
         Logger::getLogger(__METHOD__)->debug("License Server: " . strtr($_ENV["LICENSE_SERVER"], [
             "{{key}}" => $licenseKey,
-            "{{instance}}" => Helper::getInstanceId()
+            "{{instance}}" => Helper::getInstanceId(),
         ]));
 
         if (!Cache::isExpired("license_key_response")) {
-            $httpCode = (int)Cache::get("license_key_response");
-
-
-            
+            $httpCode = (int) Cache::get("license_key_response");
         } else {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, strtr($_ENV["LICENSE_SERVER"], [
                 "{{key}}" => $licenseKey,
-                "{{instance}}" => Helper::getInstanceId()
+                "{{instance}}" => Helper::getInstanceId(),
             ]));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
@@ -319,6 +320,8 @@ class License
 
             if (curl_errno($ch)) {
                 Logger::getLogger(__METHOD__)->error("Curl Error: " . curl_error($ch));
+                self::increaseGracePeriod();
+
                 return false;
             }
 
@@ -331,33 +334,28 @@ class License
             Logger::getLogger(__METHOD__)->debug("License Server HTTP: $httpCode");
         }
 
-
-        if (Config::get("license_key_response_grace") >= 10) {
-            Config::delete("license_key");
-            Config::delete("license_key_response_grace");
-            self::uninstall();
-            Logger::getLogger(__METHOD__)->error("License Server Error and Grace Period Exceeded... Uninstalling completely.");
-            return false;
-        }
-
-
         switch ($httpCode) {
             case 200:
                 $response = json_decode($response, true);
 
                 if (!isset($response["license"])) {
+                    self::increaseGracePeriod();
                     Logger::getLogger(__METHOD__)->error("Invalid Response from License Server: Missing license field");
+
                     return false;
                 }
                 if (!isset($response["signature"])) {
+                    self::increaseGracePeriod();
                     Logger::getLogger(__METHOD__)->error("Invalid Response from License Server: Missing signature field");
+
                     return false;
                 }
                 if (!isset($response["issuer"])) {
+                    self::increaseGracePeriod();
                     Logger::getLogger(__METHOD__)->error("Invalid Response from License Server: Missing issuer field");
+
                     return false;
                 }
-
 
                 Logger::getLogger(__METHOD__)->debug("Decoding License...");
                 $license = json_decode(base64_decode($response["license"]), true);
@@ -389,13 +387,13 @@ class License
                 Logger::getLogger(__METHOD__)->debug($licenseObj->encode());
                 Logger::getLogger(__METHOD__)->notice("Verifying License...");
 
-
-
                 if ($writeToDB && $licenseObj->verifySignature() && $licenseObj->isValid()) {
                     Logger::getLogger(__METHOD__)->info("License Is Valid! Installing...");
                     $licenseObj->install();
                 } else {
                     Logger::getLogger(__METHOD__)->error("License is invalid");
+                    self::increaseGracePeriod();
+                    return false;
                 }
                 Config::delete("license_key_response_grace");
 
@@ -405,6 +403,7 @@ class License
                 self::uninstall();
                 Config::delete("license_key");
                 Logger::getLogger(__METHOD__)->error("License key does not exist, uninstalling completely...");
+
                 return false;
                 break;
 
@@ -412,6 +411,7 @@ class License
                 self::uninstall();
                 Config::delete("license_key");
                 Logger::getLogger(__METHOD__)->error("License key revoked, uninstalling completely...");
+
                 return false;
                 break;
 
@@ -419,21 +419,36 @@ class License
                 self::uninstall();
                 Config::delete("license_key");
                 Logger::getLogger(__METHOD__)->error("License key expired, uninstalling completely...");
+
                 return false;
                 break;
             default:
 
                 if (self::isLicenseAvailable()) {
-                    Config::deleteCache("license_key_response_grace");
-                    Config::set("license_key_response_grace", (Config::get("license_key_response_grace") ?? 1) + 1);
-                    Logger::getLogger(__METHOD__)->error("License Server Failure: Grace Period ". Config::get("license_key_response_grace"));
-
+                    self::increaseGracePeriod();
                     Cache::write("license_key_response", $httpCode, time() + 1800);
                 }
                 Logger::getLogger(__METHOD__)->error("License Server Error: HTTP $httpCode");
+
                 return false;
                 break;
         }
+    }
+    private static function increaseGracePeriod(): void
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+        if (Config::get("license_key_response_grace", true) >= 10) {
+            Config::delete("license_key");
+            Config::delete("license_key_response_grace");
+            self::uninstall();
+            Logger::getLogger(__METHOD__)->error("License Server Error and Grace Period Exceeded... Uninstalling completely.");
+
+            return;
+        }
+        Config::deleteCache("license_key_response_grace");
+        Config::set("license_key_response_grace", (Config::get("license_key_response_grace") ?? 1) + 1);
+        Logger::getLogger(__METHOD__)->error("License Server Failure: Grace Period " . Config::get("license_key_response_grace"));
     }
 
     public function install(): bool
@@ -442,10 +457,12 @@ class License
 
         if (!$this->isValid()) {
             Logger::getLogger(__METHOD__)->error("License is invalid");
+
             return false;
         }
 
         Cache::clear();
+
         return Config::set("license_data", $this->exportToString());
     }
 
@@ -455,12 +472,12 @@ class License
         Logger::getLogger(__METHOD__)->notice("Uninstalling License...");
         Config::delete("license_data");
         Config::delete("license_issuer_public_key");
-        #Config::delete("license_issuer_private_key");
+        # Config::delete("license_issuer_private_key");
         Logger::getLogger(__METHOD__)->info("Uninstalled License");
         Cache::clear();
+
         return true;
     }
-
 
     public static function fromDB(): License|false
     {
@@ -527,7 +544,7 @@ class License
         return json_encode([
             "license" => base64_encode($this->encode()),
             "signature" => base64_encode($this->signature),
-            "issuer" => base64_encode(Config::get("license_issuer_public_key"))
+            "issuer" => base64_encode(Config::get("license_issuer_public_key")),
         ]);
     }
 

@@ -48,9 +48,9 @@ services:
       - ENVIRONMENT=development
       - SENTRY_JS_DSN=https://sentry.internal.jrbit.de/js-sdk-loader/4129710f0e07a134fc7291ec974cf504.min.js
       - GIT_TAG=${GIT_TAG}
-      - LICENSE_SERVER=http://license:81/validate/v1?key={{key}}&instance={{instance}}
+      - LICENSE_SERVER=https://castiel.prod.bl-netzwerke.de/validate/v1?key={{key}}&instance={{instance}}
       - REQUIRE_LICENSE=true
-      #- LICENSE_KEY=testKey
+      - LICENSE_KEY=ccfe847e-eb43-23c9-c535-bde03ef64cf0
     volumes:
       - ${GITPOD_REPO_ROOT}:/var/www/crisp
       - crisp:/data
