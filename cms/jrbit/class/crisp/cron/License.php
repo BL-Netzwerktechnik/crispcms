@@ -18,7 +18,7 @@ class License
 
         $License = ApiLicense::fromLicenseServer();
 
-        if (!$License || !$License->isValid()) {
+        if ($License !== false && !$License->isValid()) {
 
             if ($License) {
                 Logger::getLogger(__METHOD__)->error("The following errors occurred:");

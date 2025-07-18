@@ -47,8 +47,7 @@ class License
         private readonly ?string $instance = null,
         private readonly ?string $ocsp = null,
         private ?string $signature = null,
-    ) {
-    }
+    ) {}
 
     public function getTimestampNextOCSP(): int|null
     {
@@ -309,7 +308,6 @@ class License
 
         if (!Cache::isExpired("license_key_response")) {
             $httpCode = (int) Cache::get("license_key_response");
-
         } else {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, strtr($_ENV["LICENSE_SERVER"], [
@@ -322,6 +320,7 @@ class License
 
             if (curl_errno($ch)) {
                 Logger::getLogger(__METHOD__)->error("Curl Error: " . curl_error($ch));
+                self::increaseGracePeriod();
 
                 return false;
             }
@@ -335,30 +334,24 @@ class License
             Logger::getLogger(__METHOD__)->debug("License Server HTTP: $httpCode");
         }
 
-        if (Config::get("license_key_response_grace") >= 10) {
-            Config::delete("license_key");
-            Config::delete("license_key_response_grace");
-            self::uninstall();
-            Logger::getLogger(__METHOD__)->error("License Server Error and Grace Period Exceeded... Uninstalling completely.");
-
-            return false;
-        }
-
         switch ($httpCode) {
             case 200:
                 $response = json_decode($response, true);
 
                 if (!isset($response["license"])) {
+                    self::increaseGracePeriod();
                     Logger::getLogger(__METHOD__)->error("Invalid Response from License Server: Missing license field");
 
                     return false;
                 }
                 if (!isset($response["signature"])) {
+                    self::increaseGracePeriod();
                     Logger::getLogger(__METHOD__)->error("Invalid Response from License Server: Missing signature field");
 
                     return false;
                 }
                 if (!isset($response["issuer"])) {
+                    self::increaseGracePeriod();
                     Logger::getLogger(__METHOD__)->error("Invalid Response from License Server: Missing issuer field");
 
                     return false;
@@ -399,6 +392,8 @@ class License
                     $licenseObj->install();
                 } else {
                     Logger::getLogger(__METHOD__)->error("License is invalid");
+                    self::increaseGracePeriod();
+                    return false;
                 }
                 Config::delete("license_key_response_grace");
 
@@ -430,10 +425,7 @@ class License
             default:
 
                 if (self::isLicenseAvailable()) {
-                    Config::deleteCache("license_key_response_grace");
-                    Config::set("license_key_response_grace", (Config::get("license_key_response_grace") ?? 1) + 1);
-                    Logger::getLogger(__METHOD__)->error("License Server Failure: Grace Period " . Config::get("license_key_response_grace"));
-
+                    self::increaseGracePeriod();
                     Cache::write("license_key_response", $httpCode, time() + 1800);
                 }
                 Logger::getLogger(__METHOD__)->error("License Server Error: HTTP $httpCode");
@@ -441,6 +433,22 @@ class License
                 return false;
                 break;
         }
+    }
+    private static function increaseGracePeriod(): void
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+        if (Config::get("license_key_response_grace", true) >= 10) {
+            Config::delete("license_key");
+            Config::delete("license_key_response_grace");
+            self::uninstall();
+            Logger::getLogger(__METHOD__)->error("License Server Error and Grace Period Exceeded... Uninstalling completely.");
+
+            return;
+        }
+        Config::deleteCache("license_key_response_grace");
+        Config::set("license_key_response_grace", (Config::get("license_key_response_grace") ?? 1) + 1);
+        Logger::getLogger(__METHOD__)->error("License Server Failure: Grace Period " . Config::get("license_key_response_grace"));
     }
 
     public function install(): bool
