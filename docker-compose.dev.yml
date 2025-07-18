@@ -19,7 +19,7 @@ services:
       - PROTO=https
       - ENVIRONMENT=development
       - GIT_TAG=${GIT_TAG}
-      - LICENSE_SERVER=https://castiels.prod.bl-netzwerke.de/validate/v1?key={{key}}&instance={{instance}}
+      - LICENSE_SERVER=https://castiel.prod.bl-netzwerke.de/validate/v1?key={{key}}&instance={{instance}}
       - REQUIRE_LICENSE=true
       - LICENSE_KEY=ccfe847e-eb43-23c9-c535-bde03ef64cf0 #gitleaks:allow Development License Key
     volumes:
