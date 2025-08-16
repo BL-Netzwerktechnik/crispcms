@@ -45,6 +45,7 @@ use crisp\core\Environment as CoreEnvironment;
 use crisp\Events\ThemeEvents;
 use crisp\Events\ThemePageErrorEvent;
 use crisp\Events\ThemePageErrorEvents;
+use crisp\routes\Proxy;
 use Symfony\Contracts\EventDispatcher\Event;
 
 use function file_exists;
@@ -329,6 +330,10 @@ class Themes
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (str_starts_with($File, "//") || str_starts_with($File, "http://")  || str_starts_with($File, "https://")) {
+            if (!Proxy::isSafePublicUrl($File)) {
+                return $File;
+            }
+
             return sprintf("/_/proxy/?url=%s", $File, $cacheTTL);
         }
 

@@ -34,9 +34,42 @@ use crisp\core\RESTfulAPI;
  */
 class Proxy
 {
+
+    private const BLACKLISTED_MIMETYPES = [
+        "text/html",
+        "application/xhtml+xml",
+    ];
+
+    public static function isSafePublicUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+        if (!$parts || empty($parts['host'])) {
+            return false;
+        }
+
+        $host = $parts['host'];
+
+        // Resolve host to IPs
+        $ips = gethostbynamel($host);
+        if ($ips === false || empty($ips)) {
+            return false; // cannot resolve
+        }
+
+        foreach ($ips as $ip) {
+            if (
+                filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
+                === false
+            ) {
+                return false;
+            }
+        }
+
+        return true; // all resolved IPs are public
+    }
+
     public function preRender(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $ttlIncrease = ($_GET["cache"]) ?? 300;
         $Url = urldecode($_GET["url"]);
 
@@ -50,10 +83,15 @@ class Proxy
             exit;
         }
 
+        if (!self::isSafePublicUrl($Url)) {
+            RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Failed validating Proxy Resource!", HTTP: 400);
+            exit;
+        }
+
         $ttl = time() + $ttlIncrease;
 
         $paramArray = [
-            "cache "=> $ttlIncrease,
+            "cache " => $ttlIncrease,
             "ttl" => $ttl,
             "url" => $Url,
         ];
@@ -85,16 +123,24 @@ class Proxy
                 } else {
                     $finfo = new \finfo(FILEINFO_MIME);
                     $content_type = $finfo->buffer($data);
+
                     if ($content_type === "text/plain") {
                         $content_type = (Helper::detectMimetype($_GET["url"]) ?? $content_type);
                     }
                 }
             }
 
+            if (in_array(explode(";", $content_type)[0], self::BLACKLISTED_MIMETYPES, true)) {
+                RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Proxy cannot serve blacklisted mimetypes!", $paramArray);
+                exit;
+            }
+
+
+
             $cacheData = [
                 "content" => $data,
                 "mimetype" => $content_type,
-             ];
+            ];
 
             Cache::write($Url, serialize($cacheData), $ttl);
 
@@ -110,6 +156,5 @@ class Proxy
 
         echo $cache["content"];
         exit;
-
     }
 }
