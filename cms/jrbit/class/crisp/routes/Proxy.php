@@ -73,6 +73,15 @@ class Proxy
         $ttlIncrease = ($_GET["cache"]) ?? 300;
         $Url = urldecode($_GET["url"]);
 
+        
+        $ttl = time() + $ttlIncrease;
+
+        $paramArray = [
+            "cache " => $ttlIncrease,
+            "ttl" => $ttl,
+            "url" => $Url,
+        ];
+
         if (empty($Url)) {
             RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "URL Cannot be empty");
             exit;
@@ -84,17 +93,10 @@ class Proxy
         }
 
         if (!self::isSafePublicUrl($Url)) {
-            RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Failed validating Proxy Resource!", HTTP: 400);
+            RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Failed validating Proxy Resource!", $paramArray, HTTP: 400);
             exit;
         }
 
-        $ttl = time() + $ttlIncrease;
-
-        $paramArray = [
-            "cache " => $ttlIncrease,
-            "ttl" => $ttl,
-            "url" => $Url,
-        ];
 
         if ($ttlIncrease <= 1) {
             RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "TTL cannot be smaller than or equal 1", $paramArray);
@@ -103,7 +105,32 @@ class Proxy
 
         if (Cache::isExpired($Url)) {
 
-            $data = file_get_contents($Url);
+            $ch = curl_init($Url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,   // return content instead of outputting it
+                CURLOPT_FOLLOWLOCATION => false,   // follow redirects (like file_get_contents does)
+                CURLOPT_TIMEOUT        => 10,     // safety timeout
+                CURLOPT_CONNECTTIMEOUT => 15,
+                CURLOPT_HEADER         => true,   // <-- include headers in output
+            ]);
+
+            $response = curl_exec($ch);
+
+            if ($response === false) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                Logger::getLogger(__METHOD__)->error("cURL error: " . $error, debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+                RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Failed retrieving remote resource", $paramArray);
+                exit;
+            }
+
+            // Split headers and body
+            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $headersRaw = substr($response, 0, $headerSize);
+            $data       = substr($response, $headerSize);
+
+            curl_close($ch);
+
 
             $content_type = null;
 
@@ -117,18 +144,22 @@ class Proxy
                 $content_type = Helper::generateUpToDateMimeArray()[$_GET["type"]];
             }
 
-            if (!$content_type) {
-                if (is_array($http_response_header) && preg_match_all("/^content-type\s*:\s*(.*)$/mi", implode("\n", $http_response_header), $matches)) {
-                    $content_type = end($matches[1]);
-                } else {
-                    $finfo = new \finfo(FILEINFO_MIME);
-                    $content_type = $finfo->buffer($data);
+            // Parse Content-Type header
+            $content_type = null;
+            if (preg_match_all("/^content-type\s*:\s*(.+)$/mi", $headersRaw, $matches)) {
+                $content_type = end($matches[1]);
+            }
 
-                    if ($content_type === "text/plain") {
-                        $content_type = (Helper::detectMimetype($_GET["url"]) ?? $content_type);
-                    }
+            if (!$content_type) {
+                $finfo = new \finfo(FILEINFO_MIME);
+                $content_type = $finfo->buffer($data);
+
+                if ($content_type === "text/plain") {
+                    $content_type = (Helper::detectMimetype($_GET["url"]) ?? $content_type);
                 }
             }
+
+
 
             if (in_array(explode(";", $content_type)[0], self::BLACKLISTED_MIMETYPES, true)) {
                 RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, "Proxy cannot serve blacklisted mimetypes!", $paramArray);
