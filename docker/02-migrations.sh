@@ -3,7 +3,7 @@ set -e
 
 sudo -E -u www-data crisp crisp:migration:run --no-theme
 sudo -E -u www-data crisp crisp:check-permissions || true
-sudo -E -u www-data crisp crisp:theme --uninstall || true
+#sudo -E -u www-data crisp crisp:theme --uninstall || true # Disabled for performance testing
 sudo -E -u www-data crisp crisp:theme --install
 sudo -E -u www-data crisp crisp:migration:run --no-core || true # Allow to fail
 sudo -E -u www-data crisp crisp:cache:clear
