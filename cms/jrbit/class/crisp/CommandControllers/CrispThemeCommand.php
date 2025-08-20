@@ -31,9 +31,9 @@ class CrispThemeCommand extends Command
         if ($input->getOption("install")) {
 
             if (Themes::isInstalled()) {
-                $io->error("Theme is already installed");
+                $io->warning("Theme is already installed");
 
-                return Command::FAILURE;
+                return Command::SUCCESS;
             }
             if (!Themes::isValid()) {
                 $io->error("Theme is not mounted. Check your Docker Configuration");
