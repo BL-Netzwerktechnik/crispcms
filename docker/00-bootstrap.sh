@@ -5,9 +5,9 @@ set -e
 cd "$CRISP_WORKDIR" || exit 1
 
 
-if [ -z "$SKIP_COMPOSER" ]; then
-  /usr/local/bin/composer install
-fi
+#if [ -z "$SKIP_COMPOSER" ]; then
+#  /usr/local/bin/composer install
+#fi
 
 if [ ! -f .env ]
 then
