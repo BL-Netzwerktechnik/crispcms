@@ -55,7 +55,7 @@ RUN echo 'pm.max_children = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     rm -rf /var/lib/apt/lists/* && \
     usermod -aG sudo www-data && \
     echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
-    cd "/var/www" && \
+    cd "/var/www/crisp" && \
     /usr/local/bin/composer install && \
     chown -R 33:33 "/var/www" && \
     mkdir -p /data && chown -R 33:33 "/data" && \
