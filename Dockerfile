@@ -31,6 +31,8 @@ WORKDIR "${CRISP_WORKDIR}"
 
 VOLUME /data
 
+COPY . "$CRISP_WORKDIR"
+
 # Install Dependencies
 RUN echo 'pm.max_children = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     echo 'pm.start_servers = 50' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
@@ -53,11 +55,13 @@ RUN echo 'pm.max_children = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     rm -rf /var/lib/apt/lists/* && \
     usermod -aG sudo www-data && \
     echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+    cd "/var/www" && \
+    /usr/local/bin/composer install && \
     chown -R 33:33 "/var/www" && \
     mkdir -p /data && chown -R 33:33 "/data" && \
     mkdir -p /var/log/crisp && \
     chown -R 33:33 /var/log/crisp && \
-    rm /etc/nginx/sites-enabled/default
+    rm /etc/nginx/sites-enabled/default 
 
 
 COPY config/php.ini /usr/local/etc/php/conf.d/php_custom.ini
@@ -67,8 +71,5 @@ COPY config/crisp-cli.sh /usr/local/bin/crisp-cli
 
 RUN chmod +x /usr/local/bin/crisp-cli && \
     ln -s /usr/local/bin/crisp-cli /usr/local/bin/crisp
-
-
-COPY . "$CRISP_WORKDIR"
 
 ENTRYPOINT ["/bin/bash", "-c", "chmod +x /opt/entrypoint.d/*.sh; for script in /opt/entrypoint.d/*.sh; do $script; if [ $? -eq 255 ]; then exit 255; fi; done"]
