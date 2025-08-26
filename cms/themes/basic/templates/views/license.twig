@@ -42,84 +42,164 @@
 			</div>
 		</div>
 	</div>
+	{# Improved License Page (Bootstrap-friendly Twig) #}
 	{% if license.getVersion() is defined %}
-		<h2 class="text-center mt-4">This Instance is licensed to:
-		</h2>
-		<h3 class="text-center">{% include 'components/license_fields.twig' with {'field': license.getName()} %}</h3>
-		<div class="container mt-3">
-			<div class="card">
-				<div class="card-body">
-					<h4 class="mb-4">
-						Status:
-						{% if license.isValid() %}
-							<span class="text-success">VALID</span>
-						{% else %}
-							<span class="text-danger">INVALID</span>
-						{% endif %}
-					</h4>
-					<p>
-						License Version:
-						{% include 'components/license_fields.twig' with {'field': license.getVersion()} %}
-					</p>
-					<p>
-						License ID:
-						{% include 'components/license_fields.twig' with {'field': license.getUuid()} %}
-					</p>
-					<p>
-						Issuer:
-						{% include 'components/license_fields.twig' with {'field': license.getIssuer()} %}
-					</p>
-					<p>
-						Domains:
-						{% include 'components/license_fields.twig' with {'field': license.getDomains()|join(", ")} %}
-						{% if not license.isDomainAllowed(SERVER.HTTP_HOST) and license.getDomains() is defined %}
-							<span class="text-danger">(<b>{{ SERVER.HTTP_HOST }}</b>
-								is not permitted)</span>
-						{% endif %}
-					</p>
-					<p>
-						Issued At:
-						{% if license.getIssuedAt() is defined %}
-							{% include 'components/license_fields.twig' with {'field': license.getIssuedAt()|date()} %}
-							UTC ({{ parseTime(license.getIssuedAt()).diffForHumans() }})
-						{% else %}
-							{% include 'components/license_fields.twig' with {'field': null} %}
-						{% endif %}
-					</p>
-					<p>
-						Expires At:
-						{% if license.getExpiresAt() is defined %}
-							{% if license.canExpire() %}
-								{% include 'components/license_fields.twig' with {'field': license.getExpiresAt()|date(), 'color': license.isExpired() ? 'text-danger': 'text-success'} %}
-								UTC
-								{% set ExpiredHuman = parseTime(license.getExpiresAt()).diffForHumans() %}
-								{% if license.isExpired() %}
-									<span class="text-danger">(Expired
-										{{ ExpiredHuman }})</span>
-								{% else %}
-									({{ ExpiredHuman }})
-								{% endif %}
-							{% else %}
-								<span class="text-warning">NO EXPIRY DATE</span>
-							{% endif %}
+		<div class="container py-4">
+			<div class="row justify-content-center">
+				<div class="col-lg-10">
+					<div class="card shadow-sm border-0">
+						<div
+							class="card-body p-4">
 
-						{% else %}
-							{% include 'components/license_fields.twig' with {'field': null} %}
-						{% endif %}
-					</p>
-					<p>
-						Signature:
-						{% if license.verifySignature() %}
-							<span class="text-success">VALID</span>
-						{% else %}
-							<span class="text-danger">INVALID</span>
-						{% endif %}
-					</p>
+							{# Header: Licensee + Status badge #}
+							<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+								<div>
+									<div class="text-muted small text-uppercase">This instance is licensed to</div>
+									<h1 class="h3 mb-0">{% include 'components/license_fields.twig' with {'field': license.getName()} %}</h1>
+								</div>
+								<div>
+									{% set statusClass = license.isValid() ? 'bg-success' : 'bg-danger' %}
+									<span class="badge {{ statusClass }} bg-gradient px-3 py-2 fs-6">
+										{{ license.isValid() ? 'VALID' : 'INVALID' }}
+									</span>
+								</div>
+							</div>
+
+							<hr class="my-4">
+
+							<div
+								class="row g-4">
+								{# Left: core details #}
+								<div class="col-md-7">
+									<h2 class="h5 mb-3">Details</h2>
+									<dl class="row mb-0 small">
+										<dt class="col-sm-4 text-muted">License Version</dt>
+										<dd class="col-sm-8">
+											{% include 'components/license_fields.twig' with {'field': license.getVersion()} %}
+										</dd>
+
+										<dt class="col-sm-4 text-muted">License ID</dt>
+										<dd class="col-sm-8">
+											{% include 'components/license_fields.twig' with {'field': license.getUuid()} %}
+										</dd>
+
+										<dt class="col-sm-4 text-muted">Issuer</dt>
+										<dd class="col-sm-8">
+											{% include 'components/license_fields.twig' with {'field': license.getIssuer()} %}
+										</dd>
+
+										<dt class="col-sm-4 text-muted">Issued At</dt>
+										<dd class="col-sm-8">
+											{% if license.getIssuedAt() is defined %}
+												{% include 'components/license_fields.twig' with {'field': license.getIssuedAt()|date()} %}
+												<span class="text-muted">UTC ({{ parseTime(license.getIssuedAt()).diffForHumans() }})</span>
+											{% else %}
+												{% include 'components/license_fields.twig' with {'field': null} %}
+											{% endif %}
+										</dd>
+
+										<dt class="col-sm-4 text-muted">Expires At</dt>
+										<dd class="col-sm-8">
+											{% if license.getExpiresAt() is defined %}
+												{% if license.canExpire() %}
+													{% include 'components/license_fields.twig' with {
+                        'field': license.getExpiresAt()|date(),
+                        'color': license.isExpired() ? 'text-danger' : 'text-success'
+                      } %}
+													<span class="text-muted">UTC</span>
+													{% set ExpiredHuman = parseTime(license.getExpiresAt()).diffForHumans() %}
+													{% if license.isExpired() %}
+														<span class="text-danger">(Expired
+															{{ ExpiredHuman }})</span>
+													{% else %}
+														<span class="text-muted">({{ ExpiredHuman }})</span>
+													{% endif %}
+												{% else %}
+													<span class="text-warning">NO EXPIRY DATE</span>
+												{% endif %}
+											{% else %}
+												{% include 'components/license_fields.twig' with {'field': null} %}
+											{% endif %}
+										</dd>
+									</dl>
+								</div>
+
+								{# Right: validation + progress #}
+								<div class="col-md-5">
+									<h2 class="h5 mb-3">Validation</h2>
+									<ul class="list-group list-group-flush">
+										<li class="list-group-item d-flex justify-content-between align-items-center">
+											Signature
+											<span class="badge {{ license.verifySignature() ? 'bg-success' : 'bg-danger' }}">
+												{{ license.verifySignature() ? 'VALID' : 'INVALID' }}
+											</span>
+										</li>
+
+										{% if license.getDomains() is defined %}
+											<li class="list-group-item">
+												<div class="d-flex justify-content-between align-items-center mb-2">
+													<span>Domain Check</span>
+													{% if SERVER.HTTP_HOST is defined and not license.isDomainAllowed(SERVER.HTTP_HOST) %}
+														<span class="badge bg-danger">This host not permitted</span>
+													{% else %}
+														<span class="badge bg-success">OK</span>
+													{% endif %}
+												</div>
+												<div class="d-flex flex-wrap gap-2">
+													{% for d in license.getDomains() %}
+														{% set allowed = license.isDomainAllowed(d) %}
+														<span class="badge rounded-pill {{ allowed ? 'text-bg-light border' : 'bg-danger-subtle text-danger border border-danger-subtle' }}">
+															{{ d }}
+														</span>
+													{% endfor %}
+												</div>
+											</li>
+										{% endif %}
+									</ul>
+
+									{# Visual time progress till expiry (if applicable) #}
+									{% if license.getExpiresAt() is defined and license.canExpire() %}
+										{% set nowU = 'now'|date('U') %}
+										{% set expU = license.getExpiresAt()|date('U') %}
+										{% set issU = (license.getIssuedAt() is defined) ? license.getIssuedAt()|date('U') : nowU %}
+										{% set total = expU - issU %}
+										{% set elapsed = nowU - issU %}
+										{% set pct = (total > 0) ? (100 * (elapsed / total))|round(0, 'floor') : 0 %}
+										{% set pct = pct < 0 ? 0 : (pct > 100 ? 100 : pct) %}
+
+										<div class="mt-3">
+											<div class="d-flex justify-content-between small">
+												<span>License term used</span>
+												<span>{{ pct }}%</span>
+											</div>
+											<div class="progress" role="progressbar" aria-label="License term used">
+												<div class="progress-bar {{ license.isExpired() ? 'bg-danger' : 'bg-success' }}" style="width: {{ pct }}%"></div>
+											</div>
+										</div>
+									{% endif %}
+								</div>
+							</div>
+
+							{# Host not permitted alert #}
+							{% if license.getDomains() is defined and SERVER.HTTP_HOST is defined and not license.isDomainAllowed(SERVER.HTTP_HOST) %}
+								<div class="alert alert-danger mt-4" role="alert">
+									<strong>{{ SERVER.HTTP_HOST }}</strong>
+									is not a permitted domain for this license.
+								</div>
+							{% endif %}
+						</div>
+
+						<div class="card-footer bg-body-tertiary small d-flex justify-content-between flex-wrap gap-2">
+							<span>License ID:
+								{% include 'components/license_fields.twig' with {'field': license.getUuid()} %}</span>
+							<span>Version:
+								{% include 'components/license_fields.twig' with {'field': license.getVersion()} %}</span>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
 	{% endif %}
-
 {% endblock %}
 
 
