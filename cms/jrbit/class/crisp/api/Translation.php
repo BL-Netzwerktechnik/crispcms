@@ -86,7 +86,7 @@ class Translation
         return [];
     }
 
-    
+
 
     public static function uninstallAllTranslations(): bool
     {
@@ -136,13 +136,11 @@ class Translation
 
                 if ($Language->deleteTranslation($Key)) {
                     Logger::getLogger(__METHOD__)->debug(sprintf("Uninstalled translation key %s", $Key));
-                } elseif (defined("CRISP_CLI")) {
+                } else {
                     Logger::getLogger(__METHOD__)->warning(sprintf("Did not Uninstall translation key %s", $Key));
                 }
             } catch (\PDOException $ex) {
-                if (defined("CRISP_CLI")) {
-                    Logger::getLogger(__METHOD__)->error($ex);
-                }
+                Logger::getLogger(__METHOD__)->error($ex);
             }
         }
     }
