@@ -47,6 +47,7 @@ use crisp\Events\ThemePageErrorEvent;
 use crisp\Events\ThemePageErrorEvents;
 use crisp\routes\Proxy;
 use Symfony\Contracts\EventDispatcher\Event;
+use TypeError;
 
 use function file_exists;
 use function file_get_contents;
@@ -370,6 +371,12 @@ class Themes
         return json_decode(file_get_contents(Themes::getThemeDirectory() . "/theme.json"));
     }
 
+    /**
+     * @deprecated 19.5.0 will be removed in 20.0.0
+     * @see \crisp\api\Translation::uninstallAllTranslations()
+     *
+     * @return boolean
+     */
     public static function uninstallTranslations(): bool
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
@@ -487,7 +494,7 @@ class Themes
         }
 
         self::uninstallKVStorage();
-        self::uninstallTranslations();
+        Translation::uninstallAllTranslations();
 
         return true;
     }
@@ -636,71 +643,22 @@ class Themes
             return false;
         }
 
-        $_processed = [];
         Logger::getLogger(__METHOD__)->info("Installing translations for Theme " . ThemeMetadata->name);
 
         if (isset(ThemeMetadata->onInstall->createTranslationKeys) && is_string(ThemeMetadata->onInstall->createTranslationKeys)) {
             if (file_exists(Themes::getThemeDirectory() . "/" . ThemeMetadata->onInstall->createTranslationKeys)) {
-
-                $files = glob(Themes::getThemeDirectory() . "/" . ThemeMetadata->onInstall->createTranslationKeys . "*.{json}", GLOB_BRACE);
-                foreach ($files as $File) {
-
-                    Logger::getLogger(__METHOD__)->info(sprintf("Installing language %s", substr(basename($File), 0, -5)));
-                    if (!file_exists($File)) {
-                        Logger::getLogger(__METHOD__)->error(sprintf("%s not found!", $File));
-                        continue;
+                foreach (glob(Themes::getThemeDirectory() . "/" . ThemeMetadata->onInstall->createTranslationKeys . "*.{json}", GLOB_BRACE) as $File) {
+                    try {
+                        Logger::getLogger(__METHOD__)->info(sprintf("Installing language %s", substr(basename($File), 0, -5)));
+                        Translation::installTranslations($File);
+                    } catch (\Throwable $ex) {
+                        Logger::getLogger(__METHOD__)->error("Error installing translations", [$ex->getMessage()]);
                     }
-                    $Language = Languages::getLanguageByCode(substr(basename($File), 0, -5));
-
-                    if (!$Language) {
-                        Logger::getLogger(__METHOD__)->error(sprintf("%s not found!", substr(basename($File), 0, -5)));
-                        continue;
-                    }
-                    foreach (json_decode(file_get_contents($File), true, 512, JSON_THROW_ON_ERROR) as $Key => $Value) {
-                        try {
-
-                            if ($Language->newTranslation($Key, $Value, substr(basename($File), 0, -5))) {
-                                $_processed[] = $Key;
-                                Logger::getLogger(__METHOD__)->info(sprintf("Installed translation key %s", $Key));
-                            } elseif (defined("CRISP_CLI")) {
-                                Logger::getLogger(__METHOD__)->warning(sprintf("Did not Install translation key %s", $Key));
-                            }
-                        } catch (\PDOException $ex) {
-                            if (defined("CRISP_CLI")) {
-                                Logger::getLogger(__METHOD__)->error($ex);
-                            }
-                            continue 2;
-                        }
-                    }
-
-                    Logger::getLogger(__METHOD__)->notice(sprintf("Successfully Updated %s  translation keys", count($_processed)));
-                    $_processed = [];
                 }
             }
 
             return true;
         }
-        if (isset(ThemeMetadata->onInstall->createTranslationKeys) && is_object(ThemeMetadata->onInstall->createTranslationKeys)) {
-            foreach (ThemeMetadata->onInstall->createTranslationKeys as $Key => $Value) {
-
-                try {
-                    $Language = Languages::getLanguageByCode($Key);
-
-                    if (!$Language) {
-                        continue;
-                    }
-
-                    foreach ($Value as $KeyTranslation => $ValueTranslation) {
-                        $Language->newTranslation($KeyTranslation, $ValueTranslation, $Key);
-                    }
-                } catch (\PDOException $ex) {
-                    continue;
-                }
-            }
-
-            return true;
-        }
-
         return false;
     }
 

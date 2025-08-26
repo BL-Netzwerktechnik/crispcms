@@ -82,6 +82,18 @@ class core
     public static function init()
     {
 
+        register_shutdown_function(function () {
+            $error = error_get_last();
+            if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+                Logger::getLogger("Core")->critical(sprintf(
+                    "FATAL: %s in %s on line %d",
+                    $error['message'],
+                    $error['file'],
+                    $error['line']
+                ), $error);
+            }
+        });
+
         try {
             if (!defined('STDIN')) {
                 define('STDIN', fopen('php://stdin', 'rb'));

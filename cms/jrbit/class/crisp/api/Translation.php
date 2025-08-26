@@ -48,7 +48,7 @@ class Translation
      */
     public function __construct(?string $Language)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         self::$Language = $Language;
     }
 
@@ -61,7 +61,7 @@ class Translation
      */
     public static function listLanguages(bool $FetchIntoClass = true): array|Language
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $Languages = new Languages();
 
         return $Languages::fetchLanguages($FetchIntoClass);
@@ -74,7 +74,7 @@ class Translation
      */
     public static function listTranslations(): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -86,12 +86,79 @@ class Translation
         return [];
     }
 
+    
+
+    public static function uninstallAllTranslations(): bool
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+
+        try {
+            $Translations = Translation::listTranslations();
+
+            $Language = Languages::getLanguageByCode("de");
+
+            foreach ($Translations as $Key => $Translation) {
+
+                Logger::getLogger(__METHOD__)->debug("Deleting translation key " . $Translation["key"]);
+                if ($Language->deleteTranslation($Translation["key"])) {
+                    Logger::getLogger(__METHOD__)->debug("Deleted translation key " . $Translation["key"]);
+                }
+            }
+        } catch (\PDOException $ex) {
+            Logger::getLogger(__METHOD__)->error("Error uninstalling translations", (array)$ex);
+        }
+
+        return true;
+    }
+
+
+    /**
+     * @param string $ThemeName
+     * @param \stdClass ThemeMetadata
+     * @return bool
+     */
+    public static function installTranslations(string $LanguageFile): void
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (!file_exists($LanguageFile)) {
+            Logger::getLogger(__METHOD__)->error("Language file $LanguageFile not found!");
+            return;
+        }
+
+
+        $_processed = [];
+
+        $Language = Languages::getLanguageByCode(substr(basename($LanguageFile), 0, -5));
+
+        if (!$Language) {
+            Logger::getLogger(__METHOD__)->error(sprintf("%s not found!", substr(basename($LanguageFile), 0, -5)));
+            return;
+        }
+        foreach (json_decode(file_get_contents($LanguageFile), true, 512, JSON_THROW_ON_ERROR) as $Key => $Value) {
+            try {
+
+                if ($Language->newTranslation($Key, $Value, substr(basename($LanguageFile), 0, -5))) {
+                    $_processed[] = $Key;
+                    Logger::getLogger(__METHOD__)->debug(sprintf("Installed translation key %s", $Key));
+                } elseif (defined("CRISP_CLI")) {
+                    Logger::getLogger(__METHOD__)->warning(sprintf("Did not Install translation key %s", $Key));
+                }
+            } catch (\PDOException $ex) {
+                if (defined("CRISP_CLI")) {
+                    Logger::getLogger(__METHOD__)->error($ex);
+                }
+            }
+        }
+
+        Logger::getLogger(__METHOD__)->notice(sprintf("Successfully Updated %s translation keys", count($_processed)));
+    }
+
     /**
      * Inits DB.
      */
     private static function initDB()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $DB = new Postgres();
         self::$Database_Connection = $DB->getDBConnector();
     }
@@ -104,7 +171,7 @@ class Translation
      */
     public static function fetchAll(): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -136,7 +203,7 @@ class Translation
      */
     public static function fetchAllByKey(string $Key): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -170,7 +237,7 @@ class Translation
      */
     public static function exists(string $Key): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (self::$Database_Connection === null) {
             self::initDB();
         }
@@ -190,7 +257,7 @@ class Translation
      */
     public static function fetch(string $Key, int $Count = 1, array $UserOptions = []): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         if (!isset(self::$Language)) {
             self::$Language = Helper::getLocale();
@@ -213,7 +280,7 @@ class Translation
      */
     public static function get(string $Key, array $UserOptions = []): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         if (self::$Database_Connection === null) {
             self::initDB();
@@ -255,7 +322,7 @@ class Translation
     public static function getPlural(string $Key, array $UserOptions = []): string
     {
 
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if (self::$Database_Connection === null) {
             self::initDB();
         }

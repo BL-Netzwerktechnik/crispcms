@@ -2,6 +2,7 @@
 
 namespace crisp\CommandControllers;
 
+use crisp\api\Translation;
 use crisp\core\Logger;
 use crisp\core\Themes;
 use Symfony\Component\Console\Command\Command;
@@ -19,12 +20,11 @@ class CrispThemeTranslationsCommand extends Command
             ->setDescription('Theme translation management')
             ->addOption('install', 'i', InputOption::VALUE_NONE, 'Install crisp theme translations')
             ->addOption('uninstall', 'u', InputOption::VALUE_NONE, 'Uninstall crisp theme translations');
-
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
         $io = new SymfonyStyle($input, $output);
 
@@ -42,12 +42,14 @@ class CrispThemeTranslationsCommand extends Command
             }
 
             Logger::startTiming($Timing);
-            if (Themes::installTranslations()) {
-                $io->success("Translations successfully installed!");
-            } else {
-                $io->error("Failed to install translations!");
+            try {
+                Themes::installTranslations();
+            } catch (\Exception $ex) {
+                Logger::getLogger(__METHOD__)->error("Error installing translations", [$ex->getMessage()]);
+                return Command::FAILURE;
+            } finally {
+                Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
             }
-            Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
 
             return Command::SUCCESS;
         } elseif ($input->getOption('uninstall')) {
@@ -64,10 +66,15 @@ class CrispThemeTranslationsCommand extends Command
             }
 
             Logger::startTiming($Timing);
-            if (Themes::uninstallTranslations()) {
-                $io->success("Translations successfully uninstalled!");
-            } else {
-                $io->error("Failed to uninstall translations!");
+            try {
+                if (Translation::uninstallAllTranslations()) {
+                    $io->success("Translations successfully uninstalled!");
+                } else {
+                    $io->error("Failed to uninstall translations!");
+                }
+            } catch (\Exception $ex) {
+                Logger::getLogger(__METHOD__)->error("Error uninstalling translations", (array)$ex);
+                return Command::FAILURE;
             }
             Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
 
