@@ -156,7 +156,7 @@ class License
                     exit;
                 }
 
-                Cache::clear();
+                Cache::delete("license_data");
 
                 echo "OK";
             } elseif ($_POST["action"] === "refresh") {
@@ -169,7 +169,7 @@ class License
                     exit;
                 }
 
-                Cache::clear();
+                Cache::delete("license_data");
 
                 echo "OK";
             } else {
@@ -178,13 +178,11 @@ class License
             exit;
         }
 
-        Cache::delete("license_data");
 
         ThemeVariables::setMultiple([
             "license" => ApiLicense::fromDB(),
             "IssuerAvailable" => ApiLicense::isIssuerAvailable(),
             "LicenseAvailable" => ApiLicense::isLicenseAvailable(),
-            "IssuerPrivateAvailable" => ApiLicense::isIssuerPrivateAvailable(),
             "RequireLicense" => Build::requireLicense(),
             "RequireLicenseServer" => Build::requireLicenseServer(),
             "LicenseKeyIsDefined" => Build::licenseKeyIsDefined(),
