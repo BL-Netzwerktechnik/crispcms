@@ -117,6 +117,42 @@ class Translation
      * @param \stdClass ThemeMetadata
      * @return bool
      */
+    public static function uninstallTranslations(string $LanguageFile): void
+    {
+        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (!file_exists($LanguageFile)) {
+            Logger::getLogger(__METHOD__)->error("Language file $LanguageFile not found!");
+            return;
+        }
+
+        $Language = Languages::getLanguageByCode(substr(basename($LanguageFile), 0, -5));
+
+        if (!$Language) {
+            Logger::getLogger(__METHOD__)->error(sprintf("%s not found!", substr(basename($LanguageFile), 0, -5)));
+            return;
+        }
+        foreach (json_decode(file_get_contents($LanguageFile), true, 512, JSON_THROW_ON_ERROR) as $Key => $Value) {
+            try {
+
+                if ($Language->deleteTranslation($Key)) {
+                    Logger::getLogger(__METHOD__)->debug(sprintf("Uninstalled translation key %s", $Key));
+                } elseif (defined("CRISP_CLI")) {
+                    Logger::getLogger(__METHOD__)->warning(sprintf("Did not Uninstall translation key %s", $Key));
+                }
+            } catch (\PDOException $ex) {
+                if (defined("CRISP_CLI")) {
+                    Logger::getLogger(__METHOD__)->error($ex);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * @param string $ThemeName
+     * @param \stdClass ThemeMetadata
+     * @return bool
+     */
     public static function installTranslations(string $LanguageFile): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
