@@ -141,6 +141,7 @@ class Themes
         $TwigTheme->addGlobal('COOKIE', $_COOKIE);
         $TwigTheme->addGlobal('ENV', $_ENV);
         $TwigTheme->addGlobal('isMobile', Helper::isMobile());
+        $TwigTheme->addGlobal('instanceId', Helper::getInstanceId());
         $TwigTheme->addGlobal('URL', Helper::currentURL());
         $TwigTheme->addGlobal('CLUSTER', gethostname());
         $TwigTheme->addGlobal('VM_IP', VM_IP);

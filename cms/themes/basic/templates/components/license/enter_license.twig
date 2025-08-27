@@ -1,83 +1,121 @@
-{% if LicenseKeyIsDefined and RequireLicenseServer and RequireLicense and not LicenseAvailable %}
+<div class="container my-4">
+	<div class="row justify-content-center">
+		<div
+			class="col-12 col-lg-8">
 
-	<h3 class="text-danger text-center">Your Distributor Requires an Installed License Key but none is loaded into CrispCMS.<br>
-		Please Restart your Container!</h3>
-{% elseif RequireLicense and not LicenseAvailable %}
-	<h3 class="text-danger text-center">Your Distributor Requires an Installed License Key but none is installed</h3>
-	<h4 class="text-danger text-center">Install one with the form below</h4>
-{% endif %}
-
-
-{% if RequireLicenseServer and not LicenseKeyIsDefined %}
-	<h1>Enter License</h1>
-	<form id="entkey" method="post" action="" enctype="multipart/form-data">
-		<div class="row">
-			<div class="col">
-				<div class="form-group">
-					<label for="instance">License Key</label>
-					<input name="key" class="form-control" type="text" id="key">
-					<small id="key" class="form-text text-muted">You should have received this by your distributor</small>
+			{# --- Top status / guidance ------------------------------------------------ #}
+			{% if LicenseKeyIsDefined and RequireLicenseServer and RequireLicense and not LicenseAvailable %}
+				<div class="alert alert-danger text-center" role="alert">
+					<h3 class="h4 mb-2">License key required but none is loaded into CrispCMS</h3>
+					<p class="mb-0">Please restart your container to load the key.</p>
 				</div>
-			</div>
-		</div>
-		<div class="d-grid gap-2 mt-4">
-			<button class="btn btn-primary" type="submit">Submit</button>
-		</div>
-	</form>
-{% endif %}
-
-{% if not RequireLicenseServer %}
-
-	<h1>Enter License</h1>
-	<form id="entlic" method="post" action="" enctype="multipart/form-data">
-		<div class="row">
-			<div class="col">
-				<div class="form-group">
-					<label for="license">License File</label>
-					<input name="license" class="form-control" type="file" id="license" required>
-					<small id="license" class="form-text text-muted">The
-						<code>license.key</code>
-						File as received by your Distributor</small>
+			{% elseif RequireLicense and not LicenseAvailable %}
+				<div class="alert alert-danger text-center" role="alert">
+					<h3 class="h4 mb-1">License key required</h3>
+					<p class="mb-0">Install one using the form below.</p>
 				</div>
-			</div>
-			{% if not IssuerAvailable %}
-				<div class="col">
-					<div class="form-group">
-						<label for="issuer">Issuer File</label>
-						<input name="issuer" class="form-control" type="file" id="issuer" required>
-						<small id="issuer" class="form-text text-muted">The
-							<code>issuer.pub</code>
-							File as received by your Distributor</small>
+			{% endif %}
+
+			{# --- License Server: Enter License Key ----------------------------------- #}
+			{% if RequireLicenseServer and not ENV.LICENSE_KEY %}
+				<div class="card shadow-sm mb-4">
+					<div class="card-header">
+						<h2 class="h5 mb-0">Enter License</h2>
+					</div>
+					<div class="card-body">
+						<form id="entkey" method="post" action="" enctype="multipart/form-data" novalidate>
+							<div class="mb-3">
+								<label for="key" class="form-label">License Key</label>
+								<input name="key" class="form-control" type="text" id="key" required aria-describedby="keyHelp">
+								<div id="keyHelp" class="form-text">
+									You should have received this from your distributor.
+								</div>
+							</div>
+							<div class="d-grid">
+								<button class="btn btn-primary" type="submit">Submit</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			{% elseif not ENV.LICENSE_KEY %}
+
+				{# --- Direct Upload: License / Issuer / Instance ------------------------- #}
+				<div class="card shadow-sm mb-4">
+					<div class="card-header">
+						<h2 class="h5 mb-0">Enter License</h2>
+					</div>
+					<div class="card-body">
+						<form id="entlic" method="post" action="" enctype="multipart/form-data" novalidate>
+							<div class="row g-3">
+
+								<div class="col-12 {% if not IssuerAvailable or LicenseAvailable %}col-md-6{% endif %}">
+									<label for="license" class="form-label">License File</label>
+									<input name="license" class="form-control" type="file" id="license" required aria-describedby="licenseHelp" accept=".key,.txt">
+									<div id="licenseHelp" class="form-text">
+										Upload the
+										<code>license.key</code>
+										file you received from your distributor.
+									</div>
+								</div>
+
+								{% if not IssuerAvailable %}
+									<div class="col-12 col-md-6">
+										<label for="issuer" class="form-label">Issuer File</label>
+										<input name="issuer" class="form-control" type="file" id="issuer" required aria-describedby="issuerHelp" accept=".pub,.txt">
+										<div id="issuerHelp" class="form-text">
+											Upload the
+											<code>issuer.pub</code>
+											file you received from your distributor.
+										</div>
+									</div>
+								{% endif %}
+
+								{% if LicenseAvailable %}
+									<div class="col-12 col-md-6">
+										<label for="instance" class="form-label">Instance ID</label>
+										<input name="instance" class="form-control" type="text" id="instance" required aria-describedby="instanceHelp">
+										<div id="instanceHelp" class="form-text">
+											Run
+											<code>crisp -i</code>
+											inside your container to get the Instance ID.
+										</div>
+									</div>
+								{% endif %}
+
+							</div>
+
+							<div class="d-grid mt-4">
+								<button class="btn btn-primary" type="submit">Upload</button>
+							</div>
+						</form>
 					</div>
 				</div>
 			{% endif %}
-			{% if LicenseAvailable %}
-				<div class="col">
-					<div class="form-group">
-						<label for="instance">Instance ID</label>
-						<input name="instance" class="form-control" type="text" id="instance" required>
-						<small id="instance" class="form-text text-muted">Execute
-							<code>crisp -i</code>
-							in your container</small>
+
+			{# --- License Server Notice & Manual Refresh ------------------------------ #}
+			{% if RequireLicenseServer and LicenseKeyIsDefined %}
+
+				{% if ENV.LICENSE_KEY is defined %}
+					<div class="alert alert-warning" role="alert">
+						<span>The License Key is configured in the environment variables.</span>
+					</div>
+				{% endif %}
+
+				<div class="card">
+					<div class="card-body">
+						<h4 class="alert-heading h5">License server configured</h4>
+						<p class="mb-2">
+							Your distributor configured a license server. The license updates periodically and on container restart.
+						</p>
+						<form id="refresh" method="post" action="" enctype="multipart/form-data">
+							<div class="d-grid">
+								<button class="btn btn-outline-primary" type="submit">Refresh License Now</button>
+							</div>
+						</form>
 					</div>
 				</div>
 			{% endif %}
-		</div>
-		<div class="d-grid gap-2 mt-4">
-			<button class="btn btn-primary" type="submit">Upload</button>
-		</div>
-	</form>
-{% endif %}
 
-{% if RequireLicenseServer and LicenseKeyIsDefined %}
-	<div class="alert alert-warning mt-2" role="alert">
-		<h4 class="alert-heading">License Server Configured</h4>
-		<p class="mb-0">Your Distributor has configured a license Server. The license is updated periodically as well as on container restart.</p>
-		<form id="refresh" method="post" action="" enctype="multipart/form-data">
-			<div class="d-grid gap-2 mt-2">
-				<button class="btn btn-primary" type="submit">Refresh License</button>
-			</div>
-		</form>
+		</div>
 	</div>
-
-{% endif %}
+</div>

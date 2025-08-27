@@ -122,7 +122,7 @@
                         window.location.reload();
                     },
                     error: function() {
-                        Toast.fire({
+                        Swal.fire({
                             icon: 'error',
                             title: 'An error occurred installing the license Key!'
                         })
@@ -130,60 +130,4 @@
                     }
                 });
             });
-
-            $("#generate_issuer").on('click', function(e){
-                e.preventDefault();
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Generating License... Please wait'
-                })
-
-                let fd = new FormData();
-
-                fd.append('action', "generate_issuer");
-
-                $.ajax({
-                    url: window.location.href,
-                    type: 'post',
-                    data: fd,
-                    contentType: false,
-                    processData: false,
-                    success: function(response){
-                        window.location.reload();
-                    },
-                    error: function() {
-                        Toast.fire({
-                            icon: 'error',
-                            title: 'An error occurred generating the license Key!'
-                        })
-
-                    }
-                });
-            });
-
-            $("#genlic").on('submit', function(e){
-                e.preventDefault();
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Generating License... Please wait'
-                })
-
-                $.post(window.location.href,  $(this).serialize())
-                    .done(function(response){
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Licenses have been generated and will be downloaded!'
-                        });
-
-                        download("issuer.pub", response.parameters.issuerpub);
-                        download("license.key", response.parameters.license);
-                    })
-                    .fail(function() {
-                        Toast.fire({
-                            icon: 'error',
-                            title: 'An error occurred generating the license Key!'
-                        })
-
-                    });
-                });
         });
