@@ -13,6 +13,20 @@ variables:
   LICENSE_FINDER_CLI_OPTS: '--recursive'
   FF_NETWORK_PER_BUILD: "true"
   CS_IMAGE: $CI_REGISTRY_IMAGE:latest
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_TLS_CERTDIR: ""
+
+services:
+  - name: docker:27-dind
+    alias: docker
+    command:
+      - "-H"
+      - "tcp://0.0.0.0:2375"
+      - "-H"
+      - "unix:///var/run/docker.sock"
+
+
+
 
 stages:
 - compliance
@@ -35,57 +49,72 @@ include:
 
 nightly:
   stage: publish
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint:
-    - ''
+  image: docker:27
+  before_script:
+    - mkdir -p ~/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
+    - docker buildx create --use --name ci-builder >/dev/null 2>&1 || docker buildx use ci-builder
   script:
-  - export GENERATED_TAG=`cat GIT_TAG`
-  - echo Building Image for Tag $GENERATED_TAG
-  - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-    --destination "${CI_REGISTRY_IMAGE}:nightly" 
-    --destination "${CI_REGISTRY_IMAGE}:latest"
-    --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA} 
-    --build-arg CI_BUILD=${CI_JOB_ID}
+    - set -euo pipefail
+    - VERSION="$(git describe --tags --dirty --always)-nightly.${CI_JOB_ID}"
+    - echo "Building Image for $VERSION"
+    - docker buildx build \
+        --file "${CI_PROJECT_DIR}/Dockerfile" \
+        --build-arg "GIT_COMMIT=${CI_COMMIT_SHORT_SHA}" \
+        --build-arg "CI_BUILD=${CI_JOB_ID}" \
+        --build-arg "FRAMEWORK_VERSION=${VERSION}" \
+        --tag "${CI_REGISTRY_IMAGE}:nightly" \
+        --tag "${CI_REGISTRY_IMAGE}:${GENERATED_TAG}" \
+        --push \
+        "${CI_PROJECT_DIR}"
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG
 
 stable:
   stage: publish
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint:
-    - ''
+  image: docker:27
+  before_script:
+    - mkdir -p ~/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
+    - docker buildx create --use --name ci-builder >/dev/null 2>&1 || docker buildx use ci-builder
   script:
-  - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
-  - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
-  - export TAG_PATCH=$(echo $CI_COMMIT_TAG | cut -d. -f3)
-  - export GENERATED_TAG=`cat GIT_TAG`
-  - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-    --destination "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}"
-    --destination "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}.${TAG_MINOR}"
-    --destination "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}"
-    --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
-    --build-arg GIT_TAG=${GENERATED_TAG}
-    --build-arg CI_BUILD=${CI_JOB_ID}
-    --cleanup
+    - set -euo pipefail
+    - VERSION="$(git describe --tags --dirty --always)-stable.${CI_JOB_ID}"
+    - echo "Building Image for $VERSION"
+    - docker buildx build \
+        --file "${CI_PROJECT_DIR}/Dockerfile" \
+        --build-arg "GIT_COMMIT=${CI_COMMIT_SHORT_SHA}" \
+        --build-arg "GIT_TAG=${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}" \
+        --build-arg "FRAMEWORK_VERSION=${VERSION}" \
+        --build-arg "CI_BUILD=${CI_JOB_ID}" \
+        --tag "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}" \
+        --tag "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}.${TAG_MINOR}" \
+        --tag "${CI_REGISTRY_IMAGE}:${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}" \
+        --push \
+        "${CI_PROJECT_DIR}"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 release-candidate:
   stage: publish
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint:
-    - ''
+  image: docker:27
+  before_script:
+    - mkdir -p ~/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
+    - docker buildx create --use --name ci-builder >/dev/null 2>&1 || docker buildx use ci-builder
   script:
-  - export GENERATED_TAG=`cat GIT_TAG`
-  - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-    --destination "${CI_REGISTRY_IMAGE}:${GENERATED_TAG}"
-    --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
-    --build-arg GIT_TAG=${GENERATED_TAG}
-    --build-arg CI_BUILD=${CI_JOB_ID}
-    --cleanup
+    - set -euo pipefail
+    - VERSION="$(git describe --tags --dirty --always).${CI_JOB_ID}"
+    - echo "Building Image for $VERSION"
+    - docker buildx build \
+        --file "${CI_PROJECT_DIR}/Dockerfile" \
+        --build-arg "GIT_COMMIT=${CI_COMMIT_SHORT_SHA}" \
+        --build-arg "GIT_TAG=${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}" \
+        --build-arg "FRAMEWORK_VERSION=${VERSION}" \
+        --build-arg "CI_BUILD=${CI_JOB_ID}" \
+        --tag "${CI_REGISTRY_IMAGE}:${GENERATED_TAG}" \
+        --push \
+        "${CI_PROJECT_DIR}"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+\.rc\.\d+$/'
 
@@ -93,7 +122,6 @@ release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
-    #- migrate-and-test
     - stable
   script:
     - 'echo "Releasing version ${CI_COMMIT_TAG}"'

@@ -18,7 +18,10 @@ services:
       - ROOT=${HOST}
       - PROTO=https
       - ENVIRONMENT=development
-      - GIT_TAG=${GIT_TAG}
+      - FRAMEWORK_VERSION=${FRAMEWORK_VERSION}
+      - GIT_TAG=0.0.0
+      - GIT_COMMIT=ffffff
+      - CI_BUILD=-99
       #- LICENSE_KEY=ccfe847e-eb43-23c9-c535-bde03ef64cf0 #gitleaks:allow Development License Key
     volumes:
       - ${GITPOD_REPO_ROOT}:/var/www/crisp

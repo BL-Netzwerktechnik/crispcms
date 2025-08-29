@@ -30,6 +30,7 @@ class CrispPostInstallCommand extends Command
             $output->writeln(sprintf("You can access the Debug menu at %s://%s/_/debug", $_ENV["PROTO"], $_ENV["HOST"]));
         }
         $output->writeln(sprintf("Your instance id is: %s", Helper::getInstanceId()));
+        $output->writeln("Release ". Build::getReleaseString());
 
         return Command::SUCCESS;
     }

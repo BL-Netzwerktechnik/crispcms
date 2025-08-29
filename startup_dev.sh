@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export GIT_TAG=$(git describe --tags --always)
+export FRAMEWORK_VERSION=$(git describe --tags --dirty --always)
 export HOST=$(gp url 80 | sed -E 's_^https?://__')
 
 composer install
