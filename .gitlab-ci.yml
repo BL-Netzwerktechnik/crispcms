@@ -58,7 +58,8 @@ nightly:
     - set -euo pipefail
     - VERSION="$(git describe --tags --dirty --always)-nightly.${CI_JOB_ID}"
     - echo "Building Image for $VERSION"
-    - docker buildx build \
+    - |
+      docker buildx build \
         --file "${CI_PROJECT_DIR}/Dockerfile" \
         --build-arg "GIT_COMMIT=${CI_COMMIT_SHORT_SHA}" \
         --build-arg "CI_BUILD=${CI_JOB_ID}" \
@@ -80,7 +81,8 @@ stable:
     - set -euo pipefail
     - VERSION="$(git describe --tags --dirty --always)-stable.${CI_JOB_ID}"
     - echo "Building Image for $VERSION"
-    - docker buildx build \
+    - |
+      docker buildx build \
         --file "${CI_PROJECT_DIR}/Dockerfile" \
         --build-arg "GIT_COMMIT=${CI_COMMIT_SHORT_SHA}" \
         --build-arg "GIT_TAG=${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}" \
@@ -105,7 +107,8 @@ release-candidate:
     - set -euo pipefail
     - VERSION="$(git describe --tags --dirty --always).${CI_JOB_ID}"
     - echo "Building Image for $VERSION"
-    - docker buildx build \
+    - |
+      docker buildx build \
         --file "${CI_PROJECT_DIR}/Dockerfile" \
         --build-arg "GIT_COMMIT=${CI_COMMIT_SHORT_SHA}" \
         --build-arg "GIT_TAG=${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}" \
