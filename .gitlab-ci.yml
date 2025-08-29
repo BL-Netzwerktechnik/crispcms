@@ -64,7 +64,6 @@ nightly:
         --build-arg "CI_BUILD=${CI_JOB_ID}" \
         --build-arg "FRAMEWORK_VERSION=${VERSION}" \
         --tag "${CI_REGISTRY_IMAGE}:nightly" \
-        --tag "${CI_REGISTRY_IMAGE}:${GENERATED_TAG}" \
         --push \
         "${CI_PROJECT_DIR}"
   rules:
@@ -112,7 +111,7 @@ release-candidate:
         --build-arg "GIT_TAG=${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}" \
         --build-arg "FRAMEWORK_VERSION=${VERSION}" \
         --build-arg "CI_BUILD=${CI_JOB_ID}" \
-        --tag "${CI_REGISTRY_IMAGE}:${GENERATED_TAG}" \
+        --tag "${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}" \
         --push \
         "${CI_PROJECT_DIR}"
   rules:
