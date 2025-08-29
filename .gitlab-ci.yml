@@ -15,6 +15,9 @@ variables:
   CS_IMAGE: $CI_REGISTRY_IMAGE:latest
   DOCKER_HOST: "tcp://docker:2375"
   DOCKER_TLS_CERTDIR: ""
+  GIT_STRATEGY: fetch
+  GIT_DEPTH: "0"    # full history
+
 
 services:
   - name: docker:27-dind
