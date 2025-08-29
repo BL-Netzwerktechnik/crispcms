@@ -49,17 +49,9 @@ class Cron
         self::get()->raw($command)->at($tab)->output("/var/log/crisp/scheduler.log", true);
     }
 
-    public static function registerInternals(): void
-    {
-        self::registerJob("*/15 * * * *", CronLicense::class, "pull");
-    }
-
     public static function register(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         $GLOBALS["Crisp_Cron"] = new Scheduler();
-
-        self::registerInternals();
-
     }
 }

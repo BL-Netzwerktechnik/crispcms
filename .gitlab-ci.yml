@@ -12,10 +12,7 @@ variables:
   POSTGRES_HOST_AUTH_METHOD: trust
   LICENSE_FINDER_CLI_OPTS: '--recursive'
   FF_NETWORK_PER_BUILD: "true"
-  DAST_WEBSITE: http://crispcms
-  DAST_FULL_SCAN_ENABLED: "true"
   CS_IMAGE: $CI_REGISTRY_IMAGE:latest
-  DAST_BAS_DISABLED: "true"
 
 stages:
 - compliance
@@ -23,60 +20,16 @@ stages:
 - publish
 - pages
 - release
-- dast
 
 sast:
   stage: compliance
 include:
-- template: DAST.gitlab-ci.yml
 - template: Security/SAST.gitlab-ci.yml
 - template: Security/BAS.latest.gitlab-ci.yml
 - template: Security/Dependency-Scanning.gitlab-ci.yml
 - template: Security/Secret-Detection.gitlab-ci.yml
 - template: Security/Container-Scanning.gitlab-ci.yml
 - template: Security/SAST-IaC.gitlab-ci.yml
-
-#migrate-and-test:
-#  services:
-#    - postgres:14.5
-#  stage: test
-#  variables:
-#    COMPOSER_ALLOW_SUPERUSER: 1
-#    ENVIRONMENT: development
-#    GIT_COMMIT: "${CI_COMMIT_SHORT_SHA}"
-#    POSTGRES_URI: postgres://postgres:postgres@postgres:5432/crisp_dev #gitleaks:allow
-#    DEFAULT_LOCALE: en
-#    LANG: en_US.utf8
-#    LOG_LEVEL: DEBUG
-#    HOST: ci
-#    PROTO: http
-#    TZ: UTC
-#  image:
-#    name: php:8.2-buster
-#  script:
-#  - echo "# We dont need me!" > .env
-#  - mkdir /tmp/ci
-#  - cd /tmp/ci
-#  - apt-get update && apt-get install -y libpq-dev autoconf gcc libc6-dev make libicu-dev sudo
-#    wget git-core zip zlib1g-dev libpng-dev
-#  - docker-php-ext-install pgsql pdo_pgsql pdo_mysql intl gd gettext
-#  - docker-php-ext-enable pdo_pgsql pdo_mysql intl gd gettext
-#  - wget https://getcomposer.org/composer-stable.phar -O /tmp/ci/composer
-#  - mkdir -p /var/log/crisp
-#  - chown 33:33 /var/log/crisp -R
-#  - cd ${CI_PROJECT_DIR}
-#  - sudo -E -u www-data php /tmp/ci/composer install
-#  - sudo -E -u www-data php cms/bin/cli.php -m
-#  - mv cms/themes/basic cms/themes/crisptheme
-#  - sudo -E -u www-data php cms/bin/cli.php theme -i
-#  - rm /tmp/ci/composer
-#  - git describe --tags --always > GIT_TAG || true
-#  - sudo -E -u www-data php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --format=gitlab > php-cs-fixer.json || true
-#  artifacts:
-#      reports:
-#        codequality: php-cs-fixer.json
-#      paths:
-#        - GIT_TAG
 
 
 nightly:
@@ -85,10 +38,6 @@ nightly:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
-  #needs:
-  #  - migrate-and-test
-  #dependencies:
-  #  - migrate-and-test
   script:
   - export GENERATED_TAG=`cat GIT_TAG`
   - echo Building Image for Tag $GENERATED_TAG
@@ -100,40 +49,12 @@ nightly:
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG
 
-
-  
-nightly:license:
-  stage: publish
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint:
-    - ''
-  #needs:
-  #  - migrate-and-test
-  #dependencies:
-  #  - migrate-and-test
-  script:
-  - export GENERATED_TAG=`cat GIT_TAG`
-  - echo Building Image for Tag $GENERATED_TAG
-  - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-    --destination "${CI_REGISTRY_IMAGE}/licensed:nightly" 
-    --destination "${CI_REGISTRY_IMAGE}/licensed:latest"
-    --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA} 
-    --build-arg CI_BUILD=${CI_JOB_ID}
-    --build-arg REQUIRE_LICENSE=true 
-  rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG
-
 stable:
   stage: publish
   image:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
-  #needs:
-  #  - migrate-and-test
-  #dependencies:
-  #  - migrate-and-test
   script:
   - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
   - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
@@ -150,44 +71,12 @@ stable:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
-
-stable:license:
-  stage: publish
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint:
-    - ''
-  #needs:
-  #  - migrate-and-test
-  #dependencies:
-  #  - migrate-and-test
-  script:
-  - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
-  - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
-  - export TAG_PATCH=$(echo $CI_COMMIT_TAG | cut -d. -f3)
-  - export GENERATED_TAG=`cat GIT_TAG`
-  - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-    --destination "${CI_REGISTRY_IMAGE}/licensed:${TAG_MAJOR}"
-    --destination "${CI_REGISTRY_IMAGE}/licensed:${TAG_MAJOR}.${TAG_MINOR}"
-    --destination "${CI_REGISTRY_IMAGE}/licensed:${TAG_MAJOR}.${TAG_MINOR}.${TAG_PATCH}"
-    --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
-    --build-arg GIT_TAG=${GENERATED_TAG}
-    --build-arg CI_BUILD=${CI_JOB_ID}
-    --build-arg REQUIRE_LICENSE=true 
-    --cleanup
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
-
 release-candidate:
   stage: publish
   image:
     name: gcr.io/kaniko-project/executor:v1.9.0-debug
     entrypoint:
     - ''
-  #needs:
-  #  - migrate-and-test
-  #dependencies:
-  #  - migrate-and-test
   script:
   - export GENERATED_TAG=`cat GIT_TAG`
   - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
@@ -199,37 +88,12 @@ release-candidate:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+\.rc\.\d+$/'
 
-release-candidate:license:
-  stage: publish
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint:
-    - ''
-  #needs:
-  #  - migrate-and-test
-  #dependencies:
-  #  - migrate-and-test
-  script:
-  - export GENERATED_TAG=`cat GIT_TAG`
-
-  - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-    --destination "${CI_REGISTRY_IMAGE}/licensed:${GENERATED_TAG}"
-    --build-arg GIT_COMMIT=${CI_COMMIT_SHORT_SHA}
-    --build-arg GIT_TAG=${GENERATED_TAG}
-    --build-arg CI_BUILD=${CI_JOB_ID}
-    --build-arg REQUIRE_LICENSE=true 
-    --cleanup
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+\.rc\.\d+$/'
-
-
 release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
     #- migrate-and-test
     - stable
-    - stable:license
   script:
     - 'echo "Releasing version ${CI_COMMIT_TAG}"'
   release:
@@ -239,71 +103,3 @@ release:
     ref: '${CI_COMMIT_SHA}'
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
-
-doxygen:
-  stage: publish
-  image: tsgkadot/docker-doxygen
-  script:
-    - export GENERATED_TAG=`cat GIT_TAG`
-    - 'doxygen Doxyfile'
-  #needs:
-  #  - migrate-and-test
-  #dependencies:
-  #  - migrate-and-test
-  artifacts:
-    paths:
-      - doxygen_out
-  #rules:
-  #  - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
-
-image: alpine
-pages:
-  stage: pages
-  script:
-    - mv docs public
-    - mv doxygen_out public/api
-  artifacts:
-    paths:
-      - public
-  needs:
-    - doxygen
-  dependencies:
-    - doxygen
-  environment:
-    name: production
-    url: https://crispcms.jrbit.de
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
-
-
-
-dast:
-  extends: .dast_with_bas
-  needs:
-    #- job: migrate-and-test
-
-    - job: nightly
-      optional: true
-
-    - job: stable
-      optional: true
-
-  services:
-    - name: postgres:14
-      alias: postgres
-      variables:
-        POSTGRES_PASSWORD: "postgres"
-
-    - name: $CI_REGISTRY_IMAGE:latest
-      alias: crispcms
-      variables:
-        LOG_LEVEL: "DEBUG"
-        POSTGRES_URI: "postgres://postgres:postgres@postgres:5432/postgres" #gitleaks:allow
-        TZ: "Europe/Berlin"
-        HOST: "crispcms"
-        ROOT: "crispcms"
-        PROTO: "http"
-        SENTRY_DSN: "https://e1335d78665742d0bbd9a67935dbc6ed@sentry.internal.jrbit.de/5"
-        ENVIRONMENT: "development"
-      entrypoint: ["/bin/bash", "-c", "git clone https://gitlab.jrbit.de/crispcms/theme-template theme && mv theme/public cms/themes/crisptheme && rm -rf theme && sleep 30 && chmod +x /opt/entrypoint.d/*.sh; for script in /opt/entrypoint.d/*.sh; do $script; if [ $? -eq 255 ]; then exit 255; fi; done"]
-

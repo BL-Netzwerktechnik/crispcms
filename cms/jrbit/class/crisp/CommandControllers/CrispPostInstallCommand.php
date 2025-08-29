@@ -31,17 +31,6 @@ class CrispPostInstallCommand extends Command
         }
         $output->writeln(sprintf("Your instance id is: %s", Helper::getInstanceId()));
 
-        if (Build::requireLicense()) {
-            if (!\crisp\api\License::isIssuerAvailable() && file_exists("/issuer.pub")) {
-                Config::set("license_issuer_public_key", file_get_contents("/issuer.pub"));
-                $output->writeln("Imported Distributor Public Key!");
-            }
-        }
-
-        if (Build::requireLicense() && !\crisp\api\License::isLicenseAvailable()) {
-            $output->writeln("Your Distributor Requires a valid License but none is installed - You will be prompted to install a License Key");
-        }
-
         return Command::SUCCESS;
     }
 }

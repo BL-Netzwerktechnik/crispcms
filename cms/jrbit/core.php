@@ -192,26 +192,8 @@ class core
 
                 define("IS_SPECIAL_PAGE", str_starts_with($_SERVER['REQUEST_URI'], "/_"));
 
-                $GLOBALS["license"] = api\License::fromDB();
-
-                $LicenseEvent = EventController::getEventDispatcher()->dispatch(new LicenseValidationEvent($GLOBALS["license"]));
-
                 /* Twig Globals */
                 Themes::initRenderer();
-
-                if (Build::requireLicense() && !IS_SPECIAL_PAGE) {
-
-
-                    if (!$GLOBALS["license"] || !$GLOBALS["license"]->isValid() || $LicenseEvent->isPropagationStopped()) {
-
-                        if (IS_API_ENDPOINT) {
-                            RESTfulAPI::response(Bitmask::LICENSE_INVALID->value, 'License Error', ["error_message" => $LicenseEvent->getErrorMessages()]);
-                            exit;
-                        }
-                        (new License())->preRender($LicenseEvent->getErrorMessages(), 'danger');
-                        exit;
-                    }
-                }
 
                 if (IS_API_ENDPOINT) {
 

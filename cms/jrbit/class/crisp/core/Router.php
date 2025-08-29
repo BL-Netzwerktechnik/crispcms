@@ -60,10 +60,7 @@ class Router
     public static function registerInteralRoutes(): void
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        self::add("_/debug/oscp", RouteType::PUBLIC, \crisp\routes\DebugOCSP::class, name: "debug.oscp");
-        self::add("_/debug/license/server/{status}?/{licenseKey}?", RouteType::PUBLIC, \crisp\routes\DebugLicenseServer::class, name: "debug.license.server");
         self::add("_/debug", RouteType::PUBLIC, \crisp\routes\Debug::class, name: "debug");
-        self::add("_/license", RouteType::PUBLIC, \crisp\routes\License::class, name: "license");
         self::add("_/proxy", RouteType::PUBLIC, \crisp\routes\Proxy::class, name: "proxy");
         self::add("_/version", RouteType::PUBLIC, \crisp\routes\Version::class, name: "version");
     }
