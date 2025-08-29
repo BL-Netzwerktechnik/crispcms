@@ -81,6 +81,9 @@ stable:
     - set -euo pipefail
     - VERSION="$(git describe --tags --dirty --always)-stable.${CI_JOB_ID}"
     - echo "Building Image for $VERSION"
+    - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
+    - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
+    - export TAG_PATCH=$(echo $CI_COMMIT_TAG | cut -d. -f3)
     - |
       docker buildx build \
         --file "${CI_PROJECT_DIR}/Dockerfile" \
@@ -107,6 +110,9 @@ release-candidate:
     - set -euo pipefail
     - VERSION="$(git describe --tags --dirty --always).${CI_JOB_ID}"
     - echo "Building Image for $VERSION"
+    - export TAG_MAJOR=$(echo $CI_COMMIT_TAG | cut -d. -f1)
+    - export TAG_MINOR=$(echo $CI_COMMIT_TAG | cut -d. -f2)
+    - export TAG_PATCH=$(echo $CI_COMMIT_TAG | cut -d. -f3)
     - |
       docker buildx build \
         --file "${CI_PROJECT_DIR}/Dockerfile" \
