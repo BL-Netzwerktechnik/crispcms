@@ -37,21 +37,10 @@ class Version
     {
         Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
 
-        $license = null;
-
-        if (\crisp\api\License::isLicenseAvailable()) {
-            $licobj = \crisp\api\License::fromDB();
-            $license = json_decode($licobj->encode(), true);
-
-            $license["valid"] = $licobj->isValid();
-            unset($license["instance"]);
-        }
-
         RESTfulAPI::response(Bitmask::REQUEST_SUCCESS->value, "This site is running CrispCMS!", [
             "release" => Build::getReleaseString(),
             "environment" => Build::getEnvironment(),
-            "build" => Build::getBuildType(),
-            "installed_license" => $license,
+            "build" => Build::getBuildType()
         ]);
 
         return;

@@ -36,9 +36,7 @@ use crisp\core\Themes;
 use crisp\core\Logger;
 use crisp\core\Router;
 use crisp\core\ThemeVariables;
-use crisp\Events\LicenseValidationEvent;
 use crisp\Events\ThemePageErrorEvent;
-use crisp\routes\License;
 use Dotenv\Dotenv;
 use Sentry\State\Scope;
 
