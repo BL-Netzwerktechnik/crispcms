@@ -45,7 +45,7 @@ RUN echo 'pm.max_children = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     docker-php-ext-install gd bcmath curl gettext sodium zip pdo pdo_pgsql intl && \
     docker-php-ext-enable gd bcmath curl gettext sodium zip pdo pdo_pgsql intl excimer && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
-    wget 'https://github.com/maxmind/geoipupdate/releases/download/v5.1.1/geoipupdate_5.1.1_linux_amd64.deb' -O /tmp/geoipupdate.deb && \
+    wget 'https://github.com/maxmind/geoipupdate/releases/download/v7.1.1/geoipupdate_7.1.1_linux_amd64.deb' -O /tmp/geoipupdate.deb && \
     dpkg -i /tmp/geoipupdate.deb && \
     apt-get autoremove -y && \
     apt-get clean && \
