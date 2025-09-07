@@ -32,12 +32,9 @@ VOLUME /data
 
 COPY . "$CRISP_WORKDIR"
 
+
 # Install Dependencies
-RUN echo 'pm.max_children = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'pm.start_servers = 50' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'pm.min_spare_servers = 50' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'pm.max_spare_servers = 150' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -o DPkg::Options::="--force-confold" --no-install-recommends -y git libfreetype6-dev libjpeg62-turbo-dev libpng-dev curl zip openssl libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev locales nginx nginx-extras wget sudo cowsay toilet cron && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
@@ -63,7 +60,7 @@ RUN echo 'pm.max_children = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     rm /etc/nginx/sites-enabled/default 
 
 
-COPY config/php.ini /usr/local/etc/php/conf.d/php_custom.ini
+COPY config/php.ini /usr/local/etc/php/conf.d/zz-docker.ini
 COPY config/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker /opt/entrypoint.d
 COPY config/crisp-cli.sh /usr/local/bin/crisp-cli
