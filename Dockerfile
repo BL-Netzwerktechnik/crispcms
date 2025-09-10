@@ -32,22 +32,16 @@ VOLUME /data
 
 COPY . "$CRISP_WORKDIR"
 
+ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+
 # Update and install base dependencies
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -o DPkg::Options::="--force-confold" --no-install-recommends -y \
-      git curl zip openssl locales nginx nginx-extras wget sudo cowsay toilet cron \
-      libfreetype6-dev libjpeg62-turbo-dev libpng-dev \
-      libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev && \
+    git curl zip openssl locales nginx nginx-extras wget sudo cowsay toilet cron && \
     rm -rf /var/lib/apt/lists/*
 
-# Configure and install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
-    pecl install excimer && \
-    docker-php-ext-install gd bcmath curl gettext sodium zip pdo pdo_pgsql intl && \
-    docker-php-ext-enable gd bcmath curl gettext sodium zip pdo pdo_pgsql intl excimer && \
-    rm -rf /tmp/pear
+RUN install-php-extensions gd bcmath curl gettext sodium zip pdo pdo_pgsql intl excimer 
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -56,13 +50,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN wget 'https://github.com/maxmind/geoipupdate/releases/download/v7.1.1/geoipupdate_7.1.1_linux_amd64.deb' -O /tmp/geoipupdate.deb && \
     dpkg -i /tmp/geoipupdate.deb && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives /tmp/*
-
-# Remove build dependencies to slim down the image
-RUN apt-get purge -y \
-      libfreetype6-dev libjpeg62-turbo-dev libpng-dev \
-      libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # Configure system and app
 RUN usermod -aG sudo www-data && \
