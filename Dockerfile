@@ -38,7 +38,7 @@ ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/relea
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -o DPkg::Options::="--force-confold" --no-install-recommends -y \
-    git curl zip openssl locales nginx nginx-extras wget sudo cowsay toilet cron && \
+    git curl zip openssl locales nginx nginx-extras wget sudo cowsay toilet cron zip unzip && \
     rm -rf /var/lib/apt/lists/*
 
 RUN install-php-extensions gd bcmath curl gettext sodium zip pdo pdo_pgsql intl excimer 
