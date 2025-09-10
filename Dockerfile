@@ -45,6 +45,7 @@ RUN apt-get update && \
     wget 'https://github.com/maxmind/geoipupdate/releases/download/v7.1.1/geoipupdate_7.1.1_linux_amd64.deb' -O /tmp/geoipupdate.deb && \
     dpkg -i /tmp/geoipupdate.deb && \
     apt-get autoremove -y && \
+    apt-get upgrade -y && \
     apt-get clean && \
     rm -rf /tmp/pear && \
     rm -rf /var/cache/apt/archives && \
