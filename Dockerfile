@@ -35,6 +35,7 @@ COPY . "$CRISP_WORKDIR"
 
 # Install Dependencies
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -o DPkg::Options::="--force-confold" --no-install-recommends -y git libfreetype6-dev libjpeg62-turbo-dev libpng-dev curl zip openssl libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev locales nginx nginx-extras wget sudo cowsay toilet cron && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
@@ -44,8 +45,7 @@ RUN apt-get update && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
     wget 'https://github.com/maxmind/geoipupdate/releases/download/v7.1.1/geoipupdate_7.1.1_linux_amd64.deb' -O /tmp/geoipupdate.deb && \
     dpkg -i /tmp/geoipupdate.deb && \
-    apt-get autoremove -y && \
-    apt-get upgrade -y && \
+    apt-get purge -y --auto-remove libfreetype6-dev libjpeg62-turbo-dev libpng-dev libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev && \
     apt-get clean && \
     rm -rf /tmp/pear && \
     rm -rf /var/cache/apt/archives && \
