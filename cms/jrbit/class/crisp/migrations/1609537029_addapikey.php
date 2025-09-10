@@ -34,18 +34,20 @@ class addapikey extends \crisp\core\Migrations
 {
     public function run()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         try {
             $this->begin();
             $this->createTable(
-                "APIKeys",
-                ["key", $this::DB_VARCHAR],
-                ["UserID", $this::DB_INTEGER],
-                ["last_changed", $this::DB_TIMESTAMP, "DEFAULT NULL"],
-                ["revoked", $this::DB_INTEGER, "NOT NULL DEFAULT 0"],
-                ["created_at", $this::DB_TIMESTAMP, "NOT NULL DEFAULT CURRENT_TIMESTAMP"]
+                'APIKeys',
+                ['key', $this::DB_VARCHAR],
+                ['UserID', $this::DB_INTEGER],
+                ['last_changed', $this::DB_TIMESTAMP, 'DEFAULT NULL'],
+                ['revoked', $this::DB_INTEGER, 'NOT NULL DEFAULT 0'],
+                ['created_at', $this::DB_TIMESTAMP, 'NOT NULL DEFAULT CURRENT_TIMESTAMP']
             );
-            $this->addIndex("APIKeys", "key", $this::DB_UNIQUEKEY, "apikey");
+            $this->addIndex('APIKeys', 'key', $this::DB_UNIQUEKEY, 'apikey');
 
             return $this->end();
         } catch (\Exception $ex) {

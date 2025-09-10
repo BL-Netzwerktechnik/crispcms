@@ -14,6 +14,9 @@ class CrispThemeCommand extends Command
 {
     protected function configure(): void
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $this
             ->setName('crisp:theme')
             ->setDescription('Theme management')
@@ -24,52 +27,54 @@ class CrispThemeCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $io = new SymfonyStyle($input, $output);
 
-        if ($input->getOption("install")) {
+        if ($input->getOption('install')) {
 
             if (Themes::isInstalled()) {
-                $io->warning("Theme is already installed");
+                $io->warning('Theme is already installed');
 
                 return Command::SUCCESS;
             }
             if (!Themes::isValid()) {
-                $io->error("Theme is not mounted. Check your Docker Configuration");
+                $io->error('Theme is not mounted. Check your Docker Configuration');
 
                 return Command::FAILURE;
             }
 
             Logger::startTiming($Timing);
             if (Themes::install()) {
-                $io->success("Theme successfully installed!");
+                $io->success('Theme successfully installed!');
             } else {
-                $io->error("Failed to install Theme!");
+                $io->error('Failed to install Theme!');
             }
-            Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+            Logger::getLogger(__METHOD__)->debug(sprintf('Operation took %sms to complete!', Logger::endTiming($Timing)));
 
             return Command::SUCCESS;
         } elseif ($input->getOption('uninstall')) {
 
             if (!Themes::isInstalled()) {
-                $io->error("Theme is not installed");
+                $io->error('Theme is not installed');
 
                 return false;
             }
             if (!Themes::isValid()) {
-                $io->error("Theme is not mounted. Check your Docker Configuration");
+                $io->error('Theme is not mounted. Check your Docker Configuration');
 
                 return false;
             }
 
             Logger::startTiming($Timing);
             if (Themes::uninstall()) {
-                $io->success("Theme successfully uninstalled!");
+                $io->success('Theme successfully uninstalled!');
             } else {
-                $io->error("Failed to uninstall Theme!");
+                $io->error('Failed to uninstall Theme!');
             }
-            Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+            Logger::getLogger(__METHOD__)->debug(sprintf('Operation took %sms to complete!', Logger::endTiming($Timing)));
 
             return Command::SUCCESS;
         }

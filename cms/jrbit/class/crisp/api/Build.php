@@ -25,7 +25,6 @@ namespace crisp\api;
 
 use crisp\core\Environment;
 use crisp\core\Logger;
-use crisp\core\Tracing;
 
 /**
  * Build related functions.
@@ -34,19 +33,27 @@ class Build
 {
     public static function getReleaseString(): string
     {
-        Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
-        return $_ENV["FRAMEWORK_VERSION"] ?? '0.0.0';
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+
+        return $_ENV['FRAMEWORK_VERSION'] ?? '0.0.0';
     }
 
     public static function requireLicenseServer(): bool
     {
-        Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return array_key_exists('LICENSE_SERVER', $_ENV) && $_ENV['LICENSE_SERVER'] !== '' ? true : false;
     }
+
     public static function getEnvironment(): Environment
     {
-        Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return match (strtolower($_SERVER['ENVIRONMENT'] ?? 'production')) {
             'staging' => Environment::STAGING,
@@ -57,9 +64,13 @@ class Build
 
     public static function getVersion(): string
     {
-        Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+
         return $_ENV['GIT_TAG'] ?? '0.0.0';
     }
+
     /**
      * Get current build type.
      *
@@ -67,7 +78,9 @@ class Build
      */
     public static function getBuildType(): string
     {
-        Logger::getLogger(__METHOD__)->debug('Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (str_contains(strtolower(self::getVersion()), 'rc.')) {
             $BuildType = 2;
         } elseif (self::getVersion() !== '0.0.0' && preg_match('/^\d+\.\d+\.\d+$/', self::getVersion())) {

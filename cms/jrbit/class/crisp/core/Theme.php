@@ -52,7 +52,9 @@ class Theme
      */
     public function __construct(string $CurrentFile, string $CurrentPage, bool $Internal = false)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $this->CurrentFile = $CurrentFile;
         $this->CurrentPage = $CurrentPage;
 
@@ -100,22 +102,22 @@ class Theme
                 throw new \Exception("Failed to load $CurrentPage, missing preRender!");
             }
 
-            Logger::getLogger(__METHOD__)->debug(sprintf("START executing preRender hooks for HookFile"));
+            Logger::getLogger(__METHOD__)->debug(sprintf('START executing preRender hooks for HookFile'));
             Logger::startTiming($HookClassRenderTime);
             $HookClass->preRender($CurrentPage, $CurrentFile);
-            Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing preRender hooks for HookFile - Took %s ms", Logger::endTiming($HookClassRenderTime)));
+            Logger::getLogger(__METHOD__)->debug(sprintf('DONE executing preRender hooks for HookFile - Took %s ms', Logger::endTiming($HookClassRenderTime)));
 
-            Logger::getLogger(__METHOD__)->debug(sprintf("START executing preRender hooks for %s", $CurrentPage));
+            Logger::getLogger(__METHOD__)->debug(sprintf('START executing preRender hooks for %s', $CurrentPage));
             Logger::startTiming($PageClassRenderTime);
             $PageClass->preRender();
-            Logger::getLogger(__METHOD__)->debug(sprintf("DONE executing preRender hooks for %s - Took %s ms", $CurrentPage, Logger::endTiming($PageClassRenderTime)));
+            Logger::getLogger(__METHOD__)->debug(sprintf('DONE executing preRender hooks for %s - Took %s ms', $CurrentPage, Logger::endTiming($PageClassRenderTime)));
             echo Themes::render("views/$CurrentPage.twig");
 
             if ($PageClass !== null && !method_exists($PageClass, 'postRender')) {
                 throw new \Exception("Failed to load $CurrentPage, missing postRender!");
             }
             if ($HookClass !== null && !method_exists($HookClass, 'postRender')) {
-                throw new \Exception("Failed to load HookFile, missing postRender!");
+                throw new \Exception('Failed to load HookFile, missing postRender!');
             }
             $HookClass->postRender($CurrentPage, $CurrentFile);
             $PageClass->postRender();

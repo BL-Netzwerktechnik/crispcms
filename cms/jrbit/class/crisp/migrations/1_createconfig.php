@@ -34,18 +34,20 @@ class createconfig extends \crisp\core\Migrations
 {
     public function run()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         try {
             $this->begin();
             $this->createTable(
-                "Config",
-                ["key", $this::DB_VARCHAR],
-                ["value", $this::DB_TEXT],
-                ["last_changed", $this::DB_TIMESTAMP, "DEFAULT NULL"],
-                ["type", $this::DB_VARCHAR, "NOT NULL DEFAULT 'string'"],
-                ["created_at", $this::DB_TIMESTAMP, "NOT NULL DEFAULT CURRENT_TIMESTAMP"]
+                'Config',
+                ['key', $this::DB_VARCHAR],
+                ['value', $this::DB_TEXT],
+                ['last_changed', $this::DB_TIMESTAMP, 'DEFAULT NULL'],
+                ['type', $this::DB_VARCHAR, "NOT NULL DEFAULT 'string'"],
+                ['created_at', $this::DB_TIMESTAMP, 'NOT NULL DEFAULT CURRENT_TIMESTAMP']
             );
-            $this->addIndex("Config", "key", $this::DB_PRIMARYKEY);
+            $this->addIndex('Config', 'key', $this::DB_PRIMARYKEY);
 
             return $this->end();
         } catch (\Exception $ex) {

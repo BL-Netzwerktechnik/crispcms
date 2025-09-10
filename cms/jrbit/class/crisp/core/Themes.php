@@ -44,10 +44,8 @@ use crisp\Controllers\EventController;
 use crisp\core\Environment as CoreEnvironment;
 use crisp\Events\ThemeEvents;
 use crisp\Events\ThemePageErrorEvent;
-use crisp\Events\ThemePageErrorEvents;
 use crisp\routes\Proxy;
 use Symfony\Contracts\EventDispatcher\Event;
-use TypeError;
 
 use function file_exists;
 use function file_get_contents;
@@ -70,7 +68,9 @@ class Themes
      */
     public static function loadAPI(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         try {
             new RESTfulAPI();
         } catch (\Exception $ex) {
@@ -81,43 +81,57 @@ class Themes
 
     public static function initRendererDirectories(): void
     {
-        if (isset($GLOBALS["Crisp_ThemeLoaderRendererDirectories"])) {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        if (isset($GLOBALS['Crisp_ThemeLoaderRendererDirectories'])) {
             return;
         }
 
-        $templatedirs = [self::getThemeDirectory() . "/templates"];
+        $templatedirs = [self::getThemeDirectory() . '/templates'];
 
-        if (!isset($_ENV["EXPERIMENTAL_DISABLE_BASE_THEME_RENDERER"])) {
+        if (!isset($_ENV['EXPERIMENTAL_DISABLE_BASE_THEME_RENDERER'])) {
             $templatedirs[] = self::getThemeDirectory();
         }
-        $GLOBALS["Crisp_ThemeLoaderRendererDirectories"] = $templatedirs;
+        $GLOBALS['Crisp_ThemeLoaderRendererDirectories'] = $templatedirs;
     }
 
     public static function addRendererDirectory(string $dir): void
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         self::initRendererDirectories();
-        $GLOBALS["Crisp_ThemeLoaderRendererDirectories"][] = $dir;
+        $GLOBALS['Crisp_ThemeLoaderRendererDirectories'][] = $dir;
     }
 
     public static function addRendererDirectories(array $dirs): void
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         self::initRendererDirectories();
-        $GLOBALS["Crisp_ThemeLoaderRendererDirectories"] = array_merge($GLOBALS["Crisp_ThemeLoaderRendererDirectories"], $dirs);
+        $GLOBALS['Crisp_ThemeLoaderRendererDirectories'] = array_merge($GLOBALS['Crisp_ThemeLoaderRendererDirectories'], $dirs);
     }
 
     public static function getRendererDirectories(): array
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         self::initRendererDirectories();
 
-        return $GLOBALS["Crisp_ThemeLoaderRendererDirectories"];
+        return $GLOBALS['Crisp_ThemeLoaderRendererDirectories'];
     }
 
-    public static function initRenderer(string|array $dir = null): Environment
+    public static function initRenderer(null|string|array $dir = null): Environment
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $templatedir = self::getRendererDirectories();
 
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         if ($dir !== null) {
             $templatedir = $dir;
         }
@@ -151,7 +165,7 @@ class Themes
         $TwigTheme->addFunction(new TwigFunction('prettyDump', [new Helper(), 'prettyDump']));
         $TwigTheme->addExtension(new StringLoaderExtension());
 
-        $TwigTheme->addGlobal('VERSION_STRING', "{{ ENVIRONMENT|upper }} | Theme@{{ ENV.THEME_GIT_COMMIT }} | CIP: {{ VM_IP }}@{{ CLUSTER }} | CV: {{ ENV.GIT_TAG }} | RID: {{ REQUEST_ID }}");
+        $TwigTheme->addGlobal('VERSION_STRING', '{{ ENVIRONMENT|upper }} | Theme@{{ ENV.THEME_GIT_COMMIT }} | CIP: {{ VM_IP }}@{{ CLUSTER }} | CV: {{ ENV.GIT_TAG }} | RID: {{ REQUEST_ID }}');
 
         $TwigTheme->addFunction(new TwigFunction('microtime', 'microtime'));
         $TwigTheme->addFunction(new TwigFunction('includeResource', [new Themes(), 'includeResource']));
@@ -188,28 +202,32 @@ class Themes
         $TwigTheme->addFilter(new TwigFilter('time', 'time'));
 
         if (!$dir) {
-            $GLOBALS["Crisp_ThemeLoader"] = $TwigTheme;
+            $GLOBALS['Crisp_ThemeLoader'] = $TwigTheme;
         } else {
-            $GLOBALS["Crisp_ThemeLoader_" . hash("sha512", serialize($dir))] = $TwigTheme;
+            $GLOBALS['Crisp_ThemeLoader_' . hash('sha512', serialize($dir))] = $TwigTheme;
         }
 
         return $TwigTheme;
     }
 
-    public static function getRenderer(string|array $dir = null): Environment
+    public static function getRenderer(null|string|array $dir = null): Environment
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if (!$dir) {
-            return $GLOBALS["Crisp_ThemeLoader"] ?? self::initRenderer();
+            return $GLOBALS['Crisp_ThemeLoader'] ?? self::initRenderer();
         } else {
-            return $GLOBALS["Crisp_ThemeLoader_" . hash("sha512", serialize($dir))] ?? self::initRenderer($dir);
+            return $GLOBALS['Crisp_ThemeLoader_' . hash('sha512', serialize($dir))] ?? self::initRenderer($dir);
         }
     }
 
-    public static function render(string $Template, string|array $dir = null): string
+    public static function render(string $Template, null|string|array $dir = null): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         Logger::startTiming($TemplateRender);
         Logger::getLogger(__METHOD__)->debug("START Rendering template $Template");
         $content = self::getRenderer($dir)->render($Template, ThemeVariables::getAll());
@@ -220,17 +238,21 @@ class Themes
 
     public static function getThemeDirectory(bool $relative = false): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($relative) {
-            return sprintf("/themes/%s", core::DEFAULT_THEME);
+            return sprintf('/themes/%s', core::DEFAULT_THEME);
         }
 
-        return realpath(sprintf(__DIR__ . "/../../../../themes/%s", core::DEFAULT_THEME));
+        return realpath(sprintf(__DIR__ . '/../../../../themes/%s', core::DEFAULT_THEME));
     }
 
-    public static function renderErrorPage(object $exception, int $code = 500, string $header = null, string $message = null): void
+    public static function renderErrorPage(object $exception, int $code = 500, ?string $header = null, ?string $message = null): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         http_response_code($code);
 
@@ -241,13 +263,13 @@ class Themes
         }
 
         if (IS_DEV_ENV) {
-            echo self::getRenderer("themes/basic/templates")->render("errors/error.debug.twig", [
-                "header" => $header,
-                "message" => $message ?? $refid,
-                "stacktrace" => $exception->__toString(),
-                "httpcode" => $code,
-                "sentry_id" => SentrySdk::getCurrentHub()->getLastEventId(),
-                "SENTRY_JS_DSN" => $_ENV["SENTRY_JS_DSN"],
+            echo self::getRenderer('themes/basic/templates')->render('errors/error.debug.twig', [
+                'header' => $header,
+                'message' => $message ?? $refid,
+                'stacktrace' => $exception->__toString(),
+                'httpcode' => $code,
+                'sentry_id' => SentrySdk::getCurrentHub()->getLastEventId(),
+                'SENTRY_JS_DSN' => $_ENV['SENTRY_JS_DSN'],
             ]);
 
             return;
@@ -258,10 +280,10 @@ class Themes
             exit;
         }
 
-        echo self::getRenderer("themes/basic/templates")->render("errors/error.public.twig", [
-            "ref_id" => $refid,
-            "sentry_id" => SentrySdk::getCurrentHub()->getLastEventId(),
-            "SENTRY_JS_DSN" => $_ENV["SENTRY_JS_DSN"],
+        echo self::getRenderer('themes/basic/templates')->render('errors/error.public.twig', [
+            'ref_id' => $refid,
+            'sentry_id' => SentrySdk::getCurrentHub()->getLastEventId(),
+            'SENTRY_JS_DSN' => $_ENV['SENTRY_JS_DSN'],
         ]);
 
         return;
@@ -275,10 +297,11 @@ class Themes
      */
     public static function loadTheme(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         try {
-
 
             HookFile::preRender();
             EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::PRE_RENDER);
@@ -290,7 +313,7 @@ class Themes
             EventController::getEventDispatcher()->dispatch(new Event(), ThemeEvents::POST_RENDER);
         } catch (HttpRouteNotFoundException $ex) {
 
-            $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent("Route not found"), ThemePageErrorEvent::ROUTE_NOT_FOUND);
+            $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent('Route not found'), ThemePageErrorEvent::ROUTE_NOT_FOUND);
 
             if ($Event->isPropagationStopped()) {
                 return;
@@ -298,19 +321,19 @@ class Themes
 
             http_response_code(404);
 
-            if (Helper::templateExists("errors/notfound.twig")) {
-                echo Themes::render("errors/notfound.twig");
+            if (Helper::templateExists('errors/notfound.twig')) {
+                echo Themes::render('errors/notfound.twig');
             } else {
                 if (IS_DEV_ENV) {
-                    self::renderErrorPage($ex, 404, null, "Route not found.");
+                    self::renderErrorPage($ex, 404, null, 'Route not found.');
                 } else {
-                    echo Themes::render("errors/notfound.twig", "themes/basic/templates");
+                    echo Themes::render('errors/notfound.twig', 'themes/basic/templates');
                 }
             }
 
             return;
         } catch (\Exception $ex) {
-            Logger::getLogger(__METHOD__)->critical("Exception when rendering Twig Template", (array) $ex);
+            Logger::getLogger(__METHOD__)->critical('Exception when rendering Twig Template', (array) $ex);
 
             $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent($ex->getMessage()), ThemePageErrorEvent::SERVER_ERROR);
 
@@ -330,26 +353,28 @@ class Themes
 
     public static function includeResource($File, int $cacheTTL = 60 * 60): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        if (str_starts_with($File, "//") || str_starts_with($File, "http://")  || str_starts_with($File, "https://")) {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        if (str_starts_with($File, '//') || str_starts_with($File, 'http://')  || str_starts_with($File, 'https://')) {
             if (!Proxy::isSafePublicUrl($File)) {
                 return $File;
             }
 
-            return sprintf("/_/proxy/?url=%s", $File, $cacheTTL);
+            return sprintf('/_/proxy/?url=%s', $File, $cacheTTL);
         }
 
-        if (str_starts_with($File, "/")) {
+        if (str_starts_with($File, '/')) {
             $File = substr($File, 1);
         }
 
         $baseDir = self::getThemeDirectory(true);
         $FilePath = self::getThemeDirectory() . "/$File";
 
-        if (isset($_ENV["ASSETS_S3_BUCKET"])) {
-            $baseDir = Helper::getS3Url($_ENV["ASSETS_S3_BUCKET"], $_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_URL"]);
-        } elseif (file_exists(self::getThemeDirectory() . "/assets")) {
-            $baseDir = "/assets";
+        if (isset($_ENV['ASSETS_S3_BUCKET'])) {
+            $baseDir = Helper::getS3Url($_ENV['ASSETS_S3_BUCKET'], $_ENV['ASSETS_S3_REGION'], $_ENV['ASSETS_S3_URL']);
+        } elseif (file_exists(self::getThemeDirectory() . '/assets')) {
+            $baseDir = '/assets';
             $FilePath = self::getThemeDirectory() . "/assets/$File";
         }
 
@@ -357,54 +382,58 @@ class Themes
             return "$baseDir/$File";
         }
 
-        $hash = hash_file("sha256", $FilePath);
+        $hash = hash_file('sha256', $FilePath);
 
         return "$baseDir/$File?$hash";
     }
 
     public static function getThemeMetadata(): \stdClass|null
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!self::isValid()) {
             return null;
         }
 
-        return json_decode(file_get_contents(Themes::getThemeDirectory() . "/theme.json"));
+        return json_decode(file_get_contents(Themes::getThemeDirectory() . '/theme.json'));
     }
 
     /**
      * @deprecated 19.5.0 will be removed in 20.0.0
      * @see \crisp\api\Translation::uninstallAllTranslations()
      *
-     * @return boolean
+     * @return bool
      */
     public static function uninstallTranslations(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!is_object(ThemeMetadata) && !isset(ThemeMetadata->hookFile)) {
             return false;
         }
-        if (defined("CRISP_CLI")) {
-            echo "----------" . PHP_EOL;
-            echo "Uninstalling translations" . PHP_EOL;
-            echo "----------" . PHP_EOL;
+        if (defined('CRISP_CLI')) {
+            echo '----------' . PHP_EOL;
+            echo 'Uninstalling translations' . PHP_EOL;
+            echo '----------' . PHP_EOL;
         }
         try {
             $Configs = Translation::listTranslations();
 
-            $Language = Languages::getLanguageByCode("de");
+            $Language = Languages::getLanguageByCode('de');
 
             foreach ($Configs as $Key => $Translation) {
-                if (str_contains($Translation["key"], "plugin_")) {
+                if (str_contains($Translation['key'], 'plugin_')) {
                     continue;
                 }
 
-                if (defined("CRISP_CLI")) {
-                    echo "Deleting key " . $Translation["key"] . PHP_EOL;
+                if (defined('CRISP_CLI')) {
+                    echo 'Deleting key ' . $Translation['key'] . PHP_EOL;
                 }
-                if ($Language->deleteTranslation($Translation["key"])) {
-                    if (defined("CRISP_CLI")) {
-                        echo "Deleted Key " . $Translation["key"] . PHP_EOL;
+                if ($Language->deleteTranslation($Translation['key'])) {
+                    if (defined('CRISP_CLI')) {
+                        echo 'Deleted Key ' . $Translation['key'] . PHP_EOL;
                     }
                 }
             }
@@ -416,7 +445,9 @@ class Themes
 
     public static function uninstallKVStorage(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!is_object(ThemeMetadata) && !isset(ThemeMetadata->hookFile)) {
             return false;
         }
@@ -435,9 +466,11 @@ class Themes
      */
     public static function isValid(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        return file_exists(Themes::getThemeDirectory() . "/theme.json");
+        return file_exists(Themes::getThemeDirectory() . '/theme.json');
     }
 
     /**
@@ -445,11 +478,13 @@ class Themes
      */
     public static function uninstall(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         self::clearCache();
 
-        Config::set("theme", null);
+        Config::set('theme', null);
 
         if (!is_object(ThemeMetadata) && !isset(ThemeMetadata->hookFile)) {
             return false;
@@ -466,14 +501,18 @@ class Themes
      */
     public static function clearCache(string $dir = core::CACHE_DIR): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return Cache::clear($dir);
     }
 
     private static function performOnUninstall()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (ThemeMetadata->onUninstall->deleteData) {
             self::deleteData();
         }
@@ -488,7 +527,9 @@ class Themes
      */
     public static function deleteData(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if (self::isInstalled()) {
             return self::uninstall();
@@ -506,7 +547,9 @@ class Themes
      */
     private static function performOnInstall(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!isset(ThemeMetadata->onInstall)) {
             return false;
         }
@@ -524,13 +567,15 @@ class Themes
      */
     public static function installKVStorage(bool $Overwrite = false): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if (!is_object(ThemeMetadata) && !isset(ThemeMetadata->hookFile)) {
             return false;
         }
         if (isset(ThemeMetadata->onInstall->createKVStorageItems) && is_object(ThemeMetadata->onInstall->createKVStorageItems)) {
-            Logger::getLogger(__METHOD__)->info("Installing KVStorage for Theme " . ThemeMetadata->name);
+            Logger::getLogger(__METHOD__)->info('Installing KVStorage for Theme ' . ThemeMetadata->name);
 
             foreach (ThemeMetadata->onInstall->createKVStorageItems as $Key => $Value) {
                 if (is_array($Value) || is_object($Value)) {
@@ -558,7 +603,9 @@ class Themes
 
     public static function loadBootFiles(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if (!is_object(ThemeMetadata) && !isset(ThemeMetadata->hookFile)) {
             return false;
@@ -585,7 +632,9 @@ class Themes
 
     public static function autoload(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if (!is_object(ThemeMetadata) && !isset(ThemeMetadata->hookFile)) {
             return false;
@@ -595,7 +644,7 @@ class Themes
             foreach (ThemeMetadata->autoload as $Directory) {
 
                 if (file_exists(Themes::getThemeDirectory() . "/$Directory/autoload.php")) {
-                    Logger::getLogger(__METHOD__)->debug("Autoloading Composer");
+                    Logger::getLogger(__METHOD__)->debug('Autoloading Composer');
                     require Themes::getThemeDirectory() . "/$Directory/autoload.php";
                     continue;
                 }
@@ -639,38 +688,44 @@ class Themes
      */
     public static function installTranslations(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!is_object(ThemeMetadata) && !isset(ThemeMetadata->hookFile)) {
             return false;
         }
 
-        Logger::getLogger(__METHOD__)->info("Installing translations for Theme " . ThemeMetadata->name);
+        Logger::getLogger(__METHOD__)->info('Installing translations for Theme ' . ThemeMetadata->name);
 
         if (isset(ThemeMetadata->onInstall->createTranslationKeys) && is_string(ThemeMetadata->onInstall->createTranslationKeys)) {
-            if (file_exists(Themes::getThemeDirectory() . "/" . ThemeMetadata->onInstall->createTranslationKeys)) {
-                foreach (glob(Themes::getThemeDirectory() . "/" . ThemeMetadata->onInstall->createTranslationKeys . "*.{json}", GLOB_BRACE) as $File) {
+            if (file_exists(Themes::getThemeDirectory() . '/' . ThemeMetadata->onInstall->createTranslationKeys)) {
+                foreach (glob(Themes::getThemeDirectory() . '/' . ThemeMetadata->onInstall->createTranslationKeys . '*.{json}', GLOB_BRACE) as $File) {
                     try {
-                        Logger::getLogger(__METHOD__)->info(sprintf("Installing language %s", substr(basename($File), 0, -5)));
+                        Logger::getLogger(__METHOD__)->info(sprintf('Installing language %s', substr(basename($File), 0, -5)));
                         Translation::installTranslations($File);
                     } catch (\Throwable $ex) {
-                        Logger::getLogger(__METHOD__)->error("Error installing translations", [$ex->getMessage()]);
+                        Logger::getLogger(__METHOD__)->error('Error installing translations', [$ex->getMessage()]);
                     }
                 }
             }
 
             return true;
         }
+
         return false;
     }
 
     public static function getReleaseString(): ?string
     {
-        if (isset($_ENV["THEME_GIT_TAG"]) && isset($_ENV["THEME_GIT_COMMIT"])) {
-            return sprintf("%s@%s", $_ENV["THEME_GIT_TAG"], $_ENV["THEME_GIT_COMMIT"]);
-        } elseif (isset($_ENV["THEME_GIT_COMMIT"])) {
-            return $_ENV["THEME_GIT_COMMIT"];
-        } elseif (isset($_ENV["THEME_GIT_TAG"])) {
-            return $_ENV["THEME_GIT_TAG"];
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        if (isset($_ENV['THEME_GIT_TAG']) && isset($_ENV['THEME_GIT_COMMIT'])) {
+            return sprintf('%s@%s', $_ENV['THEME_GIT_TAG'], $_ENV['THEME_GIT_COMMIT']);
+        } elseif (isset($_ENV['THEME_GIT_COMMIT'])) {
+            return $_ENV['THEME_GIT_COMMIT'];
+        } elseif (isset($_ENV['THEME_GIT_TAG'])) {
+            return $_ENV['THEME_GIT_TAG'];
         }
 
         return null;
@@ -683,9 +738,11 @@ class Themes
      */
     public static function isInstalled(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        return Config::get("theme") === core::DEFAULT_THEME;
+        return Config::get('theme') === core::DEFAULT_THEME;
     }
 
     /**
@@ -694,13 +751,15 @@ class Themes
      */
     public static function install(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        if (Config::get("theme") !== false && Config::get("theme") === core::DEFAULT_THEME) {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        if (Config::get('theme') !== false && Config::get('theme') === core::DEFAULT_THEME) {
             return false;
         }
 
         if (!self::isValid()) {
-            Logger::getLogger(__METHOD__)->error("No theme.json found!");
+            Logger::getLogger(__METHOD__)->error('No theme.json found!');
 
             return false;
         }
@@ -708,11 +767,11 @@ class Themes
         self::performOnInstall();
 
         if (!is_object(ThemeMetadata) && !isset(ThemeMetadata->hookFile)) {
-            Logger::getLogger(__METHOD__)->error("No hookFile Property in theme.json found!");
+            Logger::getLogger(__METHOD__)->error('No hookFile Property in theme.json found!');
 
             return false;
         }
 
-        return Config::set("theme", "crisptheme");
+        return Config::set('theme', 'crisptheme');
     }
 }

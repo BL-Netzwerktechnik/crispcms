@@ -39,7 +39,9 @@ class Language extends Languages
 
     public function __construct($LanguageID)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $DB = new Postgres();
         $this->Database_Connection = $DB->getDBConnector();
         if (is_numeric($LanguageID)) {
@@ -56,13 +58,15 @@ class Language extends Languages
      */
     public function fetch(): ?array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("SELECT * FROM Languages WHERE ID = :ID");
-        $statement->execute([":ID" => $this->LanguageID]);
+        $statement = $this->Database_Connection->prepare('SELECT * FROM Languages WHERE ID = :ID');
+        $statement->execute([':ID' => $this->LanguageID]);
 
         return $statement->fetch(\PDO::FETCH_ASSOC);
     }
@@ -76,14 +80,16 @@ class Language extends Languages
      */
     public function enable(): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("UPDATE Languages SET Enabled = 1 WHERE ID = :ID");
+        $statement = $this->Database_Connection->prepare('UPDATE Languages SET Enabled = 1 WHERE ID = :ID');
 
-        return $statement->execute([":ID" => $this->LanguageID]);
+        return $statement->execute([':ID' => $this->LanguageID]);
     }
 
     /**
@@ -95,14 +101,16 @@ class Language extends Languages
      */
     public function disable(): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("UPDATE Languages SET Enabled = 0 WHERE ID = :ID");
+        $statement = $this->Database_Connection->prepare('UPDATE Languages SET Enabled = 0 WHERE ID = :ID');
 
-        return $statement->execute([":ID" => $this->LanguageID]);
+        return $statement->execute([':ID' => $this->LanguageID]);
     }
 
     /**
@@ -112,15 +120,17 @@ class Language extends Languages
      */
     public function isEnabled(): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("SELECT Enabled FROM Languages WHERE ID = :ID");
-        $statement->execute([":ID" => $this->LanguageID]);
+        $statement = $this->Database_Connection->prepare('SELECT Enabled FROM Languages WHERE ID = :ID');
+        $statement->execute([':ID' => $this->LanguageID]);
 
-        return $statement->fetch(\PDO::FETCH_ASSOC)["enabled"];
+        return $statement->fetch(\PDO::FETCH_ASSOC)['enabled'];
     }
 
     /**
@@ -130,13 +140,15 @@ class Language extends Languages
      */
     public function exists(): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("SELECT ID FROM Languages WHERE ID = :ID");
-        $statement->execute([":ID" => $this->LanguageID]);
+        $statement = $this->Database_Connection->prepare('SELECT ID FROM Languages WHERE ID = :ID');
+        $statement->execute([':ID' => $this->LanguageID]);
 
         return $statement->rowCount() != 0;
     }
@@ -149,14 +161,16 @@ class Language extends Languages
      */
     public function setName(string $Name): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("UPDATE Languages SET Name = :Name WHERE ID = :ID");
+        $statement = $this->Database_Connection->prepare('UPDATE Languages SET Name = :Name WHERE ID = :ID');
 
-        return $statement->execute([":Name" => $Name, ":ID" => $this->LanguageID]);
+        return $statement->execute([':Name' => $Name, ':ID' => $this->LanguageID]);
     }
 
     /**
@@ -166,15 +180,17 @@ class Language extends Languages
      */
     public function getName(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("SELECT Name FROM Languages WHERE ID = :ID");
-        $statement->execute([":ID" => $this->LanguageID]);
+        $statement = $this->Database_Connection->prepare('SELECT Name FROM Languages WHERE ID = :ID');
+        $statement->execute([':ID' => $this->LanguageID]);
 
-        return $statement->fetch(\PDO::FETCH_ASSOC)["name"];
+        return $statement->fetch(\PDO::FETCH_ASSOC)['name'];
     }
 
     /**
@@ -185,14 +201,16 @@ class Language extends Languages
      */
     public function setCode(string $Code): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("UPDATE Languages SET Code = :Code WHERE ID = :ID");
+        $statement = $this->Database_Connection->prepare('UPDATE Languages SET Code = :Code WHERE ID = :ID');
 
-        return $statement->execute([":Code" => $Code, ":ID" => $this->LanguageID]);
+        return $statement->execute([':Code' => $Code, ':ID' => $this->LanguageID]);
     }
 
     /**
@@ -202,15 +220,17 @@ class Language extends Languages
      */
     public function getCode(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("SELECT Code FROM Languages WHERE ID = :ID");
-        $statement->execute([":ID" => $this->LanguageID]);
+        $statement = $this->Database_Connection->prepare('SELECT Code FROM Languages WHERE ID = :ID');
+        $statement->execute([':ID' => $this->LanguageID]);
 
-        return $statement->fetch(\PDO::FETCH_ASSOC)["code"];
+        return $statement->fetch(\PDO::FETCH_ASSOC)['code'];
     }
 
     /**
@@ -221,14 +241,16 @@ class Language extends Languages
      */
     public function setNativeName(string $NativeName): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("UPDATE Languages SET NativeName = :NativeName WHERE ID = :ID");
+        $statement = $this->Database_Connection->prepare('UPDATE Languages SET NativeName = :NativeName WHERE ID = :ID');
 
-        return $statement->execute([":NativeName" => $NativeName, ":ID" => $this->LanguageID]);
+        return $statement->execute([':NativeName' => $NativeName, ':ID' => $this->LanguageID]);
     }
 
     /**
@@ -238,15 +260,17 @@ class Language extends Languages
      */
     public function getNativeName(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("SELECT NativeName FROM Languages WHERE ID = :ID");
-        $statement->execute([":ID" => $this->LanguageID]);
+        $statement = $this->Database_Connection->prepare('SELECT NativeName FROM Languages WHERE ID = :ID');
+        $statement->execute([':ID' => $this->LanguageID]);
 
-        return $statement->fetch(\PDO::FETCH_ASSOC)["nativename"];
+        return $statement->fetch(\PDO::FETCH_ASSOC)['nativename'];
     }
 
     /**
@@ -257,14 +281,16 @@ class Language extends Languages
      */
     public function deleteTranslation(string $Key): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("DELETE FROM Translations WHERE key = :key");
+        $statement = $this->Database_Connection->prepare('DELETE FROM Translations WHERE key = :key');
 
-        return $statement->execute([":key" => $Key]);
+        return $statement->execute([':key' => $Key]);
     }
 
     /**
@@ -276,7 +302,9 @@ class Language extends Languages
      */
     public function editTranslation(string $Key, string $Value): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
@@ -284,7 +312,7 @@ class Language extends Languages
         $Code = $this->getCode();
         $statement = $this->Database_Connection->prepare("UPDATE Translations SET $Code = :value WHERE key = :key");
 
-        return $statement->execute([":key" => $Key, ":value" => $Value]);
+        return $statement->execute([':key' => $Key, ':value' => $Value]);
     }
 
     /**
@@ -295,9 +323,11 @@ class Language extends Languages
      * @param  string    $Language
      * @return bool|null
      */
-    public function newTranslation(string $Key, string $Value, string $Language = "de"): ?bool
+    public function newTranslation(string $Key, string $Value, string $Language = 'de'): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
@@ -313,7 +343,7 @@ class Language extends Languages
         $Code = $this->getCode();
         $statement = $this->Database_Connection->prepare("INSERT INTO Translations (key, $Code) VALUES (:key, :value)");
 
-        return $statement->execute([":key" => $Key, ":value" => $Value]);
+        return $statement->execute([':key' => $Key, ':value' => $Value]);
     }
 
     /**
@@ -324,14 +354,16 @@ class Language extends Languages
      */
     public function setFlag(string $Flag): ?bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("UPDATE Languages SET flag = :Flag WHERE ID = :ID");
+        $statement = $this->Database_Connection->prepare('UPDATE Languages SET flag = :Flag WHERE ID = :ID');
 
-        return $statement->execute([":Flag" => $Flag, ":ID" => $this->LanguageID]);
+        return $statement->execute([':Flag' => $Flag, ':ID' => $this->LanguageID]);
     }
 
     /**
@@ -341,14 +373,16 @@ class Language extends Languages
      */
     public function getFlag(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($this->LanguageID === null) {
             return null;
         }
 
-        $statement = $this->Database_Connection->prepare("SELECT Flag FROM Languages WHERE ID = :ID");
-        $statement->execute([":ID" => $this->LanguageID]);
+        $statement = $this->Database_Connection->prepare('SELECT Flag FROM Languages WHERE ID = :ID');
+        $statement->execute([':ID' => $this->LanguageID]);
 
-        return $statement->fetch(\PDO::FETCH_ASSOC)["flag"];
+        return $statement->fetch(\PDO::FETCH_ASSOC)['flag'];
     }
 }

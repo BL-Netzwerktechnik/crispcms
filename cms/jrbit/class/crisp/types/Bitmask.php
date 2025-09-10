@@ -29,12 +29,14 @@ abstract class Bitmask extends Enum
 {
     public static function hasBitmask(int $BitwisePermissions, int $PermissionFlag = 0x00000000)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!is_numeric($BitwisePermissions)) {
-            throw new \TypeError("Parameter BitwisePermissions is not a hexadecimal or number.");
+            throw new \TypeError('Parameter BitwisePermissions is not a hexadecimal or number.');
         }
         if (!is_numeric($PermissionFlag)) {
-            throw new \TypeError("Parameter PermissionFlag is not a hexadecimal or number.");
+            throw new \TypeError('Parameter PermissionFlag is not a hexadecimal or number.');
         }
 
         if ($PermissionFlag === 0x00000000) {
@@ -46,7 +48,9 @@ abstract class Bitmask extends Enum
 
     public static function getConstants()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $oClass = new \ReflectionClass(static::class);
 
         return $oClass->getConstants();
@@ -54,12 +58,14 @@ abstract class Bitmask extends Enum
 
     public static function getBitmask(int $BitwisePermissions, bool $IndexArray = false)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!is_numeric($BitwisePermissions)) {
-            throw new \TypeError("Parameter BitwisePermissions is not a hexadecimal or number.");
+            throw new \TypeError('Parameter BitwisePermissions is not a hexadecimal or number.');
         }
         if ($BitwisePermissions === 0x00000000) {
-            throw new \TypeError("Parameter BitwisePermissions is zero.");
+            throw new \TypeError('Parameter BitwisePermissions is zero.');
         }
 
         $MatchedBits = [];

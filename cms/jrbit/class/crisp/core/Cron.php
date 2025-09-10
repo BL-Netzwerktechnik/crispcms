@@ -23,35 +23,42 @@
 
 namespace crisp\core;
 
-use crisp\cron\License as CronLicense;
 use GO\Scheduler;
 
 class Cron
 {
     public static function get(): Scheduler
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        return $GLOBALS["Crisp_Cron"];
+        return $GLOBALS['Crisp_Cron'];
     }
 
-    public static function registerJob(string $tab, mixed $class = null, string $callable = null)
+    public static function registerJob(string $tab, mixed $class = null, ?string $callable = null)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        self::get()->call([$class, $callable])->at($tab)->output("/var/log/crisp/scheduler.log", true);
+        self::get()->call([$class, $callable])->at($tab)->output('/var/log/crisp/scheduler.log', true);
     }
 
-    public static function registerJobRaw(string $tab, string $command = null)
+    public static function registerJobRaw(string $tab, ?string $command = null)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        self::get()->raw($command)->at($tab)->output("/var/log/crisp/scheduler.log", true);
+        self::get()->raw($command)->at($tab)->output('/var/log/crisp/scheduler.log', true);
     }
 
     public static function register(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $GLOBALS["Crisp_Cron"] = new Scheduler();
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        $GLOBALS['Crisp_Cron'] = new Scheduler();
     }
 }

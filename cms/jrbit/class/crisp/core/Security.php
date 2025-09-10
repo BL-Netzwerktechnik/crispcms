@@ -33,12 +33,14 @@ class Security
      */
     public static function getCSRF(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        if (!isset($_SESSION["csrf"])) {
-            $_SESSION["csrf"] = bin2hex(openssl_random_pseudo_bytes(16));
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        if (!isset($_SESSION['csrf'])) {
+            $_SESSION['csrf'] = bin2hex(openssl_random_pseudo_bytes(16));
         }
 
-        return $_SESSION["csrf"];
+        return $_SESSION['csrf'];
     }
 
     /**
@@ -47,9 +49,11 @@ class Security
      */
     public static function matchCSRF(string $Token): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        return $_SESSION["csrf"] && $Token;
+        return $_SESSION['csrf'] && $Token;
     }
 
     /**
@@ -57,9 +61,11 @@ class Security
      */
     public static function regenCSRF(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $_SESSION["csrf"] = bin2hex(openssl_random_pseudo_bytes(16));
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        $_SESSION['csrf'] = bin2hex(openssl_random_pseudo_bytes(16));
 
-        return $_SESSION["csrf"];
+        return $_SESSION['csrf'];
     }
 }

@@ -35,19 +35,29 @@ use Monolog\Handler\StreamHandler;
  */
 class Logger
 {
-    public static function overrideLogLevel(string $logLevel = "INFO"): void
+
+    public const LOG_LEVEL_TRACE = Level::Debug;
+
+    public static function isTraceEnabled(): bool
     {
-        $_ENV["LOG_LEVEL"] = $logLevel;
+        return $_ENV['TRACER'] === 'true';
+    }
+
+    public static function overrideLogLevel(string $logLevel = 'INFO'): void
+    {
+        $_ENV['LOG_LEVEL'] = $logLevel;
     }
 
     public static function getLogLevel(): string
     {
-        return $_ENV["LOG_LEVEL"] ?? "INFO";
+        return $_ENV['LOG_LEVEL'] ?? 'INFO';
     }
 
     public static function startTiming(float &$output = null): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $output = microtime(true);
     }
 
@@ -62,7 +72,7 @@ class Logger
         $logger->pushHandler(new StreamHandler('/var/log/crisp/crisp.log', Level::fromName(self::getLogLevel())));
 
         if (Level::fromName(self::getLogLevel()) > Level::Debug) {
-            $logger->pushHandler(new RotatingFileHandler(core::LOG_DIR . sprintf("/%s.log", self::getLogLevel()), 7, Level::fromName(self::getLogLevel())));
+            $logger->pushHandler(new RotatingFileHandler(core::LOG_DIR . sprintf('/%s.log', self::getLogLevel()), 7, Level::fromName(self::getLogLevel())));
         }
 
         return $logger;
@@ -70,10 +80,12 @@ class Logger
 
     public static function endTiming(float &$start): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $ms = (float) (microtime(true) - $start);
         unset($start);
 
-        return sprintf("%.3f", $ms * 1000);
+        return sprintf('%.3f', $ms * 1000);
     }
 }

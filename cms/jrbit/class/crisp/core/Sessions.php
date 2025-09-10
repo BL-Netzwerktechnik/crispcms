@@ -31,9 +31,11 @@ class Sessions
 
     public static ?\PDO $Postgres_Database_Connection = null;
 
-    public static function createSession($ID, $Identifier = "login"): bool|array
+    public static function createSession($ID, $Identifier = 'login'): bool|array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $DB = new Postgres();
         $DBConnection = $DB->getDBConnector();
 
@@ -44,16 +46,16 @@ class Sessions
         $Token = Crypto::UUIDv4();
 
         $statement = $DBConnection->prepare('INSERT INTO sessions (token, "user", identifier, oidc_token) VALUES (:Token, :User, :Identifier, :oidc)');
-        $result = $statement->execute([":User" => $ID, ":Token" => $Token, ":Identifier" => $Identifier, ":oidc" => 'None']);
+        $result = $statement->execute([':User' => $ID, ':Token' => $Token, ':Identifier' => $Identifier, ':oidc' => 'None']);
 
         if (!$result) {
             return false;
         }
 
         $Session = [
-            "identifier" => $Identifier,
-            "token" => $Token,
-            "user" => $ID,
+            'identifier' => $Identifier,
+            'token' => $Token,
+            'user' => $ID,
         ];
 
         $_SESSION[Config::$Cookie_Prefix . "session_$Identifier"] = $Session;
@@ -70,9 +72,11 @@ class Sessions
      *
      * @return bool TRUE if the session has been successfully destroyed otherwise FALSE
      */
-    public static function destroyCurrentSession($ID, $Identifier = "login")
+    public static function destroyCurrentSession($ID, $Identifier = 'login')
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if (!isset($_SESSION[Config::$Cookie_Prefix . "session_$Identifier"])) {
             return false;
@@ -82,7 +86,7 @@ class Sessions
         $DBConnection = $DB->getDBConnector();
 
         $statement = $DBConnection->prepare('DELETE FROM sessions WHERE token = :Token AND "user" = :User');
-        $Action = $statement->execute([":User" => $ID, ":Token" => $_SESSION[Config::$Cookie_Prefix . "session_$Identifier"]["token"]]);
+        $Action = $statement->execute([':User' => $ID, ':Token' => $_SESSION[Config::$Cookie_Prefix . "session_$Identifier"]['token']]);
 
         unset($_SESSION[Config::$Cookie_Prefix . "session_$Identifier"]);
 
@@ -98,9 +102,11 @@ class Sessions
      *
      * @return bool TRUE if session is valid, otherwise FALSE
      */
-    public static function isSessionValid($Identifier = "login")
+    public static function isSessionValid($Identifier = 'login')
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $DB = new Postgres();
 

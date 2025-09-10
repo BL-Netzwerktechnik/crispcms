@@ -34,19 +34,21 @@ class createcrashes extends \crisp\core\Migrations
 {
     public function run()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         try {
             $this->begin();
 
             $this->createTable(
-                "Crashes",
-                ["ReferenceID", $this::DB_VARCHAR, "NOT NULL"],
-                ["HttpStatusCode", $this::DB_INTEGER, "NOT NULL DEFAULT 500"],
-                ["Traceback", $this::DB_TEXT, "DEFAULT NULL"],
-                ["Summary", $this::DB_TEXT, "DEFAULT NULL"],
-                ["CreatedAt", $this::DB_TIMESTAMP, "NOT NULL DEFAULT CURRENT_TIMESTAMP"]
+                'Crashes',
+                ['ReferenceID', $this::DB_VARCHAR, 'NOT NULL'],
+                ['HttpStatusCode', $this::DB_INTEGER, 'NOT NULL DEFAULT 500'],
+                ['Traceback', $this::DB_TEXT, 'DEFAULT NULL'],
+                ['Summary', $this::DB_TEXT, 'DEFAULT NULL'],
+                ['CreatedAt', $this::DB_TIMESTAMP, 'NOT NULL DEFAULT CURRENT_TIMESTAMP']
             );
-            $this->addIndex("Crashes", "ReferenceID", $this::DB_PRIMARYKEY);
+            $this->addIndex('Crashes', 'ReferenceID', $this::DB_PRIMARYKEY);
 
             return $this->end();
         } catch (\Exception $ex) {

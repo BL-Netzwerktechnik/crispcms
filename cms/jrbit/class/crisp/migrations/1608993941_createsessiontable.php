@@ -29,20 +29,22 @@ class createsessiontable extends \crisp\core\Migrations
 {
     public function run()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         try {
             $this->begin();
             $this->createTable(
-                "sessions",
-                ["id", $this::DB_INTEGER, "NOT NULL SERIAL"],
-                ["token", $this::DB_VARCHAR, "NOT NULL"],
-                ['"user"', $this::DB_VARCHAR, "NOT NULL"],
-                ["Createdat", $this::DB_TIMESTAMP, "NOT NULL DEFAULT CURRENT_TIMESTAMP"],
-                ["identifier", $this::DB_VARCHAR, "NOT NULL DEFAULT 'login'"],
-                ["oidc_token", $this::DB_VARCHAR, "NOT NULL"]
+                'sessions',
+                ['id', $this::DB_INTEGER, 'NOT NULL SERIAL'],
+                ['token', $this::DB_VARCHAR, 'NOT NULL'],
+                ['"user"', $this::DB_VARCHAR, 'NOT NULL'],
+                ['Createdat', $this::DB_TIMESTAMP, 'NOT NULL DEFAULT CURRENT_TIMESTAMP'],
+                ['identifier', $this::DB_VARCHAR, "NOT NULL DEFAULT 'login'"],
+                ['oidc_token', $this::DB_VARCHAR, 'NOT NULL']
             );
-            $this->addIndex("sessions", "token", $this::DB_PRIMARYKEY);
+            $this->addIndex('sessions', 'token', $this::DB_PRIMARYKEY);
 
             return $this->end();
         } catch (\Exception $ex) {

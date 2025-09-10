@@ -52,27 +52,11 @@ class Config
      */
     private static function initDB(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Initialize Database');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
-
         $DB = new Postgres();
         self::$Database_Connection = $DB->getDBConnector();
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
     }
 
     /**
@@ -83,34 +67,18 @@ class Config
      */
     public static function exists(string|int $Key): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Checking if Config Key Exists');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-        Logger::getLogger(__METHOD__)->debug("Config::exists: SELECT value FROM Config WHERE key = :ID");
-        $statement = self::$Database_Connection->prepare("SELECT value FROM Config WHERE key = :ID");
-        $statement->execute([":ID" => $Key]);
+        Logger::getLogger(__METHOD__)->debug('Config::exists: SELECT value FROM Config WHERE key = :ID');
+        $statement = self::$Database_Connection->prepare('SELECT value FROM Config WHERE key = :ID');
+        $statement->execute([':ID' => $Key]);
 
-        $returnResult = $statement->rowCount() > 0;
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        return $statement->rowCount() > 0;
     }
 
     /**
@@ -122,20 +90,8 @@ class Config
      */
     public static function get(string $Key, bool $noCache = false): mixed
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-
-        $returnResult = false;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Getting Config Key');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
         if (self::$Database_Connection === null) {
@@ -151,55 +107,33 @@ class Config
 
         Logger::getLogger(__METHOD__)->debug("Config::get: SELECT value, type FROM Config WHERE key = $Key");
 
-        $statement = self::$Database_Connection->prepare("SELECT value, type FROM Config WHERE key = :ID");
-        $statement->execute([":ID" => $Key]);
+        $statement = self::$Database_Connection->prepare('SELECT value, type FROM Config WHERE key = :ID');
+        $statement->execute([':ID' => $Key]);
         if ($statement->rowCount() > 0) {
 
             $Result = $statement->fetch(\PDO::FETCH_ASSOC);
 
             Cache::write("Config::get::$Key", json_encode($Result), time() + self::$TTL);
 
-            $returnResult = self::evaluateRow($Result);
+            return self::evaluateRow($Result);
         }
 
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        return false;
     }
 
     private static function evaluateRow($Result)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Evaluating Config Key');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
-        $returnResult = match ($Result["type"]) {
-            'serialized' => unserialize($Result["value"]),
-            'boolean' => (bool) $Result["value"],
-            'integer' => (int) $Result["value"],
-            'double' => (float) $Result["value"],
-            default => $Result["value"],
+        return match ($Result['type']) {
+            'serialized' => unserialize($Result['value']),
+            'boolean' => (bool) $Result['value'],
+            'integer' => (int) $Result['value'],
+            'double' => (float) $Result['value'],
+            default => $Result['value'],
         };
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
     }
 
     /**
@@ -210,39 +144,22 @@ class Config
      */
     public static function getTimestamp(string $Key): bool|array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $returnResult = false;
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Getting Config Key Timestamp');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
         if (self::$Database_Connection === null) {
             self::initDB();
         }
         Logger::getLogger(__METHOD__)->debug("Config::getTimestamp: SELECT last_changed, created_at FROM Config WHERE key = $Key");
-        $statement = self::$Database_Connection->prepare("SELECT last_changed, created_at FROM Config WHERE key = :ID");
-        $statement->execute([":ID" => $Key]);
+        $statement = self::$Database_Connection->prepare('SELECT last_changed, created_at FROM Config WHERE key = :ID');
+        $statement->execute([':ID' => $Key]);
         if ($statement->rowCount() > 0) {
 
-            $returnResult = $statement->fetch(\PDO::FETCH_ASSOC);
+            return $statement->fetch(\PDO::FETCH_ASSOC);
         }
 
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        return false;
     }
 
     /**
@@ -254,19 +171,8 @@ class Config
      */
     public static function create(string $Key, mixed $Value): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = false;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Creating Config Key');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
         if (self::$Database_Connection === null) {
@@ -277,15 +183,10 @@ class Config
         } else {
             Logger::getLogger(__METHOD__)->debug("Config::create: INSERT INTO Config (key) VALUES ($Key)");
 
-            $statement = self::$Database_Connection->prepare("INSERT INTO Config (key) VALUES (:Key)");
-            $statement->execute([":Key" => $Key]);
+            $statement = self::$Database_Connection->prepare('INSERT INTO Config (key) VALUES (:Key)');
+            $statement->execute([':Key' => $Key]);
 
             $returnResult = self::set($Key, $Value);
-        }
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
 
         self::deleteCache($Key);
@@ -301,61 +202,27 @@ class Config
      */
     public static function delete(string $Key): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = false;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Creating Config Key');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
         if (self::$Database_Connection === null) {
             self::initDB();
         }
         Logger::getLogger(__METHOD__)->debug("Config::delete: DELETE FROM Config WHERE key = $Key");
-        $statement = self::$Database_Connection->prepare("DELETE FROM Config WHERE key = :Key");
+        $statement = self::$Database_Connection->prepare('DELETE FROM Config WHERE key = :Key');
         self::deleteCache($Key);
 
-        $returnResult = $statement->execute([":Key" => $Key]);
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        return $statement->execute([':Key' => $Key]);
     }
 
     public static function deleteCache(string $Key): bool
     {
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = false;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Deleting Cache for Config Key');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-        }
-        $returnResult = Cache::delete("Config::get::$Key");
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
-        return $returnResult;
+        return Cache::delete("Config::get::$Key");
     }
 
     /**
@@ -367,19 +234,8 @@ class Config
      */
     public static function set(string $Key, mixed $Value): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = false;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Setting Config Key');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
         if (self::$Database_Connection === null) {
@@ -391,28 +247,21 @@ class Config
         }
 
         $Type = match (true) {
-            is_null($Value) => "NULL",
-            Helper::isSerialized($Value), (is_array($Value) || is_object($Value)) => "serialized",
+            is_null($Value) => 'NULL',
+            Helper::isSerialized($Value), (is_array($Value) || is_object($Value)) => 'serialized',
             default => gettype($Value)
         };
 
-        if ($Type == "boolean") {
+        if ($Type == 'boolean') {
             $Value = ($Value ? 1 : 0);
         }
 
         self::deleteCache($Key);
         Logger::getLogger(__METHOD__)->debug("Config::set: UPDATE Config SET value = $Value, type = $Type WHERE key = $Key");
-        $statement = self::$Database_Connection->prepare("UPDATE Config SET value = :val, type = :type WHERE key = :key");
-        $statement->execute([":val" => $Value, ":key" => $Key, ":type" => $Type]);
+        $statement = self::$Database_Connection->prepare('UPDATE Config SET value = :val, type = :type WHERE key = :key');
+        $statement->execute([':val' => $Value, ':key' => $Key, ':type' => $Type]);
 
-        $returnResult = $statement->rowCount() > 0;
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        return $statement->rowCount() > 0;
     }
 
     /**
@@ -423,44 +272,28 @@ class Config
      */
     public static function list(bool $KV = false): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = false;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Setting Config Key');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
         if (self::$Database_Connection === null) {
             self::initDB();
         }
 
-        Logger::getLogger(__METHOD__)->debug("Config::list: SELECT key, value FROM Config");
-        $statement = self::$Database_Connection->prepare("SELECT key, value FROM Config");
+        Logger::getLogger(__METHOD__)->debug('Config::list: SELECT key, value FROM Config');
+        $statement = self::$Database_Connection->prepare('SELECT key, value FROM Config');
         $statement->execute();
 
         if (!$KV) {
             $Array = [];
 
             foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $Item) {
-                $Array[$Item["key"]] = self::get($Item["key"]);
+                $Array[$Item['key']] = self::get($Item['key']);
             }
 
             $returnResult = $Array;
         } else {
             $returnResult = $statement->fetchAll(\PDO::FETCH_ASSOC);
-        }
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
         }
 
         return $returnResult;

@@ -14,6 +14,9 @@ class CrispAssetsDeployToS3Command extends Command
 {
     protected function configure(): void
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $this
             ->setName('crisp:assets:deploy-to-s3')
             ->setDescription('Deploy assets to configured s3 server');
@@ -21,42 +24,44 @@ class CrispAssetsDeployToS3Command extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        if (!isset($_ENV["ASSETS_S3_BUCKET"], $_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_BUCKET"], $_ENV["ASSETS_S3_ACCESS_KEY"], $_ENV["ASSETS_S3_SECRET_KEY"])) {
-            $output->writeln("Missing one of the following environment variables to deploy to s3: ASSETS_S3_BUCKET, ASSETS_S3_REGION, ASSETS_S3_BUCKET, ASSETS_S3_ACCESS_KEY, ASSETS_S3_SECRET_KEY");
+        if (!isset($_ENV['ASSETS_S3_BUCKET'], $_ENV['ASSETS_S3_REGION'], $_ENV['ASSETS_S3_BUCKET'], $_ENV['ASSETS_S3_ACCESS_KEY'], $_ENV['ASSETS_S3_SECRET_KEY'])) {
+            $output->writeln('Missing one of the following environment variables to deploy to s3: ASSETS_S3_BUCKET, ASSETS_S3_REGION, ASSETS_S3_BUCKET, ASSETS_S3_ACCESS_KEY, ASSETS_S3_SECRET_KEY');
 
             return Command::FAILURE;
         }
 
         $conn = [
             'version' => 'latest',
-            'region'  => $_ENV["ASSETS_S3_REGION"],
+            'region'  => $_ENV['ASSETS_S3_REGION'],
         ];
 
-        if (isset($_ENV["ASSETS_S3_HOST"])) {
-            $conn["endpoint"] = $_ENV["ASSETS_S3_HOST"];
+        if (isset($_ENV['ASSETS_S3_HOST'])) {
+            $conn['endpoint'] = $_ENV['ASSETS_S3_HOST'];
         }
-        if (isset($_ENV["ASSETS_S3_ACCESS_KEY"],  $_ENV["ASSETS_S3_SECRET_KEY"])) {
-            $conn["credentials"] = [
-                'key'    => $_ENV["ASSETS_S3_ACCESS_KEY"],
-                'secret' => $_ENV["ASSETS_S3_SECRET_KEY"],
+        if (isset($_ENV['ASSETS_S3_ACCESS_KEY'],  $_ENV['ASSETS_S3_SECRET_KEY'])) {
+            $conn['credentials'] = [
+                'key'    => $_ENV['ASSETS_S3_ACCESS_KEY'],
+                'secret' => $_ENV['ASSETS_S3_SECRET_KEY'],
             ];
         }
-        $constructedurl = Helper::getS3Url($_ENV["ASSETS_S3_BUCKET"], $_ENV["ASSETS_S3_REGION"], $_ENV["ASSETS_S3_URL"]);
+        $constructedurl = Helper::getS3Url($_ENV['ASSETS_S3_BUCKET'], $_ENV['ASSETS_S3_REGION'], $_ENV['ASSETS_S3_URL']);
 
         $s3 = new S3Client($conn);
 
-        foreach (Helper::getDirRecursive(Themes::getThemeDirectory() . "/assets") as $file) {
+        foreach (Helper::getDirRecursive(Themes::getThemeDirectory() . '/assets') as $file) {
             $newFileName = substr($file, strlen(Themes::getThemeDirectory()));
 
             $s3->deleteObject([
-                'Bucket' => $_ENV["ASSETS_S3_BUCKET"],
+                'Bucket' => $_ENV['ASSETS_S3_BUCKET'],
                 'Key'    => $newFileName,
             ]);
 
             $insert = $s3->putObject([
-                'Bucket' => $_ENV["ASSETS_S3_BUCKET"],
+                'Bucket' => $_ENV['ASSETS_S3_BUCKET'],
                 'Key'    => $newFileName,
                 'SourceFile'   => $file,
                 'ContentType' => Helper::detectMimetype($file),

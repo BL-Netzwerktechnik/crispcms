@@ -34,49 +34,61 @@ class Router
 {
     public static function addFun(string $route, RouteType $routeType, mixed $function, string $method = Route::ANY): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $collector = self::get($routeType)->addRoute($method, $route, $function);
-        $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
+        $GLOBALS['Crisp_Router_' . $routeType->value] = $collector;
     }
 
-    public static function add(string $route, RouteType $routeType, mixed $class, string $callable = null, string $name = null, string $method = Route::ANY): void
+    public static function add(string $route, RouteType $routeType, mixed $class, ?string $callable = null, ?string $name = null, string $method = Route::ANY): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        $callable = $callable ?? ($routeType == RouteType::PUBLIC ? "preRender" : "execute");
+        $callable = $callable ?? ($routeType == RouteType::PUBLIC ? 'preRender' : 'execute');
 
         $collector = self::get($routeType)->addRoute($method, [$route, $name ?? $class], [$class, $callable]);
-        $GLOBALS["Crisp_Router_" . $routeType->value] = $collector;
+        $GLOBALS['Crisp_Router_' . $routeType->value] = $collector;
     }
 
     public static function reverse(string $name, RouteType $routeType, array $params = []): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return self::get($routeType)->route($name, $params);
     }
 
     public static function registerInteralRoutes(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        self::add("_/debug", RouteType::PUBLIC, \crisp\routes\Debug::class, name: "debug");
-        self::add("_/proxy", RouteType::PUBLIC, \crisp\routes\Proxy::class, name: "proxy");
-        self::add("_/version", RouteType::PUBLIC, \crisp\routes\Version::class, name: "version");
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        self::add('_/debug', RouteType::PUBLIC, \crisp\routes\Debug::class, name: 'debug');
+        self::add('_/proxy', RouteType::PUBLIC, \crisp\routes\Proxy::class, name: 'proxy');
+        self::add('_/version', RouteType::PUBLIC, \crisp\routes\Version::class, name: 'version');
     }
 
     public static function get(RouteType $routeType): RouteCollector
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        return $GLOBALS["Crisp_Router_" . $routeType->value];
+        return $GLOBALS['Crisp_Router_' . $routeType->value];
     }
 
     public static function register(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         foreach (RouteType::cases() as $RouteType) {
-            $GLOBALS["Crisp_Router_" . $RouteType->value] = new RouteCollector();
+            $GLOBALS['Crisp_Router_' . $RouteType->value] = new RouteCollector();
         }
 
         self::registerInteralRoutes();

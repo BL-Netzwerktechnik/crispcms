@@ -25,7 +25,6 @@ namespace crisp\api;
 
 use crisp\core;
 use crisp\core\Logger;
-use crisp\core\Tracing;
 
 /**
  * Interact with the cache.
@@ -40,17 +39,11 @@ class Cache
      */
     public static function getCrispCacheDir(string $Key): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        $context = new \Sentry\Tracing\SpanContext();
-        $context->setOp(__METHOD__);
-        $context->setDescription('Get Cache Directory');
-
-        return Tracing::traceFunction($context, function () use ($Key) {
-
-            return sprintf("%s/crisp/%s", core::CACHE_DIR, self::calculateCacheDir(self::getHash($Key)));
-
-        });
+        return sprintf('%s/crisp/%s', core::CACHE_DIR, self::calculateCacheDir(self::getHash($Key)));
     }
 
     /**
@@ -61,17 +54,12 @@ class Cache
      */
     public static function getCrispCacheFile(string $Key): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        $context = new \Sentry\Tracing\SpanContext();
-        $context->setOp(__METHOD__);
-        $context->setDescription('Get Cache Directory');
+        return sprintf('%s/%s.cache', self::getCrispCacheDir($Key), self::getHash($Key));
 
-        return Tracing::traceFunction($context, function () use ($Key) {
-
-            return sprintf("%s/%s.cache", self::getCrispCacheDir($Key), self::getHash($Key));
-
-        });
     }
 
     /**
@@ -83,29 +71,11 @@ class Cache
      */
     private static function calculateSingleLevel(string $name, int $level): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Get Cache File');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
-        $returnResult = $name[$level - 1];
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        return $name[$level - 1];
     }
 
     /**
@@ -116,30 +86,17 @@ class Cache
      */
     private static function calculateCacheDir(string $name): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Get Cache File');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
-        $returnResult = sprintf(
-            "%s/%s/%s/%s",
+        return sprintf(
+            '%s/%s/%s/%s',
             self::calculateSingleLevel($name, 1),
             self::calculateSingleLevel($name, 2),
             self::calculateSingleLevel($name, 3),
             self::calculateSingleLevel($name, 4)
         );
-
-        return $returnResult;
     }
 
     /**
@@ -150,30 +107,11 @@ class Cache
      */
     public static function getExpiryDate(string $key): int|false
     {
-
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Get Cache File');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
-        $returnResult = !self::isCached($key) ? false : json_decode(file_get_contents(self::getCrispCacheFile($key)))->expires;
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        return !self::isCached($key) ? false : json_decode(file_get_contents(self::getCrispCacheFile($key)))->expires;
     }
 
     /**
@@ -184,31 +122,13 @@ class Cache
      */
     private static function isCached(string $key): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-        $span = null;
-        $returnResult = null;
-
-        if ($parent) {
-            $context = new \Sentry\Tracing\SpanContext();
-            $context->setOp(__METHOD__);
-            $context->setDescription('Get Cache File');
-            $span = $parent->startChild($context);
-
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
 
-        Logger::getLogger(__METHOD__)->debug(sprintf("Checking cache %s (%s)", self::getCrispCacheFile($key), $key));
+        Logger::getLogger(__METHOD__)->debug(sprintf('Checking cache %s (%s)', self::getCrispCacheFile($key), $key));
 
-        $returnResult = file_exists(self::getCrispCacheFile($key));
-
-        if ($span) {
-            $span->finish();
-            \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-        }
-
-        return $returnResult;
+        return file_exists(self::getCrispCacheFile($key));
 
     }
 
@@ -220,22 +140,24 @@ class Cache
      */
     private static function createDir(string $key): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        Logger::getLogger(__METHOD__)->debug(sprintf("START Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        Logger::getLogger(__METHOD__)->debug(sprintf('START Creating cache directories %s (%s)', self::getCrispCacheDir($key), $key));
         $created = mkdir(self::getCrispCacheDir($key), recursive: true);
 
         if ($created) {
-            Logger::getLogger(__METHOD__)->debug(sprintf("DONE Creating cache directories %s (%s)", self::getCrispCacheDir($key), $key));
+            Logger::getLogger(__METHOD__)->debug(sprintf('DONE Creating cache directories %s (%s)', self::getCrispCacheDir($key), $key));
 
             return true;
         }
         if (is_writable(self::getCrispCacheDir($key)) && file_exists(self::getCrispCacheDir($key))) {
-            Logger::getLogger(__METHOD__)->debug(sprintf("SKIPPED Creating cache directories %s (%s): File already exists", self::getCrispCacheDir($key), $key));
+            Logger::getLogger(__METHOD__)->debug(sprintf('SKIPPED Creating cache directories %s (%s): File already exists', self::getCrispCacheDir($key), $key));
 
             return true;
         }
 
-        Logger::getLogger(__METHOD__)->error(sprintf('FAIL Creating cache directories %s (%s) - MSG: "%s", IS_WRITEABLE: "%b"', self::getCrispCacheDir($key), $key, error_get_last()["message"], is_writable(self::getCrispCacheDir($key))));
+        Logger::getLogger(__METHOD__)->error(sprintf('FAIL Creating cache directories %s (%s) - MSG: "%s", IS_WRITEABLE: "%b"', self::getCrispCacheDir($key), $key, error_get_last()['message'], is_writable(self::getCrispCacheDir($key))));
 
         return false;
     }
@@ -248,9 +170,11 @@ class Cache
      */
     public static function getHash(string $data): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        return hash("sha512", $data);
+        return hash('sha512', $data);
     }
 
     /**
@@ -261,9 +185,11 @@ class Cache
      */
     private static function generateFile(int $expires, string $data)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        return json_encode(["expires" => $expires, "data" => base64_encode($data)]);
+        return json_encode(['expires' => $expires, 'data' => base64_encode($data)]);
     }
 
     /**
@@ -276,26 +202,28 @@ class Cache
      */
     public static function write(string $key, string $data, int $expires): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         self::createDir($key);
 
-        Logger::getLogger(__METHOD__)->debug("START Writing Cache " . self::getCrispCacheFile($key));
+        Logger::getLogger(__METHOD__)->debug('START Writing Cache ' . self::getCrispCacheFile($key));
         $bytes = file_put_contents(self::getCrispCacheFile($key), self::generateFile($expires, $data));
 
         if ($bytes !== false) {
-            Logger::getLogger(__METHOD__)->debug("DONE Writing Cache " . self::getCrispCacheFile($key));
+            Logger::getLogger(__METHOD__)->debug('DONE Writing Cache ' . self::getCrispCacheFile($key));
 
             return true;
         }
 
         if (is_writable(self::getCrispCacheFile($key))) {
-            Logger::getLogger(__METHOD__)->debug(sprintf("SKIPPED Writing Cache %s (Already exists!)", self::getCrispCacheFile($key)));
+            Logger::getLogger(__METHOD__)->debug(sprintf('SKIPPED Writing Cache %s (Already exists!)', self::getCrispCacheFile($key)));
 
             return true;
         }
 
-        Logger::getLogger(__METHOD__)->error("FAIL Writing Cache ", ["cacheFile" =>self::getCrispCacheFile($key)]);
+        Logger::getLogger(__METHOD__)->error('FAIL Writing Cache ', ['cacheFile' =>self::getCrispCacheFile($key)]);
 
         return false;
     }
@@ -308,7 +236,9 @@ class Cache
      */
     public static function isExpired(string $key): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $CacheFile = self::getCrispCacheFile($key);
         if (!self::isCached($key)) {
@@ -337,7 +267,9 @@ class Cache
      */
     public static function clear(string $dir = core::CACHE_DIR): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if (!file_exists($dir)) {
             mkdir($dir);
@@ -351,30 +283,30 @@ class Cache
             \RecursiveIteratorIterator::CHILD_FIRST
         );
         foreach ($files as $file) {
-            Logger::getLogger(__METHOD__)->debug("Deleting " . $file->getRealPath());
+            Logger::getLogger(__METHOD__)->debug('Deleting ' . $file->getRealPath());
             if ($file->isDir()) {
-                Logger::getLogger(__METHOD__)->debug("Deleting Directory " . $file->getRealPath());
+                Logger::getLogger(__METHOD__)->debug('Deleting Directory ' . $file->getRealPath());
                 if (rmdir($file->getRealPath())) {
-                    Logger::getLogger(__METHOD__)->debug("Deleted Directory " . $file->getRealPath());
+                    Logger::getLogger(__METHOD__)->debug('Deleted Directory ' . $file->getRealPath());
                 } elseif (is_writable($file->getRealPath())) {
-                    Logger::getLogger(__METHOD__)->debug("Directory " . $file->getRealPath() . " is writable but not deleted");
+                    Logger::getLogger(__METHOD__)->debug('Directory ' . $file->getRealPath() . ' is writable but not deleted');
                 } else {
-                    Logger::getLogger(__METHOD__)->error("Failed to delete Directory " . $file->getRealPath() . " - MSG: " . error_get_last()["message"]);
+                    Logger::getLogger(__METHOD__)->error('Failed to delete Directory ' . $file->getRealPath() . ' - MSG: ' . error_get_last()['message']);
                 }
             } else {
-                Logger::getLogger(__METHOD__)->debug("Deleting File " . $file->getRealPath());
+                Logger::getLogger(__METHOD__)->debug('Deleting File ' . $file->getRealPath());
                 if (unlink($file->getRealPath())) {
-                    Logger::getLogger(__METHOD__)->debug("Deleted File " . $file->getRealPath());
+                    Logger::getLogger(__METHOD__)->debug('Deleted File ' . $file->getRealPath());
                 } elseif (is_writable($file->getRealPath())) {
-                    Logger::getLogger(__METHOD__)->debug("File " . $file->getRealPath() . " is writable but not deleted");
+                    Logger::getLogger(__METHOD__)->debug('File ' . $file->getRealPath() . ' is writable but not deleted');
                 } else {
-                    Logger::getLogger(__METHOD__)->error("Failed to delete File " . $file->getRealPath() . " - MSG: " . error_get_last()["message"]);
+                    Logger::getLogger(__METHOD__)->error('Failed to delete File ' . $file->getRealPath() . ' - MSG: ' . error_get_last()['message']);
                 }
             }
         }
 
-        if ($dir !== "/tmp/symfony-cache") {
-            return self::clear("/tmp/symfony-cache");
+        if ($dir !== '/tmp/symfony-cache') {
+            return self::clear('/tmp/symfony-cache');
         }
 
         return true;
@@ -388,7 +320,9 @@ class Cache
      */
     public static function delete(string $key): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!Cache::isCached($key)) {
             return false;
         }
@@ -404,7 +338,9 @@ class Cache
      */
     public static function get(string $key): string|false
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!Cache::isCached($key)) {
             return false;
         }

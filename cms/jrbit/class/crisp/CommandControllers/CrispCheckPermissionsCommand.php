@@ -12,6 +12,9 @@ class CrispCheckPermissionsCommand extends Command
 {
     protected function configure(): void
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $this
             ->setName('crisp:check-permissions')
             ->setDescription('Check filesystem permissions');
@@ -20,31 +23,33 @@ class CrispCheckPermissionsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $formatter = $this->getHelper('formatter');
 
         $exitCode = Command::SUCCESS;
 
         if (!is_writable(core::PERSISTENT_DATA)) {
-            $output->writeln(sprintf("Directory %s is not writable!", core::PERSISTENT_DATA));
+            $output->writeln(sprintf('Directory %s is not writable!', core::PERSISTENT_DATA));
             $exitCode = Command::FAILURE;
         } else {
-            $output->writeln(sprintf("Directory %s is writable!", core::PERSISTENT_DATA));
+            $output->writeln(sprintf('Directory %s is writable!', core::PERSISTENT_DATA));
         }
 
-        if (!is_writable(core::PERSISTENT_DATA . "/.instance_id")) {
+        if (!is_writable(core::PERSISTENT_DATA . '/.instance_id')) {
             $exitCode = Command::FAILURE;
-            $output->writeln(sprintf("File %s is not writable!", core::PERSISTENT_DATA . "/.instance_id"));
+            $output->writeln(sprintf('File %s is not writable!', core::PERSISTENT_DATA . '/.instance_id'));
         } else {
-            $output->writeln(sprintf("File %s is writable!", core::PERSISTENT_DATA . "/.instance_id"));
+            $output->writeln(sprintf('File %s is writable!', core::PERSISTENT_DATA . '/.instance_id'));
         }
 
         if (!is_writable(core::CACHE_DIR)) {
             $exitCode = Command::FAILURE;
-            $output->writeln(sprintf("Directory %s is not writable!", core::CACHE_DIR));
+            $output->writeln(sprintf('Directory %s is not writable!', core::CACHE_DIR));
         } else {
-            $output->writeln(sprintf("Directory %s is writable!", core::CACHE_DIR));
+            $output->writeln(sprintf('Directory %s is writable!', core::CACHE_DIR));
         }
 
         return $exitCode;

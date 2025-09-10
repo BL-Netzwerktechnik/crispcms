@@ -43,7 +43,9 @@ class Postgres
      */
     public function __construct($EnvKey = 'POSTGRES_URI')
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if ($GLOBALS["DBConn_$EnvKey"] !== null) {
             $this->Database_Connection = $GLOBALS["DBConn_$EnvKey"];
@@ -54,15 +56,15 @@ class Postgres
             }
 
             try {
-                $pdo = new \PDO("pgsql:" . sprintf(
-                    "host=%s;port=%s;user=%s;password=%s;dbname=%s",
-                    $db["host"],
-                    $db["port"],
-                    $db["user"],
-                    $db["pass"],
-                    ltrim($db["path"], "/")
+                $pdo = new \PDO('pgsql:' . sprintf(
+                    'host=%s;port=%s;user=%s;password=%s;dbname=%s',
+                    $db['host'],
+                    $db['port'],
+                    $db['user'],
+                    $db['pass'],
+                    ltrim($db['path'], '/')
                 ));
-                Logger::getLogger(__METHOD__)->debug("Created new PDO Session");
+                Logger::getLogger(__METHOD__)->debug('Created new PDO Session');
                 $this->Database_Connection = $pdo;
                 $GLOBALS["DBConn_$EnvKey"] = $pdo;
             } catch (\Exception $ex) {
@@ -78,7 +80,9 @@ class Postgres
      */
     public function getDBConnector(): \PDO
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return $this->Database_Connection;
     }

@@ -16,6 +16,9 @@ class CrispThemeStorageCommand extends Command
 {
     protected function configure(): void
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $this
             ->setName('crisp:theme:storage')
             ->setDescription('Theme KV Storage interactions')
@@ -31,52 +34,54 @@ class CrispThemeStorageCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $io = new SymfonyStyle($input, $output);
 
-        if ($input->getOption("install")) {
+        if ($input->getOption('install')) {
 
             if (!Themes::isInstalled()) {
-                $io->error("Theme is not installed");
+                $io->error('Theme is not installed');
 
                 return Command::FAILURE;
             }
             if (!Themes::isValid()) {
-                $io->error("Theme is not mounted. Check your Docker Configuration");
+                $io->error('Theme is not mounted. Check your Docker Configuration');
 
                 return Command::FAILURE;
             }
 
             Logger::startTiming($Timing);
-            if (Themes::installKVStorage((bool) $input->getOption("force"))) {
-                $io->success("KVStorage successfully installed!");
+            if (Themes::installKVStorage((bool) $input->getOption('force'))) {
+                $io->success('KVStorage successfully installed!');
             } else {
-                $io->error("Failed to install KVStorage!");
+                $io->error('Failed to install KVStorage!');
             }
-            Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+            Logger::getLogger(__METHOD__)->debug(sprintf('Operation took %sms to complete!', Logger::endTiming($Timing)));
 
             return Command::SUCCESS;
         } elseif ($input->getOption('uninstall')) {
 
             if (!Themes::isInstalled()) {
-                $io->error("Theme is not installed");
+                $io->error('Theme is not installed');
 
                 return false;
             }
             if (!Themes::isValid()) {
-                $io->error("Theme is not mounted. Check your Docker Configuration");
+                $io->error('Theme is not mounted. Check your Docker Configuration');
 
                 return false;
             }
 
             Logger::startTiming($Timing);
             if (Themes::uninstallKVStorage()) {
-                $io->success("KVStorage successfully uninstalled!");
+                $io->success('KVStorage successfully uninstalled!');
             } else {
-                $io->error("Failed to uninstall KVStorage!");
+                $io->error('Failed to uninstall KVStorage!');
             }
-            Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+            Logger::getLogger(__METHOD__)->debug(sprintf('Operation took %sms to complete!', Logger::endTiming($Timing)));
 
             return Command::SUCCESS;
         } elseif ($input->getOption('key')) {
@@ -120,7 +125,7 @@ class CrispThemeStorageCommand extends Command
 
         foreach (Config::list(true) as $item) {
 
-            $value = $item["value"];
+            $value = $item['value'];
 
             if (is_array($value)) {
                 $value = '(array)';
@@ -131,17 +136,17 @@ class CrispThemeStorageCommand extends Command
             }
 
             if (is_bool($value)) {
-                $value = sprintf("%s (boolean)", $value);
+                $value = sprintf('%s (boolean)', $value);
             }
 
             if (is_null($value)) {
                 $value = 'NULL';
             }
 
-            $items[] = [$item["key"], $value];
+            $items[] = [$item['key'], $value];
         }
         $io->table(
-            ["Key", "Value"],
+            ['Key', 'Value'],
             $items
         );
 

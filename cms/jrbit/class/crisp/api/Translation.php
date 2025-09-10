@@ -48,7 +48,9 @@ class Translation
      */
     public function __construct(?string $Language)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         self::$Language = $Language;
     }
 
@@ -61,7 +63,9 @@ class Translation
      */
     public static function listLanguages(bool $FetchIntoClass = true): array|Language
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $Languages = new Languages();
 
         return $Languages::fetchLanguages($FetchIntoClass);
@@ -74,11 +78,13 @@ class Translation
      */
     public static function listTranslations(): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-        $statement = self::$Database_Connection->query("SELECT * FROM Translations");
+        $statement = self::$Database_Connection->query('SELECT * FROM Translations');
         if ($statement->rowCount() > 0) {
             return $statement->fetchAll(\PDO::FETCH_ASSOC);
         }
@@ -86,31 +92,30 @@ class Translation
         return [];
     }
 
-
-
     public static function uninstallAllTranslations(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         try {
             $Translations = Translation::listTranslations();
 
-            $Language = Languages::getLanguageByCode("de");
+            $Language = Languages::getLanguageByCode('de');
 
             foreach ($Translations as $Key => $Translation) {
 
-                Logger::getLogger(__METHOD__)->debug("Deleting translation key " . $Translation["key"]);
-                if ($Language->deleteTranslation($Translation["key"])) {
-                    Logger::getLogger(__METHOD__)->debug("Deleted translation key " . $Translation["key"]);
+                Logger::getLogger(__METHOD__)->debug('Deleting translation key ' . $Translation['key']);
+                if ($Language->deleteTranslation($Translation['key'])) {
+                    Logger::getLogger(__METHOD__)->debug('Deleted translation key ' . $Translation['key']);
                 }
             }
         } catch (\PDOException $ex) {
-            Logger::getLogger(__METHOD__)->error("Error uninstalling translations", (array)$ex);
+            Logger::getLogger(__METHOD__)->error('Error uninstalling translations', (array) $ex);
         }
 
         return true;
     }
-
 
     /**
      * @param string $ThemeName
@@ -119,32 +124,35 @@ class Translation
      */
     public static function uninstallTranslations(string $LanguageFile): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!file_exists($LanguageFile)) {
             Logger::getLogger(__METHOD__)->error("Language file $LanguageFile not found!");
+
             return;
         }
 
         $Language = Languages::getLanguageByCode(substr(basename($LanguageFile), 0, -5));
 
         if (!$Language) {
-            Logger::getLogger(__METHOD__)->error(sprintf("%s not found!", substr(basename($LanguageFile), 0, -5)));
+            Logger::getLogger(__METHOD__)->error(sprintf('%s not found!', substr(basename($LanguageFile), 0, -5)));
+
             return;
         }
         foreach (json_decode(file_get_contents($LanguageFile), true, 512, JSON_THROW_ON_ERROR) as $Key => $Value) {
             try {
 
                 if ($Language->deleteTranslation($Key)) {
-                    Logger::getLogger(__METHOD__)->debug(sprintf("Uninstalled translation key %s", $Key));
+                    Logger::getLogger(__METHOD__)->debug(sprintf('Uninstalled translation key %s', $Key));
                 } else {
-                    Logger::getLogger(__METHOD__)->warning(sprintf("Did not Uninstall translation key %s", $Key));
+                    Logger::getLogger(__METHOD__)->warning(sprintf('Did not Uninstall translation key %s', $Key));
                 }
             } catch (\PDOException $ex) {
                 Logger::getLogger(__METHOD__)->error($ex);
             }
         }
     }
-
 
     /**
      * @param string $ThemeName
@@ -153,19 +161,22 @@ class Translation
      */
     public static function installTranslations(string $LanguageFile): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (!file_exists($LanguageFile)) {
             Logger::getLogger(__METHOD__)->error("Language file $LanguageFile not found!");
+
             return;
         }
-
 
         $_processed = [];
 
         $Language = Languages::getLanguageByCode(substr(basename($LanguageFile), 0, -5));
 
         if (!$Language) {
-            Logger::getLogger(__METHOD__)->error(sprintf("%s not found!", substr(basename($LanguageFile), 0, -5)));
+            Logger::getLogger(__METHOD__)->error(sprintf('%s not found!', substr(basename($LanguageFile), 0, -5)));
+
             return;
         }
         foreach (json_decode(file_get_contents($LanguageFile), true, 512, JSON_THROW_ON_ERROR) as $Key => $Value) {
@@ -173,18 +184,18 @@ class Translation
 
                 if ($Language->newTranslation($Key, $Value, substr(basename($LanguageFile), 0, -5))) {
                     $_processed[] = $Key;
-                    Logger::getLogger(__METHOD__)->debug(sprintf("Installed translation key %s", $Key));
-                } elseif (defined("CRISP_CLI")) {
-                    Logger::getLogger(__METHOD__)->warning(sprintf("Did not Install translation key %s", $Key));
+                    Logger::getLogger(__METHOD__)->debug(sprintf('Installed translation key %s', $Key));
+                } elseif (defined('CRISP_CLI')) {
+                    Logger::getLogger(__METHOD__)->warning(sprintf('Did not Install translation key %s', $Key));
                 }
             } catch (\PDOException $ex) {
-                if (defined("CRISP_CLI")) {
+                if (defined('CRISP_CLI')) {
                     Logger::getLogger(__METHOD__)->error($ex);
                 }
             }
         }
 
-        Logger::getLogger(__METHOD__)->notice(sprintf("Successfully Updated %s translation keys", count($_processed)));
+        Logger::getLogger(__METHOD__)->notice(sprintf('Successfully Updated %s translation keys', count($_processed)));
     }
 
     /**
@@ -192,7 +203,9 @@ class Translation
      */
     private static function initDB()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $DB = new Postgres();
         self::$Database_Connection = $DB->getDBConnector();
     }
@@ -205,11 +218,13 @@ class Translation
      */
     public static function fetchAll(): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-        $statement = self::$Database_Connection->query("SELECT * FROM Translations");
+        $statement = self::$Database_Connection->query('SELECT * FROM Translations');
         if ($statement->rowCount() > 0) {
 
             $Translations = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -219,7 +234,7 @@ class Translation
             foreach (Languages::fetchLanguages() as $Language) {
                 $Array[$Language->getCode()] = [];
                 foreach ($Translations as $Item) {
-                    $Array[$Language->getCode()][$Item["key"]] = $Item[$Language->getCode()];
+                    $Array[$Language->getCode()][$Item['key']] = $Item[$Language->getCode()];
                 }
             }
 
@@ -237,24 +252,26 @@ class Translation
      */
     public static function fetchAllByKey(string $Key): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-        $statement = self::$Database_Connection->query("SELECT * FROM Translations");
+        $statement = self::$Database_Connection->query('SELECT * FROM Translations');
         if ($statement->rowCount() > 0) {
 
             $Translations = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
             $Array = [];
             foreach ($Translations as $Item) {
-                if (str_contains($Item["key"], "plugin.")) {
+                if (str_contains($Item['key'], 'plugin.')) {
                     continue;
                 }
                 if ($Item[$Key] === null) {
                     continue;
                 }
-                $Array[$Key][$Item["key"]] = $Item[$Key];
+                $Array[$Key][$Item['key']] = $Item[$Key];
             }
 
             return $Array[$Key];
@@ -271,12 +288,14 @@ class Translation
      */
     public static function exists(string $Key): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-        $statement = self::$Database_Connection->prepare("SELECT * FROM Translations WHERE key = :key");
-        $statement->execute([":key" => $Key]);
+        $statement = self::$Database_Connection->prepare('SELECT * FROM Translations WHERE key = :key');
+        $statement->execute([':key' => $Key]);
 
         return $statement->rowCount() > 0;
     }
@@ -291,13 +310,15 @@ class Translation
      */
     public static function fetch(string $Key, int $Count = 1, array $UserOptions = []): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if (!isset(self::$Language)) {
             self::$Language = Helper::getLocale();
         }
 
-        $UserOptions["{{ count }}"] = $Count;
+        $UserOptions['{{ count }}'] = $Count;
 
         return nl2br(ngettext(self::get($Key, $UserOptions), self::getPlural($Key, $UserOptions), $Count));
     }
@@ -314,15 +335,17 @@ class Translation
      */
     public static function get(string $Key, array $UserOptions = []): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if (self::$Database_Connection === null) {
             self::initDB();
         }
 
-        $statement = self::$Database_Connection->prepare("SELECT * FROM Translations WHERE key = :Key");
+        $statement = self::$Database_Connection->prepare('SELECT * FROM Translations WHERE key = :Key');
         $statement->execute([
-            ":Key" => $Key,
+            ':Key' => $Key,
             // ":Language" => $this->Language
         ]);
         if ($statement->rowCount() > 0) {
@@ -355,15 +378,16 @@ class Translation
      */
     public static function getPlural(string $Key, array $UserOptions = []): string
     {
-
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if (self::$Database_Connection === null) {
             self::initDB();
         }
 
-        $statement = self::$Database_Connection->prepare("SELECT * FROM Translations WHERE key = :Key");
+        $statement = self::$Database_Connection->prepare('SELECT * FROM Translations WHERE key = :Key');
         $statement->execute([
-            ":Key" => $Key . ".plural",
+            ':Key' => $Key . '.plural',
             // ":Language" => $this->Language
         ]);
         if ($statement->rowCount() > 0) {
@@ -371,7 +395,7 @@ class Translation
 
             if ($Translation[strtolower(self::$Language)] === null) {
                 if (self::$Language === $_ENV['DEFAULT_LOCALE'] ?? 'en' || !$Translation[$_ENV['DEFAULT_LOCALE'] ?? 'en']) {
-                    return $Key . ".plural";
+                    return $Key . '.plural';
                 }
 
                 return strtr($Translation[$_ENV['DEFAULT_LOCALE'] ?? 'en'], $UserOptions);
@@ -380,6 +404,6 @@ class Translation
             return strtr($Translation[strtolower(self::$Language)], $UserOptions);
         }
 
-        return $Key . ".plural";
+        return $Key . '.plural';
     }
 }

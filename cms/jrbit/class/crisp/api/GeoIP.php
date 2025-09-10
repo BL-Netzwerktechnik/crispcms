@@ -38,9 +38,11 @@ class GeoIP
      */
     public static function isAvailable(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        return count(glob("/usr/share/GeoIP/*.mmdb")) > 0;
+        return count(glob('/usr/share/GeoIP/*.mmdb')) > 0;
     }
 
     /**
@@ -49,9 +51,11 @@ class GeoIP
      * @param  string $defaultDB
      * @return Reader
      */
-    public static function City(string $defaultDB = "GeoLite2-City.mmdb"): Reader
+    public static function City(string $defaultDB = 'GeoLite2-City.mmdb'): Reader
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return new Reader("/usr/share/GeoIP/$defaultDB");
     }
@@ -62,9 +66,11 @@ class GeoIP
      * @param  string $defaultDB
      * @return Reader
      */
-    public static function ASN(string $defaultDB = "GeoLite2-ASN.mmdb"): Reader
+    public static function ASN(string $defaultDB = 'GeoLite2-ASN.mmdb'): Reader
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return new Reader("/usr/share/GeoIP/$defaultDB");
     }
@@ -75,9 +81,11 @@ class GeoIP
      * @param  string $defaultDB
      * @return Reader
      */
-    public static function Country(string $defaultDB = "GeoLite2-Country.mmdb"): Reader
+    public static function Country(string $defaultDB = 'GeoLite2-Country.mmdb'): Reader
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return new Reader("/usr/share/GeoIP/$defaultDB");
     }

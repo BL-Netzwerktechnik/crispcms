@@ -34,27 +34,29 @@ class createcrons extends \crisp\core\Migrations
 {
     public function run()
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         try {
             $this->begin();
 
             $this->createTable(
-                "Cron",
-                ["ID", $this::DB_INTEGER, "NOT NULL SERIAL"],
-                ["Type", $this::DB_VARCHAR, "NOT NULL"],
-                ["ScheduledAt", $this::DB_TIMESTAMP, "NOT NULL DEFAULT CURRENT_TIMESTAMP"],
-                ["CreatedAt", $this::DB_TIMESTAMP, "DEFAULT NULL"],
-                ["FinishedAt", $this::DB_TIMESTAMP, "DEFAULT NULL"],
-                ["UpdatedAt", $this::DB_TIMESTAMP, "DEFAULT NULL"],
-                ["StartedAt", $this::DB_TIMESTAMP, "DEFAULT NULL"],
-                ["Finished", $this::DB_BOOL, "NOT NULL DEFAULT 0"],
-                ["Started", $this::DB_BOOL, "NOT NULL DEFAULT 0"],
-                ["Canceled", $this::DB_BOOL, "NOT NULL DEFAULT 0"],
-                ["Failed", $this::DB_BOOL, "NOT NULL DEFAULT 0"],
-                ["Data", $this::DB_LONGTEXT, "DEFAULT NULL"],
-                ["Logger", $this::DB_LONGTEXT, "DEFAULT NULL"],
-                ["Interval", $this::DB_VARCHAR, "DEFAULT '5 MINUTE'"],
-                ["Plugin", $this::DB_VARCHAR, "DEFAULT NULL"]
+                'Cron',
+                ['ID', $this::DB_INTEGER, 'NOT NULL SERIAL'],
+                ['Type', $this::DB_VARCHAR, 'NOT NULL'],
+                ['ScheduledAt', $this::DB_TIMESTAMP, 'NOT NULL DEFAULT CURRENT_TIMESTAMP'],
+                ['CreatedAt', $this::DB_TIMESTAMP, 'DEFAULT NULL'],
+                ['FinishedAt', $this::DB_TIMESTAMP, 'DEFAULT NULL'],
+                ['UpdatedAt', $this::DB_TIMESTAMP, 'DEFAULT NULL'],
+                ['StartedAt', $this::DB_TIMESTAMP, 'DEFAULT NULL'],
+                ['Finished', $this::DB_BOOL, 'NOT NULL DEFAULT 0'],
+                ['Started', $this::DB_BOOL, 'NOT NULL DEFAULT 0'],
+                ['Canceled', $this::DB_BOOL, 'NOT NULL DEFAULT 0'],
+                ['Failed', $this::DB_BOOL, 'NOT NULL DEFAULT 0'],
+                ['Data', $this::DB_LONGTEXT, 'DEFAULT NULL'],
+                ['Logger', $this::DB_LONGTEXT, 'DEFAULT NULL'],
+                ['Interval', $this::DB_VARCHAR, "DEFAULT '5 MINUTE'"],
+                ['Plugin', $this::DB_VARCHAR, 'DEFAULT NULL']
             );
 
             return $this->end();

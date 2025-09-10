@@ -26,7 +26,6 @@ namespace crisp\api\lists;
 use crisp\api\Language;
 use crisp\core\Postgres;
 use crisp\core\Logger;
-use crisp\core\Tracing;
 
 /**
  * Interact with all languages stored on the server.
@@ -46,16 +45,11 @@ class Languages
      */
     private static function initDB()
     {
-
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $context = new \Sentry\Tracing\SpanContext();
-        $context->setOp(__METHOD__);
-        $context->setDescription('Initializing Database Connection');
-
-        return Tracing::traceFunction($context, function () {
-            $DB = new Postgres();
-            self::$Database_Connection = $DB->getDBConnector();
-        });
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        $DB = new Postgres();
+        self::$Database_Connection = $DB->getDBConnector();
     }
 
     /**
@@ -66,30 +60,26 @@ class Languages
      */
     public static function fetchLanguages(bool $FetchIntoClass = true): array|Language
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        $context = new \Sentry\Tracing\SpanContext();
-        $context->setOp(__METHOD__);
-        $context->setDescription('Fetching Languages from Database');
+        if (self::$Database_Connection === null) {
+            self::initDB();
+        }
+        $statement = self::$Database_Connection->query('SELECT * FROM Languages');
 
-        return Tracing::traceFunction($context, function () use ($FetchIntoClass) {
-            if (self::$Database_Connection === null) {
-                self::initDB();
-            }
-            $statement = self::$Database_Connection->query('SELECT * FROM Languages');
+        if ($FetchIntoClass) {
+            $Array = [];
 
-            if ($FetchIntoClass) {
-                $Array = [];
-
-                foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $Language) {
-                    $Array[] = new Language($Language['id']);
-                }
-
-                return $Array;
+            foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $Language) {
+                $Array[] = new Language($Language['id']);
             }
 
-            return $statement->fetchAll(\PDO::FETCH_ASSOC);
-        });
+            return $Array;
+        }
+
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -100,27 +90,22 @@ class Languages
      */
     public static function languageExists(string|int|null $Code): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        $context = new \Sentry\Tracing\SpanContext();
-        $context->setOp(__METHOD__);
-        $context->setDescription('Checking if Language exists');
+        if ($Code === null) {
+            return false;
+        } else {
 
-        return Tracing::traceFunction($context, function () use ($Code) {
-
-            if ($Code === null) {
-                return false;
-            } else {
-
-                if (self::$Database_Connection === null) {
-                    self::initDB();
-                }
-                $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE Code = :code');
-                $statement->execute([':code' => $Code]);
-
-                return $statement->rowCount() > 0;
+            if (self::$Database_Connection === null) {
+                self::initDB();
             }
-        });
+            $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE Code = :code');
+            $statement->execute([':code' => $Code]);
+
+            return $statement->rowCount() > 0;
+        }
     }
 
     /**
@@ -132,40 +117,34 @@ class Languages
      */
     public static function getLanguageByCode(string $Code, bool $FetchIntoClass = true): bool|array|Language
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        $context = new \Sentry\Tracing\SpanContext();
-        $context->setOp(__METHOD__);
-        $context->setDescription('Fetching Language by Code');
-
-        return Tracing::traceFunction($context, function () use ($FetchIntoClass, $Code) {
-
-            if (self::$Database_Connection === null) {
-                self::initDB();
-            }
-            $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE Code = :code');
-            $statement->execute([':code' => $Code]);
-            if ($statement->rowCount() > 0) {
-                if ($FetchIntoClass) {
-                    return new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
-                }
-
-                return $statement->fetch(\PDO::FETCH_ASSOC);
-
-            }
-            $Flag = strtolower($Code);
-
-            if (str_contains($Flag, '_')) {
-                $Flag = substr($Flag, 3);
+        if (self::$Database_Connection === null) {
+            self::initDB();
+        }
+        $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE Code = :code');
+        $statement->execute([':code' => $Code]);
+        if ($statement->rowCount() > 0) {
+            if ($FetchIntoClass) {
+                return new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
             }
 
-            if (Languages::createLanguage("base.language.$Code", $Code, "base.language.native.$Code", $Flag)) {
-                return self::getLanguageByCode($Code, $FetchIntoClass);
-            }
+            return $statement->fetch(\PDO::FETCH_ASSOC);
 
-            return false;
+        }
+        $Flag = strtolower($Code);
 
-        });
+        if (str_contains($Flag, '_')) {
+            $Flag = substr($Flag, 3);
+        }
+
+        if (Languages::createLanguage("base.language.$Code", $Code, "base.language.native.$Code", $Flag)) {
+            return self::getLanguageByCode($Code, $FetchIntoClass);
+        }
+
+        return false;
     }
 
     /**
@@ -180,40 +159,35 @@ class Languages
      */
     public static function createLanguage(string $Name, string $Code, string $NativeName, string $Flag, bool $Enabled = true): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        $context = new \Sentry\Tracing\SpanContext();
-        $context->setOp(__METHOD__);
-        $context->setDescription('Creating Language');
+        if (self::$Database_Connection === null) {
+            self::initDB();
+        }
+        self::$Database_Connection->beginTransaction();
+        $statement = self::$Database_Connection->prepare('INSERT INTO Languages (Name, Code, NativeName, Flag, Enabled) VALUES (:Name, :Code, :NativeName, :Flag, :Enabled)');
+        $success = $statement->execute([':Name' => $Name, ':Code' => $Code, ':NativeName' => $NativeName, ':Flag' => $Flag, ':Enabled' => $Enabled]);
 
-        return Tracing::traceFunction($context, function () use ($Name, $Code, $NativeName, $Flag, $Enabled) {
-
-            if (self::$Database_Connection === null) {
-                self::initDB();
-            }
-            self::$Database_Connection->beginTransaction();
-            $statement = self::$Database_Connection->prepare('INSERT INTO Languages (Name, Code, NativeName, Flag, Enabled) VALUES (:Name, :Code, :NativeName, :Flag, :Enabled)');
-            $success = $statement->execute([':Name' => $Name, ':Code' => $Code, ':NativeName' => $NativeName, ':Flag' => $Flag, ':Enabled' => $Enabled]);
-
-            if (!$success) {
-                return !self::$Database_Connection->rollBack();
-            }
-
-            $statement2 = self::$Database_Connection->prepare("SELECT table_name, column_name, data_type FROM information_schema.columns WHERE table_name = 'translations' AND column_name = '$Code';");
-            $statement2->execute();
-            if ($statement2->rowCount() > 0) {
-                return self::$Database_Connection->commit();
-            }
-            $statement3 = self::$Database_Connection->prepare("ALTER TABLE Translations ADD COLUMN $Code TEXT NULL");
-
-            $success3 = $statement3->execute();
-
-            if ($success3) {
-                return self::$Database_Connection->commit();
-            }
-
+        if (!$success) {
             return !self::$Database_Connection->rollBack();
-        });
+        }
+
+        $statement2 = self::$Database_Connection->prepare("SELECT table_name, column_name, data_type FROM information_schema.columns WHERE table_name = 'translations' AND column_name = '$Code';");
+        $statement2->execute();
+        if ($statement2->rowCount() > 0) {
+            return self::$Database_Connection->commit();
+        }
+        $statement3 = self::$Database_Connection->prepare("ALTER TABLE Translations ADD COLUMN $Code TEXT NULL");
+
+        $success3 = $statement3->execute();
+
+        if ($success3) {
+            return self::$Database_Connection->commit();
+        }
+
+        return !self::$Database_Connection->rollBack();
     }
 
     /**
@@ -225,30 +199,24 @@ class Languages
      */
     public static function getLanguageByID(int|string $ID, bool $FetchIntoClass = true): bool|array|Language
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        $context = new \Sentry\Tracing\SpanContext();
-        $context->setOp(__METHOD__);
-        $context->setDescription('Fetching Language by ID');
-
-        return Tracing::traceFunction($context, function () use ($FetchIntoClass, $ID) {
-
-            if (self::$Database_Connection === null) {
-                self::initDB();
-            }
-            $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE ID = :ID');
-            $statement->execute([':ID' => $ID]);
-            if ($statement->rowCount() > 0) {
-                if ($FetchIntoClass) {
-                    return new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
-                }
-
-                return $statement->fetch(\PDO::FETCH_ASSOC);
-
+        if (self::$Database_Connection === null) {
+            self::initDB();
+        }
+        $statement = self::$Database_Connection->prepare('SELECT * FROM Languages WHERE ID = :ID');
+        $statement->execute([':ID' => $ID]);
+        if ($statement->rowCount() > 0) {
+            if ($FetchIntoClass) {
+                return new Language($statement->fetch(\PDO::FETCH_ASSOC)['id']);
             }
 
-            return false;
+            return $statement->fetch(\PDO::FETCH_ASSOC);
 
-        });
+        }
+
+        return false;
     }
 }

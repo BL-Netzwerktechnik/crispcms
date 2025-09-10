@@ -13,6 +13,9 @@ class CrispThemeExecuteBootFilesCommand extends Command
 {
     protected function configure(): void
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $this
             ->setName('crisp:theme:execute-boot-files')
             ->setDescription('Execute theme boot files');
@@ -20,28 +23,30 @@ class CrispThemeExecuteBootFilesCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $io = new SymfonyStyle($input, $output);
 
         if (!Themes::isInstalled()) {
-            $io->error("Theme is not installed");
+            $io->error('Theme is not installed');
 
             return Command::FAILURE;
         }
         if (!Themes::isValid()) {
-            $io->error("Theme is not mounted. Check your Docker Configuration");
+            $io->error('Theme is not mounted. Check your Docker Configuration');
 
             return Command::FAILURE;
         }
 
         Logger::startTiming($Timing);
         if (Themes::loadBootFiles()) {
-            $io->success("Executed theme boot files!");
+            $io->success('Executed theme boot files!');
         } else {
-            $io->error("Failed to execute theme boot files!");
+            $io->error('Failed to execute theme boot files!');
         }
-        Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+        Logger::getLogger(__METHOD__)->debug(sprintf('Operation took %sms to complete!', Logger::endTiming($Timing)));
 
         return Command::SUCCESS;
     }

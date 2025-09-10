@@ -15,6 +15,9 @@ class CrispThemeTranslationsCommand extends Command
 {
     protected function configure(): void
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $this
             ->setName('crisp:theme:translations')
             ->setDescription('Theme translation management')
@@ -24,19 +27,21 @@ class CrispThemeTranslationsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $io = new SymfonyStyle($input, $output);
 
-        if ($input->getOption("install")) {
+        if ($input->getOption('install')) {
 
             if (!Themes::isInstalled()) {
-                $io->error("Theme is not already installed");
+                $io->error('Theme is not already installed');
 
                 return Command::FAILURE;
             }
             if (!Themes::isValid()) {
-                $io->error("Theme is not mounted. Check your Docker Configuration");
+                $io->error('Theme is not mounted. Check your Docker Configuration');
 
                 return Command::FAILURE;
             }
@@ -45,22 +50,23 @@ class CrispThemeTranslationsCommand extends Command
             try {
                 Themes::installTranslations();
             } catch (\Exception $ex) {
-                Logger::getLogger(__METHOD__)->error("Error installing translations", [$ex->getMessage()]);
+                Logger::getLogger(__METHOD__)->error('Error installing translations', [$ex->getMessage()]);
+
                 return Command::FAILURE;
             } finally {
-                Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+                Logger::getLogger(__METHOD__)->debug(sprintf('Operation took %sms to complete!', Logger::endTiming($Timing)));
             }
 
             return Command::SUCCESS;
         } elseif ($input->getOption('uninstall')) {
 
             if (!Themes::isInstalled()) {
-                $io->error("Theme is not installed");
+                $io->error('Theme is not installed');
 
                 return false;
             }
             if (!Themes::isValid()) {
-                $io->error("Theme is not mounted. Check your Docker Configuration");
+                $io->error('Theme is not mounted. Check your Docker Configuration');
 
                 return false;
             }
@@ -68,15 +74,16 @@ class CrispThemeTranslationsCommand extends Command
             Logger::startTiming($Timing);
             try {
                 if (Translation::uninstallAllTranslations()) {
-                    $io->success("Translations successfully uninstalled!");
+                    $io->success('Translations successfully uninstalled!');
                 } else {
-                    $io->error("Failed to uninstall translations!");
+                    $io->error('Failed to uninstall translations!');
                 }
             } catch (\Exception $ex) {
-                Logger::getLogger(__METHOD__)->error("Error uninstalling translations", (array)$ex);
+                Logger::getLogger(__METHOD__)->error('Error uninstalling translations', (array) $ex);
+
                 return Command::FAILURE;
             }
-            Logger::getLogger(__METHOD__)->debug(sprintf("Operation took %sms to complete!", Logger::endTiming($Timing)));
+            Logger::getLogger(__METHOD__)->debug(sprintf('Operation took %sms to complete!', Logger::endTiming($Timing)));
 
             return Command::SUCCESS;
         }

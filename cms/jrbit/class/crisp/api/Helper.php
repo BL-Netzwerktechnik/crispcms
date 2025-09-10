@@ -45,14 +45,18 @@ class Helper
      */
     public static function createDir(string $dir): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return mkdir($dir) && chown($dir, 33) && chgrp($dir, 33);
     }
 
     public static function prettyFormatNumber(int $num): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if ($num > 1000) {
 
@@ -79,19 +83,21 @@ class Helper
      * @param  string|null $template
      * @return string
      */
-    public static function getS3Url(string $bucket, string $region, string $template = null): string
+    public static function getS3Url(string $bucket, string $region, ?string $template = null): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if ($template === null) {
-            $template = "https://{{bucket}}.s3.{{region}}.amazonaws.com";
+            $template = 'https://{{bucket}}.s3.{{region}}.amazonaws.com';
         }
 
         return strtr(
             $template,
             [
-                "{{bucket}}" => $bucket,
-                "{{region}}" => $region,
+                '{{bucket}}' => $bucket,
+                '{{region}}' => $region,
             ]
         );
     }
@@ -104,18 +110,20 @@ class Helper
      * @param  string $url
      * @return array
      */
-    public static function generateUpToDateMimeArray(string $url = "https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types"): array
+    public static function generateUpToDateMimeArray(string $url = 'https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types'): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        if (!Cache::isExpired("mime_types")) {
-            return json_decode(Cache::get("mime_types"), true);
+        if (!Cache::isExpired('mime_types')) {
+            return json_decode(Cache::get('mime_types'), true);
         }
 
         $mimetypes = [];
         foreach (explode("\n", file_get_contents($url)) as $line) {
             $line = trim($line);
-            if (str_starts_with($line, "#") || $line == "") {
+            if (str_starts_with($line, '#') || $line == '') {
                 continue;
             }
             $explodedLine = preg_split('/\s+/', $line);
@@ -123,7 +131,7 @@ class Helper
             $mimetypes[$extension] = $mimetype;
         }
 
-        Cache::write("mime_types", json_encode($mimetypes), time() + 3600);
+        Cache::write('mime_types', json_encode($mimetypes), time() + 3600);
 
         return $mimetypes;
     }
@@ -136,11 +144,13 @@ class Helper
      */
     public static function detectMimetype(string $file): string|null
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $mappings = self::generateUpToDateMimeArray();
 
-        $splitExt = explode(".", $file);
+        $splitExt = explode('.', $file);
         $extension = end($splitExt);
 
         return $mappings[$extension];
@@ -157,14 +167,16 @@ class Helper
      */
     public static function getDirRecursive($dir, &$results = []): array
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $files = scandir($dir);
 
         foreach ($files as $key => $value) {
             $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
             if (!is_dir($path)) {
                 $results[] = $path;
-            } elseif ($value != "." && $value != "..") {
+            } elseif ($value != '.' && $value != '..') {
                 self::getDirRecursive($path, $results);
                 if (!is_dir($path)) {
                     $results[] = $path;
@@ -182,17 +194,19 @@ class Helper
      */
     public static function getRequestLog(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return sprintf(
             '%s - [%s] "%s %s %s" %s "%s"',
             self::getRealIpAddr(),
-            date("d/M/Y:H:i:s O"),
-            $_SERVER["REQUEST_METHOD"],
-            $_SERVER["REQUEST_URI"],
+            date('d/M/Y:H:i:s O'),
+            $_SERVER['REQUEST_METHOD'],
+            $_SERVER['REQUEST_URI'],
             $_SERVER['SERVER_PROTOCOL'],
             http_response_code(),
-            $_SERVER["HTTP_USER_AGENT"]
+            $_SERVER['HTTP_USER_AGENT']
         );
     }
 
@@ -203,14 +217,16 @@ class Helper
      */
     public static function getInstanceId(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-
-        if (file_exists(core::PERSISTENT_DATA . "/.instance_id")) {
-            return file_get_contents(core::PERSISTENT_DATA . "/.instance_id");
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
         }
-        $InstanceId = Crypto::UUIDv4("I");
 
-        file_put_contents(core::PERSISTENT_DATA . "/.instance_id", $InstanceId);
+        if (file_exists(core::PERSISTENT_DATA . '/.instance_id')) {
+            return file_get_contents(core::PERSISTENT_DATA . '/.instance_id');
+        }
+        $InstanceId = Crypto::UUIDv4('I');
+
+        file_put_contents(core::PERSISTENT_DATA . '/.instance_id', $InstanceId);
 
         return $InstanceId;
     }
@@ -222,7 +238,9 @@ class Helper
      */
     public static function isMobile($UserAgent = null): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $UserAgent = ($UserAgent ?? $_SERVER['HTTP_USER_AGENT']);
 
         return preg_match('/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i', $UserAgent);
@@ -235,17 +253,19 @@ class Helper
      */
     public static function getRealIpAddr(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {   // to check ip is pass from proxy
-            return trim(explode(",", $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
+            return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
         }
 
         if (!empty($_SERVER['HTTP_X_REAL_IP'])) {   // to check ip is pass from proxy
-            return trim(explode(",", $_SERVER['HTTP_X_REAL_IP'])[0]);
+            return trim(explode(',', $_SERVER['HTTP_X_REAL_IP'])[0]);
         }
 
-        return $_SERVER["REMOTE_ADDR"] ?? "0.0.0.0";
+        return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
     }
 
     /**
@@ -255,14 +275,16 @@ class Helper
      */
     public static function getLocale(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        $Locale = $_GET["crisp_locale"] ?? locale_accept_from_http($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        $Locale = $_GET['crisp_locale'] ?? locale_accept_from_http($_SERVER['HTTP_ACCEPT_LANGUAGE']);
 
         if (!array_key_exists($Locale, array_column(Languages::fetchLanguages(false), null, 'code'))) {
             $Locale = $_ENV['DEFAULT_LOCALE'] ?? 'en';
         }
 
-        if (isset($_COOKIE[core\Config::$Cookie_Prefix . 'language']) && !isset($_GET["crisp_locale"])) {
+        if (isset($_COOKIE[core\Config::$Cookie_Prefix . 'language']) && !isset($_GET['crisp_locale'])) {
             $Locale = $_COOKIE[core\Config::$Cookie_Prefix . 'language'];
         }
 
@@ -276,7 +298,9 @@ class Helper
      */
     public static function setLocale(): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return setcookie(core\Config::$Cookie_Prefix . 'language', self::getLocale(), time() + (86400 * 30), '/');
     }
@@ -289,7 +313,9 @@ class Helper
      */
     public static function filterAlphaNum(string $String): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return str_replace(' ', '-', strtolower(preg_replace('/[^0-9a-zA-Z\-_]/', '-', $String)));
     }
@@ -302,8 +328,10 @@ class Helper
      */
     public static function PlaceHolder(string $Size = '150x150', string|true $Text = true, $backgroundColor = null, $textColor = null)
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
-        list($width, $height) = explode("x", $Size);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+        list($width, $height) = explode('x', $Size);
         $faker = Factory::create();
         $faker->addProvider(new ImagesGeneratorProvider($faker));
 
@@ -322,7 +350,9 @@ class Helper
      */
     public static function Faker(): FakerGenerator
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $faker = Factory::create();
 
         return $faker;
@@ -335,7 +365,9 @@ class Helper
      */
     public static function getCommitHash(): ?string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return $_ENV['GIT_COMMIT'] ?: trim(exec('git describe --tags --always'));
     }
@@ -349,43 +381,45 @@ class Helper
      */
     public static function generateLink(string $Path, bool $External = false, string|false|null $Locale = false, ?string $UtmID = null, ?string $UtmSource = null, ?string $UtmMedium = null, ?string $UtmCampaign = null, ?string $UtmTerm = null, ?string $UtmContent = null): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         parse_str(parse_url($Path, PHP_URL_QUERY), $parameters);
 
         $CleanedPath = strtok($Path, '?');
 
         if (!empty($UtmID)) {
-            $parameters["utm_id"] = $UtmID;
+            $parameters['utm_id'] = $UtmID;
         }
         if (!empty($UtmSource)) {
-            $parameters["utm_source"] = $UtmSource;
+            $parameters['utm_source'] = $UtmSource;
         }
         if (!empty($UtmMedium)) {
-            $parameters["utm_medium"] = $UtmMedium;
+            $parameters['utm_medium'] = $UtmMedium;
         }
         if (!empty($UtmCampaign)) {
-            $parameters["utm_campaign"] = $UtmCampaign;
+            $parameters['utm_campaign'] = $UtmCampaign;
         }
         if (!empty($UtmTerm)) {
-            $parameters["utm_term"] = $UtmTerm;
+            $parameters['utm_term'] = $UtmTerm;
         }
         if (!empty($UtmContent)) {
-            $parameters["utm_content"] = $UtmContent;
+            $parameters['utm_content'] = $UtmContent;
         }
         if ($Locale !== false) {
-            $parameters["crisp_locale"] = $Locale;
+            $parameters['crisp_locale'] = $Locale;
         }
 
         if (empty($parameters)) {
             $Destination = $Path;
         } else {
-            $Destination = sprintf("%s?%s", $CleanedPath, http_build_query($parameters));
+            $Destination = sprintf('%s?%s', $CleanedPath, http_build_query($parameters));
         }
 
-        if ($External || (str_starts_with($Destination, "http://") || str_starts_with($Destination, "https://"))) {
-            $urlConstruct = sprintf("%s", $Destination);
+        if ($External || (str_starts_with($Destination, 'http://') || str_starts_with($Destination, 'https://'))) {
+            $urlConstruct = sprintf('%s', $Destination);
         } else {
-            $urlConstruct = sprintf("/%s", $Destination);
+            $urlConstruct = sprintf('/%s', $Destination);
         }
 
         return $urlConstruct;
@@ -398,7 +432,9 @@ class Helper
      */
     public static function prettyDump($var): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         echo sprintf('<pre>%s</pre>', var_export($var, true));
     }
 
@@ -411,7 +447,9 @@ class Helper
      */
     public static function templateExists(string $Template): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return file_exists(Themes::getThemeDirectory() . "/templates/$Template");
     }
@@ -428,7 +466,9 @@ class Helper
      */
     public static function truncateText($text, $length = 100, $ending = '...', $exact = false, $considerHtml = true): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         if ($considerHtml) {
             // if the plain text is shorter than the maximum length, return the whole text
             if (strlen(preg_replace('/<.*?>/', '', $text)) <= $length) {
@@ -530,7 +570,9 @@ class Helper
      */
     public static function isSerialized(string $data, bool $strict = true): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         // if it isn't a string, it isn't serialized.
         if (!is_string($data)) {
             return false;
@@ -596,14 +638,18 @@ class Helper
      */
     public static function currentURL(): string
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
     }
 
     public static function in_array_any($needles, $haystack): bool
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         return !empty(array_intersect($needles, $haystack));
     }

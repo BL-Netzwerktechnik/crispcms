@@ -35,12 +35,14 @@ class Version
 {
     public function preRender(): void
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
-        RESTfulAPI::response(Bitmask::REQUEST_SUCCESS->value, "This site is running CrispCMS!", [
-            "release" => Build::getReleaseString(),
-            "environment" => Build::getEnvironment(),
-            "build" => Build::getBuildType()
+        RESTfulAPI::response(Bitmask::REQUEST_SUCCESS->value, 'This site is running Crisp Framework!', [
+            'release' => Build::getReleaseString(),
+            'environment' => Build::getEnvironment(),
+            'build' => Build::getBuildType(),
         ]);
 
         return;

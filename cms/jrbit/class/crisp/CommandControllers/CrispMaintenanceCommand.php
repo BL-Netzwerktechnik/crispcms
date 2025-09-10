@@ -14,6 +14,9 @@ class CrispMaintenanceCommand extends Command
 {
     protected function configure(): void
     {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
         $this
             ->setName('crisp:maintenance')
             ->setDescription('Gets or sets the maintenance status')
@@ -24,19 +27,21 @@ class CrispMaintenanceCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Logger::getLogger(__METHOD__)->debug("Called", debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
 
         $io = new SymfonyStyle($input, $output);
 
         if ($input->getOption('on')) {
 
-            if (Config::set("maintenance_enabled", true)) {
-                $io->success("Maintenance Mode successfully enabled.");
+            if (Config::set('maintenance_enabled', true)) {
+                $io->success('Maintenance Mode successfully enabled.');
 
                 return Command::SUCCESS;
             }
 
-            $io->error("Maintenance Mode could not be enabled.");
+            $io->error('Maintenance Mode could not be enabled.');
 
             return Command::FAILURE;
 
@@ -44,22 +49,22 @@ class CrispMaintenanceCommand extends Command
 
         if ($input->getOption('off')) {
 
-            if (Config::set("maintenance_enabled", false)) {
-                $io->success("Maintenance Mode successfully disabled.");
+            if (Config::set('maintenance_enabled', false)) {
+                $io->success('Maintenance Mode successfully disabled.');
 
                 return Command::SUCCESS;
             }
 
-            $io->error("Maintenance Mode could not be disabled.");
+            $io->error('Maintenance Mode could not be disabled.');
 
             return Command::FAILURE;
 
         }
 
-        if (Config::get("maintenance_enabled")) {
-            $io->warning("Maintenance Mode is currently enabled");
+        if (Config::get('maintenance_enabled')) {
+            $io->warning('Maintenance Mode is currently enabled');
         } else {
-            $io->success("Maintenance Mode is currently disabled");
+            $io->success('Maintenance Mode is currently disabled');
         }
 
         return Command::SUCCESS;
