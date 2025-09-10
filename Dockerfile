@@ -58,7 +58,7 @@ RUN wget 'https://github.com/maxmind/geoipupdate/releases/download/v7.1.1/geoipu
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives /tmp/*
 
 # Remove build dependencies to slim down the image
-RUN apt-get purge -y --auto-remove \
+RUN apt-get purge -y \
       libfreetype6-dev libjpeg62-turbo-dev libpng-dev \
       libpq-dev libcurl4-openssl-dev libsodium-dev libzip-dev libicu-dev libssl-dev && \
     apt-get clean && \
