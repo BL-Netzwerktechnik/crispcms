@@ -31,4 +31,4 @@ done < <(printenv) > /etc/.env.sh
 
 chmod +x /etc/.env.sh
 
-echo "* * * * * www-data /bin/bash -c 'source /etc/.env.sh && cd /var/www/crisp && /usr/local/bin/crisp crisp:cron:run' >> /var/log/crisp/cron.log 2>&1" >> /etc/cron.d/crontab
+echo "* * * * * www-data /bin/bash -c 'source /etc/.env.sh && cd /var/www/crisp && /usr/local/bin/crisp crisp:cron:run' >> /var/log/crisp/cron.log 2>&1" > /etc/cron.d/crontab
