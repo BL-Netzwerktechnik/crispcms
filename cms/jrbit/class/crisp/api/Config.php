@@ -74,7 +74,23 @@ class Config
         if (self::$Database_Connection === null) {
             self::initDB();
         }
-        Logger::getLogger(__METHOD__)->debug('Config::exists: SELECT value FROM Config WHERE key = :ID');
+        Logger::getLogger(__METHOD__)->debug('SELECT value FROM Config WHERE key = :ID');
+        $statement = self::$Database_Connection->prepare('SELECT value FROM Config WHERE key = :ID');
+        $statement->execute([':ID' => $Key]);
+
+        return $statement->rowCount() > 0;
+    }
+
+    public static function existsAndHasValue(string|int $Key): bool
+    {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+
+        if (self::$Database_Connection === null) {
+            self::initDB();
+        }
+        Logger::getLogger(__METHOD__)->debug('SELECT value FROM Config WHERE key = :ID AND value IS NOT NULL AND value != \'\'');
         $statement = self::$Database_Connection->prepare('SELECT value FROM Config WHERE key = :ID AND value IS NOT NULL AND value != \'\'');
         $statement->execute([':ID' => $Key]);
 
@@ -96,8 +112,8 @@ class Config
 
         Logger::getLogger(__METHOD__)->debug("Bootstrapping key $Key");
 
-        if (!self::exists($Key)) {
-            return self::create($Key, $Value);
+        if (!self::existsAndHasValue($Key)) {
+            return self::set($Key, $Value);
         }
 
         return false;
