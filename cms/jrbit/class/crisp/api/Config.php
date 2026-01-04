@@ -75,10 +75,32 @@ class Config
             self::initDB();
         }
         Logger::getLogger(__METHOD__)->debug('Config::exists: SELECT value FROM Config WHERE key = :ID');
-        $statement = self::$Database_Connection->prepare('SELECT value FROM Config WHERE key = :ID');
+        $statement = self::$Database_Connection->prepare('SELECT value FROM Config WHERE key = :ID AND value IS NOT NULL AND value != \'\'');
         $statement->execute([':ID' => $Key]);
 
         return $statement->rowCount() > 0;
+    }
+
+    /**
+     * Initializes a key with a value if it does not exist.
+     *
+     * @param  string $Key
+     * @param  mixed  $Value
+     * @return bool
+     */
+    public static function bootstrap(string $Key, mixed $Value): bool
+    {
+        if (Logger::isTraceEnabled()) {
+            Logger::getLogger(__METHOD__)->log(Logger::LOG_LEVEL_TRACE, 'Called', debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? []);
+        }
+
+        Logger::getLogger(__METHOD__)->debug("Bootstrapping key $Key");
+
+        if (!self::exists($Key)) {
+            return self::create($Key, $Value);
+        }
+
+        return false;
     }
 
     /**
