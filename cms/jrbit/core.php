@@ -178,11 +178,15 @@ class core
                 $GLOBALS['navbar_right'] = [];
                 $GLOBALS['render'] = [];
 
+                $sessionOpts = [
+                    'cookie_httponly' => true,
+                ];
+
                 if (Config::existsAndHasValue('core_session_lifetime')) {
-                    session_set_cookie_params(Config::get('core_session_lifetime'), '/');
+                    $sessionOpts['lifetime'] = Config::get('core_session_lifetime');
                 }
 
-                session_start();
+                session_start($sessionOpts);
 
                 Helper::setLocale();
 
