@@ -24,6 +24,7 @@
 namespace crisp;
 
 use crisp\api\Build;
+use crisp\api\Config;
 use crisp\api\Helper;
 use crisp\Controllers\EventController;
 use crisp\core\Bitmask;
@@ -40,7 +41,6 @@ use crisp\Events\ThemePageErrorEvent;
 use Dotenv\Dotenv;
 use Sentry\State\Scope;
 
-use function Sentry\captureException;
 use function Sentry\configureScope;
 use function Sentry\init;
 
@@ -58,12 +58,12 @@ class core
     /**
      * Location of the Persistent Storage.
      */
-    public const PERSISTENT_DATA = "/data";
+    public const PERSISTENT_DATA = '/data';
 
     /**
      * Default Theme.
      */
-    public const DEFAULT_THEME = "crisptheme";
+    public const DEFAULT_THEME = 'crisptheme';
 
     /**
      * Default Cache Location.
@@ -83,8 +83,8 @@ class core
         register_shutdown_function(function () {
             $error = error_get_last();
             if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-                Logger::getLogger("Core")->critical(sprintf(
-                    "FATAL: %s in %s on line %d",
+                Logger::getLogger('Core')->critical(sprintf(
+                    'FATAL: %s in %s on line %d',
                     $error['message'],
                     $error['file'],
                     $error['line']
@@ -109,7 +109,7 @@ class core
                 Helper::createDir(core::PERSISTENT_DATA);
             }
 
-            define("ThemeMetadata", Themes::getThemeMetadata());
+            define('ThemeMetadata', Themes::getThemeMetadata());
 
             $dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
             if (IS_DEV_ENV) {
@@ -137,7 +137,7 @@ class core
 
             define('IS_API_ENDPOINT', (PHP_SAPI !== 'cli' && isset($_SERVER['IS_API_ENDPOINT'])));
             define('IS_NATIVE_API', isset($_SERVER['IS_API_ENDPOINT']));
-            define('REQUEST_ID', Crypto::UUIDv4("R"));
+            define('REQUEST_ID', Crypto::UUIDv4('R'));
 
             if (PHP_SAPI !== 'cli') {
                 Logger::getLogger(__METHOD__)->info(Helper::getRequestLog());
@@ -162,7 +162,7 @@ class core
 
             header('X-Request-ID: ' . REQUEST_ID);
 
-            setlocale(LC_TIME, $_ENV["LANG"] ?? 'en_US.utf8');
+            setlocale(LC_TIME, $_ENV['LANG'] ?? 'en_US.utf8');
 
             EventController::register();
             Themes::autoload();
@@ -177,6 +177,11 @@ class core
                 $GLOBALS['navbar'] = [];
                 $GLOBALS['navbar_right'] = [];
                 $GLOBALS['render'] = [];
+
+                if (Config::existsAndHasValue('core_session_lifetime')) {
+                    session_set_cookie_params(Config::get('core_session_lifetime'), '/');
+                }
+
                 session_start();
 
                 Helper::setLocale();
@@ -188,7 +193,7 @@ class core
                     $GLOBALS['guid'] = $_COOKIE['guid'];
                 }
 
-                define("IS_SPECIAL_PAGE", str_starts_with($_SERVER['REQUEST_URI'], "/_"));
+                define('IS_SPECIAL_PAGE', str_starts_with($_SERVER['REQUEST_URI'], '/_'));
 
                 /* Twig Globals */
                 Themes::initRenderer();
@@ -216,7 +221,6 @@ class core
                 $refid = 'Core';
             }
 
-
             $Event = EventController::getEventDispatcher()->dispatch(new ThemePageErrorEvent($ex->getMessage()), ThemePageErrorEvent::SERVER_ERROR);
 
             if ($Event->isPropagationStopped()) {
@@ -225,10 +229,11 @@ class core
 
             if (IS_API_ENDPOINT) {
                 if (Build::getEnvironment() === Environment::DEVELOPMENT) {
-                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', (array)$ex);
+                    RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', (array) $ex);
                 } else {
                     RESTfulAPI::response(Bitmask::GENERIC_ERROR->value, 'Internal Server Error', ['reference_id' => $refid]);
                 }
+
                 return;
             }
 
